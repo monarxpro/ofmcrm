@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Accounts</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.filters-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-tags{display:flex;gap:6px;margin-left:auto}
+.filter-tag{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;background:var(--bg4);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s}
+.filter-tag:hover{border-color:var(--border2);color:var(--text)}
+.filter-tag.active{background:var(--accent-bg);border-color:rgba(108,99,255,.3);color:var(--accent2)}
+.steps{display:flex;align-items:center;gap:6px;margin-bottom:22px}
+.step{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
+.step-num{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.step.active .step-num{background:var(--accent);border-color:var(--accent);color:#fff}
+.step.active{color:var(--text);font-weight:500}
+.step.done .step-num{background:var(--green);border-color:var(--green);color:#fff}
+.step-sep{flex:1;height:1px;background:var(--border)}
+.platform-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.platform-card{background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
+.platform-card:hover{border-color:var(--border2)}
+.platform-card.selected{border-color:var(--accent);background:var(--accent-bg)}
+.platform-card.disabled{opacity:.4;cursor:not-allowed}
+.platform-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.platform-name{font-size:13px;font-weight:500}
+.platform-desc{font-size:11px;color:var(--text2);margin-top:2px}
+.platform-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.platform-card.selected .platform-check{background:var(--accent);border-color:var(--accent)}
+.platform-check svg{width:10px;height:10px;color:#fff;display:none}
+.platform-card.selected .platform-check svg{display:block}
+.oauth-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;border-radius:10px;border:1.5px solid var(--accent);background:var(--accent-bg);color:var(--accent2);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .15s;margin-bottom:16px}
+.oauth-btn:hover{background:var(--accent);color:#fff}
+.oauth-divider{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.oauth-divider-line{flex:1;height:1px;background:var(--border)}
+.oauth-divider-text{font-size:11px;color:var(--text3);white-space:nowrap}
+.info-box{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;gap:10px}
+.info-box svg{width:14px;height:14px;color:var(--accent2);flex-shrink:0;margin-top:1px}
+.info-box-text{font-size:12px;color:var(--text2);line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title" id="page-title">Accounts</div>
+      <button class="btn btn-primary" onclick="openModal()">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span id="btn-connect">Connect Account</span>
+      </button>
+    </div>
+    <div class="stat-chips">
+      <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--text2)"></div><div><div class="stat-chip-val">12</div><div class="stat-chip-label" id="lbl-total">Total accounts</div></div></div>
+      <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--green)"></div><div><div class="stat-chip-val" style="color:var(--green)">9</div><div class="stat-chip-label" id="lbl-active">Active</div></div></div>
+      <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--amber)"></div><div><div class="stat-chip-val" style="color:var(--amber)">2</div><div class="stat-chip-label" id="lbl-reconnect">Reconnect needed</div></div></div>
+      <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--red)"></div><div><div class="stat-chip-val" style="color:var(--red)">1</div><div class="stat-chip-label" id="lbl-offline">Offline</div></div></div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" id="tab-accounts">Accounts</div>
+      <div class="tab" id="tab-groups">Groups</div>
+    </div>
+    <div class="filters-bar">
+      <select class="filter-select" style="min-width:130px">
+        <option id="opt-allgroups">All Groups</option>
+        <option id="opt-topearners">Top Earners</option>
+        <option id="opt-newmodels">New Models</option>
+      </select>
+      <div class="search-wrap" style="flex:1;max-width:260px">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <input type="text" id="search-input" placeholder="Search accounts...">
+      </div>
+      <div class="filter-tags">
+        <div class="filter-tag active" onclick="filterStatus(this,'all')" id="ftag-all">All</div>
+        <div class="filter-tag" onclick="filterStatus(this,'active')"><div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0"></div><span id="ftag-active">Active</span></div>
+        <div class="filter-tag" onclick="filterStatus(this,'reconnect')"><div style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0"></div><span id="ftag-reconnect">Reconnect</span></div>
+        <div class="filter-tag" onclick="filterStatus(this,'offline')"><div style="width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0"></div><span id="ftag-offline">Offline</span></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th id="th-account">Account</th>
+          <th id="th-platform">Platform</th>
+          <th id="th-status">Status</th>
+          <th id="th-group">Group</th>
+          <th id="th-subprice">Sub Price</th>
+          <th id="th-fans">Fans</th>
+          <th id="th-chatter">Chatter</th>
+          <th id="th-plan">Plan</th>
+          <th id="th-actions">Actions</th>
+        </tr></thead>
+        <tbody id="accounts-table">
+          <tr data-status="active">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,.2);color:#8b84ff;border:1.5px solid rgba(108,99,255,.3)">AV</div><div><div class="account-name">Aurora Voss</div><div class="account-handle">@aurora_voss</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span class="st-active">Active</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px" class="gr-top">Top Earners</span></td>
+            <td class="mono">$9.99</td><td class="mono">342</td>
+            <td style="color:var(--text2);font-size:11.5px">@mike_c</td>
+            <td><span class="badge badge-purple">Pro</span></td>
+            <td><div class="actions-cell"><a href="insights.html" class="action-btn" style="text-decoration:none" id="btn-open">Open</a><a href="model-cards.html" class="action-btn" style="text-decoration:none" id="btn-card">Card</a></div></td>
+          </tr>
+          <tr data-status="active">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(34,197,94,.15);color:#22c55e;border:1.5px solid rgba(34,197,94,.3)">SM</div><div><div class="account-name">Stella Moon</div><div class="account-handle">@stella_moon</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span class="st-active">Active</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px" class="gr-top">Top Earners</span></td>
+            <td class="mono">$14.99</td><td class="mono">287</td>
+            <td style="color:var(--text2);font-size:11.5px">@anna_k</td>
+            <td><span class="badge badge-purple">Pro</span></td>
+            <td><div class="actions-cell"><a href="insights.html" class="action-btn" style="text-decoration:none">Open</a><a href="model-cards.html" class="action-btn" style="text-decoration:none">Card</a></div></td>
+          </tr>
+          <tr data-status="reconnect">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(245,158,11,.15);color:#f59e0b;border:1.5px solid rgba(245,158,11,.3)">LR</div><div><div class="account-name">Luna Ray</div><div class="account-handle">@luna_ray</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-amber"><span class="badge-dot"></span><span class="st-reconnect">Reconnect</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px" class="gr-new">New Models</span></td>
+            <td class="mono">$7.99</td><td class="mono">198</td>
+            <td style="color:var(--text2);font-size:11.5px">@mike_c</td>
+            <td><span class="badge badge-gray">Basic</span></td>
+            <td><div class="actions-cell"><button class="action-btn" style="color:var(--amber);border-color:rgba(245,158,11,.3);background:var(--amber-bg)"><span class="st-reconnect">Reconnect</span></button></div></td>
+          </tr>
+          <tr data-status="offline">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(239,68,68,.15);color:#ef4444;border:1.5px solid rgba(239,68,68,.3)">NV</div><div><div class="account-name">Nova Vale</div><div class="account-handle">@nova_vale</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-red"><span class="badge-dot"></span><span class="st-offline">Offline</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px">—</span></td>
+            <td class="mono">$4.99</td><td class="mono">156</td>
+            <td style="color:var(--text2);font-size:11.5px">—</td>
+            <td><span class="badge badge-gray">Basic</span></td>
+            <td><div class="actions-cell"><a href="insights.html" class="action-btn" style="text-decoration:none">Open</a></div></td>
+          </tr>
+          <tr data-status="active">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,.15);color:#8b84ff;border:1.5px solid rgba(108,99,255,.2)">IB</div><div><div class="account-name">Ivy Bloom</div><div class="account-handle">@ivy_bloom</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span class="st-active">Active</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px" class="gr-top">Top Earners</span></td>
+            <td class="mono">$19.99</td><td class="mono">121</td>
+            <td style="color:var(--text2);font-size:11.5px">@anna_k</td>
+            <td><span class="badge badge-purple">Agency</span></td>
+            <td><div class="actions-cell"><a href="insights.html" class="action-btn" style="text-decoration:none">Open</a><a href="model-cards.html" class="action-btn" style="text-decoration:none">Card</a></div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span id="pag-text">Showing 5 of 12 accounts</span>
+        <div class="page-btns">
+          <button class="page-btn">‹</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="modal-title">Connect Account</div><div class="modal-sub" id="modal-sub">Link your Fanvue account securely via OAuth</div></div>
+      <div class="modal-close" onclick="closeModal()"><svg viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    </div>
+    <div class="modal-body">
+      <div class="steps">
+        <div class="step active" id="step1"><div class="step-num">1</div><span id="step-lbl1">Platform</span></div>
+        <div class="step-sep"></div>
+        <div class="step" id="step2"><div class="step-num">2</div><span id="step-lbl2">Connect</span></div>
+        <div class="step-sep"></div>
+        <div class="step" id="step3"><div class="step-num">3</div><span id="step-lbl3">Settings</span></div>
+      </div>
+      <div id="s1">
+        <div class="platform-grid">
+          <div class="platform-card selected" onclick="selectPlatform(this)"><div class="platform-icon" style="background:rgba(108,99,255,.15)">🎯</div><div><div class="platform-name">Fanvue</div><div class="platform-desc" id="p-official">Official API</div></div><div class="platform-check"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+          <div class="platform-card disabled"><div class="platform-icon" style="background:rgba(34,197,94,.1)">💠</div><div><div class="platform-name">OnlyFans</div><div class="platform-desc" id="p-soon1">Coming soon</div></div><div class="platform-check"></div></div>
+          <div class="platform-card disabled"><div class="platform-icon" style="background:rgba(245,158,11,.1)">⭐</div><div><div class="platform-name">Fansly</div><div class="platform-desc" id="p-soon2">Coming soon</div></div><div class="platform-check"></div></div>
+          <div class="platform-card disabled"><div class="platform-icon" style="background:rgba(239,68,68,.1)">🔥</div><div><div class="platform-name">Passes</div><div class="platform-desc" id="p-soon3">Coming soon</div></div><div class="platform-check"></div></div>
+        </div>
+      </div>
+      <div id="s2" style="display:none">
+        <div class="info-box"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><div class="info-box-text" id="oauth-info">We use Fanvue's official OAuth 2.0 API. Your password is never shared.</div></div>
+        <button class="oauth-btn" id="oauth-btn">Connect with Fanvue</button>
+        <div class="oauth-divider"><div class="oauth-divider-line"></div><div class="oauth-divider-text" id="or-manual">or enter credentials manually</div><div class="oauth-divider-line"></div></div>
+        <div class="form-group"><div class="form-label" id="lbl-username">Fanvue Username</div><input class="form-input" type="text" placeholder="@username"></div>
+        <div class="form-group"><div class="form-label">API Token</div><input class="form-input" type="password" placeholder="fv_live_..."><div class="form-hint" id="token-hint">Find your token in Fanvue → Settings → Developer → Builder Area</div></div>
+      </div>
+      <div id="s3" style="display:none">
+        <div class="form-group"><div class="form-label" id="lbl-dispname">Display Name</div><input class="form-input" type="text" placeholder="Aurora Voss"></div>
+        <div class="form-row">
+          <div class="form-group"><div class="form-label" id="lbl-group">Assign to Group</div><select class="form-select"><option id="opt-nogroup">No group</option><option>Top Earners</option><option>New Models</option></select></div>
+          <div class="form-group"><div class="form-label" id="lbl-chatter">Assign Chatter</div><select class="form-select"><option id="opt-unassigned">Unassigned</option><option>@mike_c</option><option>@anna_k</option></select></div>
+        </div>
+        <div class="form-group"><div class="form-label" id="lbl-cardlink">Link Model Card</div><select class="form-select"><option id="opt-selcard">Select model card...</option><option>Aurora Voss</option><option>Stella Moon</option><option id="opt-newcard">+ Create new card</option></select><div class="form-hint" id="ai-hint">AI will use the model card persona when responding to fans</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="btn-back" onclick="prevStep()" style="display:none">Back</button>
+      <button class="btn btn-ghost" onclick="closeModal()" id="btn-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextStep()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'Accounts';
+let currentStep = 1;
+const TR = {
+  en:{title:'Accounts',connect:'Connect Account',sub:'Link your Fanvue account securely via OAuth',total:'Total accounts',active:'Active',reconnectNeeded:'Reconnect needed',offline:'Offline',allGroups:'All Groups',topEarners:'Top Earners',newModels:'New Models',all:'All',reconnect:'Reconnect',account:'Account',platform:'Platform',status:'Status',group:'Group',subPrice:'Sub Price',fans:'Fans',chatter:'Chatter',plan:'Plan',actions:'Actions',pag:'Showing 5 of 12 accounts',plat1:'Platform',plat2:'Connect',plat3:'Settings',official:'Official API',soon:'Coming soon',oauthInfo:"We use Fanvue's official OAuth 2.0 API. Your password is never shared.",oauthBtn:'Connect with Fanvue',orManual:'or enter credentials manually',username:'Fanvue Username',tokenHint:'Find your token in Fanvue → Settings → Developer → Builder Area',dispName:'Display Name',assignGroup:'Assign to Group',assignChatter:'Assign Chatter',noGroup:'No group',unassigned:'Unassigned',cardLink:'Link Model Card',selCard:'Select model card...',newCard:'+ Create new card',aiHint:'AI will use the model card persona when responding to fans',back:'Back',cancel:'Cancel',next:'Next →',done:'Connect',search:'Search accounts...'},
+  ru:{title:'Аккаунты',connect:'Подключить аккаунт',sub:'Подключите аккаунт Fanvue через OAuth',total:'Всего аккаунтов',active:'Активен',reconnectNeeded:'Требуют переподключения',offline:'Офлайн',allGroups:'Все группы',topEarners:'Топ заработок',newModels:'Новые модели',all:'Все',reconnect:'Переподключить',account:'Аккаунт',platform:'Платформа',status:'Статус',group:'Группа',subPrice:'Цена подписки',fans:'Фаны',chatter:'Чаттер',plan:'План',actions:'Действия',pag:'Показано 5 из 12 аккаунтов',plat1:'Платформа',plat2:'Подключение',plat3:'Настройки',official:'Официальный API',soon:'Скоро',oauthInfo:'Мы используем официальный OAuth 2.0 API Fanvue. Ваш пароль никогда не передаётся.',oauthBtn:'Подключить через Fanvue',orManual:'или введите вручную',username:'Имя пользователя Fanvue',tokenHint:'Найдите токен в Fanvue → Настройки → Разработчик → Builder Area',dispName:'Отображаемое имя',assignGroup:'Группа',assignChatter:'Назначить чаттера',noGroup:'Без группы',unassigned:'Не назначен',cardLink:'Привязать карточку',selCard:'Выберите карточку...',newCard:'+ Создать новую карточку',aiHint:'AI будет использовать персону из карточки при общении с фанами',back:'Назад',cancel:'Отмена',next:'Далее →',done:'Подключить',search:'Поиск аккаунтов...'}
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  const l=getLang(),t=TR[l];
+  document.getElementById('page-title').textContent=t.title;
+  document.getElementById('btn-connect').textContent=t.connect;
+  document.getElementById('lbl-total').textContent=t.total;
+  document.getElementById('lbl-active').textContent=t.active;
+  document.getElementById('lbl-reconnect').textContent=t.reconnectNeeded;
+  document.getElementById('lbl-offline').textContent=t.offline;
+  document.getElementById('tab-accounts').textContent=t.title;
+  document.getElementById('tab-groups').textContent=l==='ru'?'Группы':'Groups';
+  document.getElementById('opt-allgroups').textContent=t.allGroups;
+  document.getElementById('opt-topearners').textContent=t.topEarners;
+  document.getElementById('opt-newmodels').textContent=t.newModels;
+  document.getElementById('search-input').placeholder=t.search;
+  document.getElementById('ftag-all').textContent=t.all;
+  document.getElementById('ftag-active').textContent=t.active;
+  document.getElementById('ftag-reconnect').textContent=t.reconnect;
+  document.getElementById('ftag-offline').textContent=t.offline;
+  document.getElementById('th-account').textContent=t.account;
+  document.getElementById('th-platform').textContent=t.platform;
+  document.getElementById('th-status').textContent=t.status;
+  document.getElementById('th-group').textContent=t.group;
+  document.getElementById('th-subprice').textContent=t.subPrice;
+  document.getElementById('th-fans').textContent=t.fans;
+  document.getElementById('th-chatter').textContent=t.chatter;
+  document.getElementById('th-plan').textContent=t.plan;
+  document.getElementById('th-actions').textContent=t.actions;
+  document.getElementById('pag-text').textContent=t.pag;
+  document.querySelectorAll('.st-active').forEach(e=>e.textContent=t.active);
+  document.querySelectorAll('.st-reconnect').forEach(e=>e.textContent=t.reconnect);
+  document.querySelectorAll('.st-offline').forEach(e=>e.textContent=t.offline);
+  document.querySelectorAll('.gr-top').forEach(e=>e.textContent=t.topEarners);
+  document.querySelectorAll('.gr-new').forEach(e=>e.textContent=t.newModels);
+  document.getElementById('modal-title').textContent=t.connect;
+  document.getElementById('modal-sub').textContent=t.sub;
+  document.getElementById('step-lbl1').textContent=t.plat1;
+  document.getElementById('step-lbl2').textContent=t.plat2;
+  document.getElementById('step-lbl3').textContent=t.plat3;
+  document.getElementById('p-official').textContent=t.official;
+  ['p-soon1','p-soon2','p-soon3'].forEach(id=>document.getElementById(id).textContent=t.soon);
+  document.getElementById('oauth-info').textContent=t.oauthInfo;
+  document.getElementById('oauth-btn').textContent=t.oauthBtn;
+  document.getElementById('or-manual').textContent=t.orManual;
+  document.getElementById('lbl-username').textContent=t.username;
+  document.getElementById('token-hint').textContent=t.tokenHint;
+  document.getElementById('lbl-dispname').textContent=t.dispName;
+  document.getElementById('lbl-group').textContent=t.assignGroup;
+  document.getElementById('lbl-chatter').textContent=t.assignChatter;
+  document.getElementById('opt-nogroup').textContent=t.noGroup;
+  document.getElementById('opt-unassigned').textContent=t.unassigned;
+  document.getElementById('lbl-cardlink').textContent=t.cardLink;
+  document.getElementById('opt-selcard').textContent=t.selCard;
+  document.getElementById('opt-newcard').textContent=t.newCard;
+  document.getElementById('ai-hint').textContent=t.aiHint;
+  document.getElementById('btn-back').textContent=t.back;
+  document.getElementById('btn-cancel').textContent=t.cancel;
+  document.getElementById('btn-next').textContent=t.next;
+  window.PAGE_TITLE=t.title;
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');});
+  });
+});
+function openModal(){document.getElementById('overlay').classList.add('open');currentStep=1;showStep(1);}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+function showStep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('s'+i).style.display=i===n?'':'none';
+    const s=document.getElementById('step'+i);
+    s.className='step'+(i<n?' done':i===n?' active':'');
+  });
+  document.getElementById('btn-back').style.display=n>1?'':'none';
+  const l=getLang(),t=TR[l];
+  document.getElementById('btn-next').textContent=n===3?t.done:t.next;
+}
+function nextStep(){if(currentStep<3){currentStep++;showStep(currentStep);}else{closeModal();}}
+function prevStep(){if(currentStep>1){currentStep--;showStep(currentStep);}}
+function selectPlatform(el){document.querySelectorAll('.platform-card:not(.disabled)').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');}
+function filterStatus(tag,status){
+  document.querySelectorAll('.filter-tag').forEach(t=>t.classList.remove('active'));
+  tag.classList.add('active');
+  document.querySelectorAll('#accounts-table tr').forEach(tr=>{
+    tr.style.display=(status==='all'||tr.dataset.status===status)?'':'none';
+  });
+}
+</script>
+</body>
+</html>
