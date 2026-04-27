@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Model Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0b; --bg2: #111113; --bg3: #18181b; --bg4: #1f1f23;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f0; --text2: #888890; --text3: #555560;
+    --accent: #6c63ff; --accent2: #8b84ff; --accent-bg: rgba(108,99,255,0.12);
+    --green: #22c55e; --green-bg: rgba(34,197,94,0.1);
+    --red: #ef4444; --red-bg: rgba(239,68,68,0.1);
+    --amber: #f59e0b; --amber-bg: rgba(245,158,11,0.1);
+    --pink: #ec4899; --pink-bg: rgba(236,72,153,0.1);
+    --sidebar-w: 224px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+  /* SIDEBAR */
+  .sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+  .sidebar::-webkit-scrollbar { width: 0; }
+  .logo { padding: 16px 14px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .logo-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; line-height: 1; }
+  .logo-sub { font-size: 9px; color: var(--text3); letter-spacing: 0.5px; margin-top: 3px; text-transform: uppercase; }
+  .nav-section { padding: 8px 8px 2px; }
+  .nav-label { font-size: 9.5px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.9px; padding: 4px 8px 3px; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; }
+  .nav-label svg { width: 11px; height: 11px; opacity: 0.4; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 6.5px 8px; border-radius: 7px; cursor: pointer; color: var(--text2); font-size: 12.5px; transition: all 0.15s; text-decoration: none; }
+  .nav-item:hover { background: var(--bg4); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent2); font-weight: 500; }
+  .nav-item svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.65; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-badge { margin-left: auto; font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 4px; background: var(--accent-bg); color: var(--accent2); }
+  .nav-badge.new { background: var(--green-bg); color: var(--green); }
+  .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding: 8px; }
+
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 50px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 22px; gap: 10px; flex-shrink: 0; background: var(--bg2); }
+  .topbar-title { font-size: 14px; font-weight: 500; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+  .lang-switcher { display: flex; background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+  .lang-btn { padding: 4px 11px; font-size: 11px; font-weight: 700; font-family: var(--font); cursor: pointer; border: none; background: transparent; color: var(--text2); transition: all 0.15s; }
+  .lang-btn.active { background: var(--accent); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--text); }
+  .icon-btn { width: 30px; height: 30px; border-radius: 7px; background: var(--bg4); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: all 0.15s; color: var(--text2); }
+  .icon-btn:hover { background: var(--bg3); color: var(--text); }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .notif-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; position: absolute; top: 5px; right: 5px; border: 1.5px solid var(--bg2); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; cursor: pointer; }
+  .avatar-name { font-size: 12px; color: var(--text2); }
+
+  /* LAYOUT: LIST + DETAIL */
+  .workspace { flex: 1; display: flex; overflow: hidden; }
+
+  /* LEFT: CARDS LIST */
+  .cards-list { width: 300px; min-width: 300px; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg2); overflow: hidden; }
+  .cards-list-header { padding: 16px 14px 12px; border-bottom: 1px solid var(--border); }
+  .cards-list-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .btn-sm { display: flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 7px; font-size: 11.5px; font-family: var(--font); font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-sm-primary { background: var(--accent); color: #fff; }
+  .btn-sm-primary:hover { background: var(--accent2); }
+  .btn-sm svg { width: 11px; height: 11px; }
+  .search-wrap { display: flex; align-items: center; gap: 7px; background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px; transition: border-color 0.15s; }
+  .search-wrap:focus-within { border-color: var(--accent); }
+  .search-wrap svg { width: 12px; height: 12px; color: var(--text3); flex-shrink: 0; }
+  .search-wrap input { background: none; border: none; outline: none; color: var(--text); font-size: 12px; font-family: var(--font); width: 100%; }
+  .search-wrap input::placeholder { color: var(--text3); }
+  .cards-scroll { flex: 1; overflow-y: auto; padding: 8px; }
+  .cards-scroll::-webkit-scrollbar { width: 3px; }
+  .cards-scroll::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+  /* MODEL CARD ITEM */
+  .card-item { display: flex; align-items: center; gap: 10px; padding: 10px 10px; border-radius: 9px; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; margin-bottom: 2px; }
+  .card-item:hover { background: var(--bg4); }
+  .card-item.active { background: var(--accent-bg); border-color: rgba(108,99,255,0.2); }
+  .card-photo { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-meta { font-size: 11px; color: var(--text2); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .card-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .card-badge { font-size: 9.5px; font-weight: 600; padding: 1px 5px; border-radius: 3px; }
+
+  /* RIGHT: DETAIL */
+  .card-detail { flex: 1; overflow-y: auto; background: var(--bg); }
+  .card-detail::-webkit-scrollbar { width: 4px; }
+  .card-detail::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+
+  /* DETAIL HEADER */
+  .detail-hero { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 22px 26px; display: flex; align-items: flex-start; gap: 18px; }
+  .hero-photo { width: 72px; height: 72px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; border: 2px solid var(--border2); position: relative; }
+  .hero-photo-upload { position: absolute; bottom: -4px; right: -4px; width: 22px; height: 22px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--bg2); }
+  .hero-photo-upload svg { width: 10px; height: 10px; color: #fff; }
+  .hero-info { flex: 1; }
+  .hero-name { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 4px; }
+  .hero-handle { font-size: 13px; color: var(--text2); margin-bottom: 10px; }
+  .hero-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 5px; font-size: 10.5px; font-weight: 600; }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-purple { background: var(--accent-bg); color: var(--accent2); }
+  .badge-pink { background: var(--pink-bg); color: var(--pink); }
+  .badge-gray { background: var(--bg4); color: var(--text2); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .hero-actions { display: flex; gap: 8px; flex-direction: column; align-items: flex-end; }
+  .btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-family: var(--font); font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-ghost:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .btn svg { width: 13px; height: 13px; }
+
+  /* DETAIL TABS */
+  .detail-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 26px; background: var(--bg2); }
+  .dtab { padding: 10px 14px; font-size: 12.5px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+  .dtab:hover { color: var(--text); }
+  .dtab.active { color: var(--accent2); border-bottom-color: var(--accent); font-weight: 500; }
+
+  /* DETAIL BODY */
+  .detail-body { padding: 22px 26px; }
+  .section { margin-bottom: 24px; }
+  .section-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .field { }
+  .field-label { font-size: 10.5px; color: var(--text3); margin-bottom: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field-input { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: var(--font); padding: 8px 11px; outline: none; transition: border-color 0.15s; }
+  .field-input:focus { border-color: var(--accent); }
+  .field-input::placeholder { color: var(--text3); }
+  .field-textarea { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: var(--font); padding: 8px 11px; outline: none; transition: border-color 0.15s; resize: vertical; min-height: 80px; line-height: 1.5; }
+  .field-textarea:focus { border-color: var(--accent); }
+  .field-textarea::placeholder { color: var(--text3); }
+  .field-select { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: var(--font); padding: 8px 28px 8px 11px; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; cursor: pointer; transition: border-color 0.15s; }
+  .field-select:focus { border-color: var(--accent); }
+  .field-select option { background: var(--bg3); }
+
+  /* INSTAGRAM SECTION */
+  .ig-main { display: flex; gap: 8px; margin-bottom: 10px; }
+  .ig-input-wrap { flex: 1; position: relative; }
+  .ig-prefix { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px; }
+  .ig-input { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: var(--font); padding: 8px 11px 8px 24px; outline: none; transition: border-color 0.15s; }
+  .ig-input:focus { border-color: var(--accent); }
+  .ig-input::placeholder { color: var(--text3); }
+  .ig-badge { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
+  .ig-main-badge { background: var(--accent-bg); color: var(--accent2); border: 1px solid rgba(108,99,255,0.2); }
+  .ig-backup-badge { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+
+  /* SATELLITES */
+  .satellites-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .satellite-tag { display: flex; align-items: center; gap: 6px; background: var(--bg4); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 12px; color: var(--text2); }
+  .satellite-tag span { color: var(--text); }
+  .satellite-remove { width: 14px; height: 14px; border-radius: 50%; background: var(--bg3); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text3); transition: all 0.15s; padding: 0; }
+  .satellite-remove:hover { background: var(--red-bg); color: var(--red); }
+  .satellite-remove svg { width: 8px; height: 8px; }
+  .add-satellite { display: flex; gap: 8px; }
+  .satellite-count { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+
+  /* TOPICS TAGS */
+  .topics-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .topic-tag { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); color: var(--text2); background: var(--bg4); }
+  .topic-tag:hover { border-color: var(--border2); color: var(--text); }
+  .topic-tag.active { background: var(--accent-bg); border-color: rgba(108,99,255,0.3); color: var(--accent2); }
+  .topic-tag.forbidden { background: var(--red-bg); border-color: rgba(239,68,68,0.2); color: var(--red); }
+
+  /* ACCESS */
+  .access-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
+  .access-ava { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .access-name { font-size: 12.5px; font-weight: 500; }
+  .access-role { font-size: 11px; color: var(--text2); }
+  .access-time { font-size: 11px; color: var(--text3); margin-left: auto; }
+  .toggle-sm { width: 30px; height: 17px; background: var(--accent); border-radius: 10px; position: relative; cursor: pointer; flex-shrink: 0; }
+  .toggle-sm::after { content: ''; position: absolute; width: 11px; height: 11px; background: #fff; border-radius: 50%; top: 3px; right: 3px; transition: all 0.2s; }
+  .toggle-sm.off { background: var(--bg4); }
+  .toggle-sm.off::after { right: auto; left: 3px; }
+
+  /* SAVE BAR */
+  .save-bar { position: sticky; bottom: 0; background: var(--bg2); border-top: 1px solid var(--border); padding: 12px 26px; display: flex; align-items: center; justify-content: space-between; }
+  .save-hint { font-size: 11.5px; color: var(--text3); }
+  .save-actions { display: flex; gap: 8px; }
+
+  /* EMPTY */
+  .empty-detail { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text2); padding: 40px; text-align: center; }
+  .empty-detail-icon { width: 56px; height: 56px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .empty-detail-icon svg { width: 26px; height: 26px; color: var(--text3); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">OFM</div>
+    <div>
+      <div class="logo-name">OFM CRM</div>
+      <div class="logo-sub" data-en="Fanvue Management" data-ru="Управление Fanvue">Fanvue Management</div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label"><span data-en="Analytics" data-ru="Аналитика">Analytics</span><svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" rx="1" fill="currentColor"/><rect x="6" y="5" width="3" height="10" rx="1" fill="currentColor"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor"/></svg><span data-en="Dashboard" data-ru="Дашборд">Dashboard</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 4v4l3 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="Accounts" data-ru="Аккаунты">Accounts</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><path d="M2 12l4-5 3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-en="Account Insights" data-ru="Инсайты">Account Insights</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-en="Tracking Links" data-ru="Трекинг ссылки">Tracking Links</span></a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label"><span data-en="Team Performance" data-ru="Команда">Team Performance</span><svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/></svg><span data-en="Chatting Metrics" data-ru="Метрики чата">Chatting Metrics</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 3V1M11 3V1M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="Chatting Shifts" data-ru="Смены чаттеров">Chatting Shifts</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="Message Templates" data-ru="Шаблоны">Message Templates</span></a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label"><span data-en="Automations" data-ru="Автоматизация">Automations</span><svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><path d="M1 5h14M1 9h14M5 5V1M11 5V1M5 15v-4M11 15v-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="Mass Messages" data-ru="Массовая рассылка">Mass Messages</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v3m0 6v3M2 8h3m6 0h3M4.2 4.2l2.1 2.1m3.4 3.4l2.1 2.1M4.2 11.8l2.1-2.1m3.4-3.4l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="Fan Retention" data-ru="Удержание фанов">Fan Retention</span><span class="nav-badge new">New</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg><span data-en="Media Hub" data-ru="Медиа-хаб">Media Hub</span></a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label"><span data-en="Models" data-ru="Модели">Models</span><svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <a class="nav-item active" href="#"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="7" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 13s.5-2.5 4-2.5S12 13 12 13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="Model Cards" data-ru="Карточки моделей">Model Cards</span><span class="nav-badge new">New</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><path d="M2 3h12M2 7h8M2 11h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="Knowledge Base" data-ru="База знаний">Knowledge Base</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="Help Center" data-ru="Помощь">Help Center</span></a>
+    <a class="nav-item" href="#"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-en="My Profile" data-ru="Мой профиль">My Profile</span></a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" data-en="Model Cards" data-ru="Карточки моделей">Model Cards</div>
+    <div class="topbar-right">
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" id="btn-ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <div class="icon-btn" style="position:relative;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 015 5v2l1.5 2.5h-13L3 9V7a5 5 0 015-5zM6 13.5a2 2 0 004 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="avatar-name">Pride Agency</div>
+      <div class="avatar">PA</div>
+    </div>
+  </div>
+
+  <div class="workspace">
+
+    <!-- CARDS LIST -->
+    <div class="cards-list">
+      <div class="cards-list-header">
+        <div class="cards-list-title">
+          <span data-en="All Models" data-ru="Все модели">All Models</span>
+          <button class="btn-sm btn-sm-primary" onclick="selectCard(-1)">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span data-en="New" data-ru="Создать">New</span>
+          </button>
+        </div>
+        <div class="search-wrap">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input type="text" placeholder="Search models..." data-placeholder-en="Search models..." data-placeholder-ru="Поиск моделей...">
+        </div>
+      </div>
+      <div class="cards-scroll">
+        <div class="card-item active" onclick="selectCard(0)">
+          <div class="card-photo" style="background:rgba(108,99,255,0.2);color:#8b84ff;">AV</div>
+          <div class="card-info">
+            <div class="card-name">Aurora Voss</div>
+            <div class="card-meta">
+              <div class="card-dot" style="background:var(--green);"></div>
+              <span>@aurora_voss</span>
+              <span class="card-badge badge-purple" style="background:var(--accent-bg);color:var(--accent2);">Pro</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-item" onclick="selectCard(1)">
+          <div class="card-photo" style="background:rgba(236,72,153,0.15);color:#ec4899;">SM</div>
+          <div class="card-info">
+            <div class="card-name">Stella Moon</div>
+            <div class="card-meta">
+              <div class="card-dot" style="background:var(--green);"></div>
+              <span>@stella_moon</span>
+              <span class="card-badge badge-purple" style="background:var(--accent-bg);color:var(--accent2);">Pro</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-item" onclick="selectCard(2)">
+          <div class="card-photo" style="background:rgba(245,158,11,0.15);color:#f59e0b;">LR</div>
+          <div class="card-info">
+            <div class="card-name">Luna Ray</div>
+            <div class="card-meta">
+              <div class="card-dot" style="background:var(--amber);"></div>
+              <span>@luna_ray</span>
+              <span class="card-badge" style="background:var(--bg4);color:var(--text2);">Basic</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-item" onclick="selectCard(3)">
+          <div class="card-photo" style="background:rgba(239,68,68,0.15);color:#ef4444;">NV</div>
+          <div class="card-info">
+            <div class="card-name">Nova Vale</div>
+            <div class="card-meta">
+              <div class="card-dot" style="background:var(--red);"></div>
+              <span>@nova_vale</span>
+              <span class="card-badge" style="background:var(--bg4);color:var(--text2);">Basic</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-item" onclick="selectCard(4)">
+          <div class="card-photo" style="background:rgba(34,197,94,0.15);color:#22c55e;">IB</div>
+          <div class="card-info">
+            <div class="card-name">Ivy Bloom</div>
+            <div class="card-meta">
+              <div class="card-dot" style="background:var(--green);"></div>
+              <span>@ivy_bloom</span>
+              <span class="card-badge badge-purple" style="background:var(--accent-bg);color:var(--accent2);">Agency</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD DETAIL -->
+    <div class="card-detail" id="detail">
+
+      <!-- HERO -->
+      <div class="detail-hero">
+        <div class="hero-photo" style="background:rgba(108,99,255,0.2);">
+          AV
+          <div class="hero-photo-upload">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M6 2v6M3 5l3-3 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+        <div class="hero-info">
+          <div class="hero-name">Aurora Voss</div>
+          <div class="hero-handle">@aurora_voss · Fanvue</div>
+          <div class="hero-badges">
+            <span class="badge badge-green"><span class="badge-dot"></span><span data-en="Active" data-ru="Активна">Active</span></span>
+            <span class="badge badge-purple">Pro</span>
+            <span class="badge badge-pink">AI Enabled</span>
+            <span class="badge badge-gray" data-en="English" data-ru="Английский">English</span>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v3M7 10v3M1 7h3M10 7h3M3.2 3.2l2.1 2.1M8.7 8.7l2.1 2.1M3.2 10.8l2.1-2.1M8.7 5.3l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span data-en="Test AI" data-ru="Тест AI">Test AI</span>
+          </button>
+          <button class="btn btn-ghost">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span data-en="Open Fanvue" data-ru="Открыть Fanvue">Open Fanvue</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DETAIL TABS -->
+      <div class="detail-tabs">
+        <div class="dtab active" onclick="switchTab(this,'tab-profile')" data-en="Profile" data-ru="Профиль">Profile</div>
+        <div class="dtab" onclick="switchTab(this,'tab-instagram')" data-en="Instagram" data-ru="Instagram">Instagram</div>
+        <div class="dtab" onclick="switchTab(this,'tab-persona')" data-en="Persona & AI" data-ru="Персона & AI">Persona & AI</div>
+        <div class="dtab" onclick="switchTab(this,'tab-media')" data-en="Materials" data-ru="Материалы">Materials</div>
+        <div class="dtab" onclick="switchTab(this,'tab-access')" data-en="Access" data-ru="Доступ">Access</div>
+      </div>
+
+      <!-- TAB: PROFILE -->
+      <div class="detail-body" id="tab-profile">
+        <div class="section">
+          <div class="section-title" data-en="Basic Info" data-ru="Основная информация">Basic Info</div>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-label" data-en="Real Name" data-ru="Настоящее имя">Real Name</div>
+              <input class="field-input" type="text" value="Anna Koroleva" placeholder="Real name">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Stage Name" data-ru="Псевдоним">Stage Name</div>
+              <input class="field-input" type="text" value="Aurora Voss">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Date of Birth" data-ru="Дата рождения">Date of Birth</div>
+              <input class="field-input" type="text" value="1998-04-12" placeholder="YYYY-MM-DD">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Nationality" data-ru="Национальность">Nationality</div>
+              <input class="field-input" type="text" value="Russian" placeholder="Country">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Location" data-ru="Локация">Location</div>
+              <input class="field-input" type="text" value="Moscow, Russia">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Timezone" data-ru="Часовой пояс">Timezone</div>
+              <select class="field-select">
+                <option>UTC+3 Moscow</option>
+                <option>UTC+0 London</option>
+                <option>UTC-5 New York</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Language" data-ru="Язык">Language</div>
+              <select class="field-select">
+                <option>English</option>
+                <option>Russian</option>
+                <option>Spanish</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Content Category" data-ru="Категория контента">Content Category</div>
+              <select class="field-select">
+                <option>Lifestyle</option>
+                <option>Fitness</option>
+                <option>Adult</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Fanvue Account" data-ru="Аккаунт Fanvue">Fanvue Account</div>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-label" data-en="Username" data-ru="Username">Username</div>
+              <input class="field-input" type="text" value="@aurora_voss">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Subscription Price" data-ru="Цена подписки">Subscription Price</div>
+              <input class="field-input" type="text" value="$9.99">
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Contacts (Internal)" data-ru="Контакты (внутренние)">Contacts (Internal)</div>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-label">Telegram</div>
+              <input class="field-input" type="text" value="@anna_real" placeholder="@username">
+            </div>
+            <div class="field">
+              <div class="field-label">WhatsApp</div>
+              <input class="field-input" type="text" value="+7 999 123 45 67" placeholder="+1 ...">
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Finance" data-ru="Финансы">Finance</div>
+          <div class="field-grid-3">
+            <div class="field">
+              <div class="field-label" data-en="Model's %" data-ru="% модели">Model's %</div>
+              <input class="field-input" type="text" value="60%">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Agency %" data-ru="% агентства">Agency %</div>
+              <input class="field-input" type="text" value="40%">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Payout Method" data-ru="Метод выплаты">Payout Method</div>
+              <select class="field-select">
+                <option>Bank Transfer</option>
+                <option>Crypto</option>
+                <option>PayPal</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <div class="save-hint" data-en="Last saved: 2 hours ago" data-ru="Последнее сохранение: 2 часа назад">Last saved: 2 hours ago</div>
+          <div class="save-actions">
+            <button class="btn btn-ghost" data-en="Reset" data-ru="Сбросить">Reset</button>
+            <button class="btn btn-primary" data-en="Save Changes" data-ru="Сохранить">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: INSTAGRAM -->
+      <div class="detail-body" id="tab-instagram" style="display:none;">
+        <div class="section">
+          <div class="section-title" data-en="Main Instagram" data-ru="Основной Instagram">Main Instagram</div>
+          <div class="ig-main">
+            <div class="ig-input-wrap">
+              <span class="ig-prefix">@</span>
+              <input class="ig-input" type="text" value="aurora_voss_official" placeholder="username">
+            </div>
+            <div class="ig-badge ig-main-badge" data-en="Main" data-ru="Основной">Main</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Backup Instagram" data-ru="Резервный Instagram">Backup Instagram</div>
+          <div class="ig-main">
+            <div class="ig-input-wrap">
+              <span class="ig-prefix">@</span>
+              <input class="ig-input" type="text" value="aurora_backup2" placeholder="username">
+            </div>
+            <div class="ig-badge ig-backup-badge" data-en="Backup" data-ru="Резервный">Backup</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Satellite Accounts" data-ru="Аккаунты-спутники">Satellite Accounts</div>
+          <div class="satellite-count" id="sat-count">8 / 30 accounts added</div>
+          <div class="satellites-grid" id="satellites">
+            <div class="satellite-tag"><span>@</span><span>aurora_sat_1</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+            <div class="satellite-tag"><span>@</span><span>auroralife_ig</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+            <div class="satellite-tag"><span>@</span><span>aurora_style</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+            <div class="satellite-tag"><span>@</span><span>avoss_official</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+            <div class="satellite-tag"><span>@</span><span>aurora_beauty</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+            <div class="satellite-tag"><span>@</span><span>auroraxfit</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+            <div class="satellite-tag"><span>@</span><span>aurora_v2</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+            <div class="satellite-tag"><span>@</span><span>auroravoss_fan</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+          </div>
+          <div class="add-satellite">
+            <div class="ig-input-wrap" style="flex:1;">
+              <span class="ig-prefix">@</span>
+              <input class="ig-input" type="text" id="new-sat" placeholder="new_satellite_account">
+            </div>
+            <button class="btn btn-ghost" onclick="addSat()">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span data-en="Add" data-ru="Добавить">Add</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <div class="save-hint" data-en="Last saved: 2 hours ago" data-ru="Последнее сохранение: 2 часа назад">Last saved: 2 hours ago</div>
+          <div class="save-actions">
+            <button class="btn btn-primary" data-en="Save Changes" data-ru="Сохранить">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: PERSONA -->
+      <div class="detail-body" id="tab-persona" style="display:none;">
+        <div class="section">
+          <div class="section-title" data-en="Character & Backstory" data-ru="Персонаж и легенда">Character & Backstory</div>
+          <div class="field" style="margin-bottom:12px;">
+            <div class="field-label" data-en="Legend (for chatters & AI)" data-ru="Легенда (для чаттеров и AI)">Legend (for chatters & AI)</div>
+            <textarea class="field-textarea" style="min-height:100px;" placeholder="Aurora is a 25-year-old fitness model from Miami...">Aurora is a 25-year-old lifestyle model originally from Miami. She loves yoga, travelling to tropical countries and cooking healthy food. She has a younger sister and a rescue cat named Pixel.</textarea>
+          </div>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-label" data-en="Communication Style" data-ru="Стиль общения">Communication Style</div>
+              <select class="field-select">
+                <option data-en="Friendly & Warm" data-ru="Дружелюбный и тёплый">Friendly & Warm</option>
+                <option data-en="Flirty" data-ru="Флиртующий">Flirty</option>
+                <option data-en="Professional" data-ru="Профессиональный">Professional</option>
+                <option data-en="Playful" data-ru="Игривый">Playful</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Response Language" data-ru="Язык ответов">Response Language</div>
+              <select class="field-select">
+                <option>English</option>
+                <option data-en="Auto-detect" data-ru="Авто-определение">Auto-detect</option>
+                <option>Russian</option>
+                <option>Spanish</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Interests & Hobbies" data-ru="Интересы и хобби">Interests & Hobbies</div>
+          <div class="topics-wrap">
+            <div class="topic-tag active">🧘 Yoga</div>
+            <div class="topic-tag active">✈️ Travel</div>
+            <div class="topic-tag active">🍳 Cooking</div>
+            <div class="topic-tag active">🐱 Cats</div>
+            <div class="topic-tag active">📸 Photography</div>
+            <div class="topic-tag">🏋️ Gym</div>
+            <div class="topic-tag">🎵 Music</div>
+            <div class="topic-tag">🎨 Art</div>
+            <div class="topic-tag">📚 Books</div>
+            <div class="topic-tag">🏖️ Beach</div>
+            <div class="topic-tag">🍷 Wine</div>
+            <div class="topic-tag">🎬 Movies</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Forbidden Topics" data-ru="Запрещённые темы">Forbidden Topics</div>
+          <div class="topics-wrap">
+            <div class="topic-tag forbidden">❌ <span data-en="Real name" data-ru="Настоящее имя">Real name</span></div>
+            <div class="topic-tag forbidden">❌ <span data-en="Real location" data-ru="Реальное местонахождение">Real location</span></div>
+            <div class="topic-tag forbidden">❌ <span data-en="Politics" data-ru="Политика">Politics</span></div>
+            <div class="topic-tag forbidden">❌ <span data-en="Religion" data-ru="Религия">Religion</span></div>
+            <div class="topic-tag" onclick="this.classList.toggle('forbidden')">+ <span data-en="Add topic" data-ru="Добавить тему">Add topic</span></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Favourite Phrases" data-ru="Любимые фразы">Favourite Phrases</div>
+          <textarea class="field-textarea" placeholder="Hey babe! 🌸&#10;Miss you so much!&#10;You always make me smile 😊">Hey babe! 🌸
+Miss you so much!
+You always make me smile 😊
+Can't wait to share something special with you...</textarea>
+          <div style="font-size:11px;color:var(--text3);margin-top:5px;" data-en="One phrase per line. AI will naturally use these in conversations." data-ru="Одна фраза в строке. AI будет естественно использовать их в разговорах.">One phrase per line. AI will naturally use these in conversations.</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">AI Settings</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;">
+              <div>
+                <div style="font-size:13px;font-weight:500;" data-en="AI Auto-replies" data-ru="Авто-ответы AI">AI Auto-replies</div>
+                <div style="font-size:11px;color:var(--text2);margin-top:2px;" data-en="AI responds automatically when chatter is offline" data-ru="AI отвечает автоматически когда чаттер офлайн">AI responds automatically when chatter is offline</div>
+              </div>
+              <div class="toggle-sm" id="tog-ai"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;">
+              <div>
+                <div style="font-size:13px;font-weight:500;" data-en="AI Suggestions" data-ru="Подсказки AI">AI Suggestions</div>
+                <div style="font-size:11px;color:var(--text2);margin-top:2px;" data-en="Show AI reply suggestions to chatter in real-time" data-ru="Показывать подсказки AI чаттеру в реальном времени">Show AI reply suggestions to chatter in real-time</div>
+              </div>
+              <div class="toggle-sm" id="tog-sug"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;">
+              <div>
+                <div style="font-size:13px;font-weight:500;" data-en="PPV Auto-promote" data-ru="Авто-продвижение PPV">PPV Auto-promote</div>
+                <div style="font-size:11px;color:var(--text2);margin-top:2px;" data-en="AI suggests PPV content based on fan behaviour" data-ru="AI предлагает PPV контент на основе поведения фана">AI suggests PPV content based on fan behaviour</div>
+              </div>
+              <div class="toggle-sm off" id="tog-ppv"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <div class="save-hint" data-en="Last saved: 2 hours ago" data-ru="Последнее сохранение: 2 часа назад">Last saved: 2 hours ago</div>
+          <div class="save-actions">
+            <button class="btn btn-primary" data-en="Save Changes" data-ru="Сохранить">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: MEDIA -->
+      <div class="detail-body" id="tab-media" style="display:none;">
+        <div class="section">
+          <div class="section-title" data-en="Content Materials" data-ru="Материалы контента">Content Materials</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+            <div style="aspect-ratio:1;background:var(--bg4);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all 0.15s;" onmouseenter="this.style.borderColor='var(--border2)'" onmouseleave="this.style.borderColor='var(--border)'">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="1" width="20" height="20" rx="4" stroke="var(--text3)" stroke-width="1.3"/><path d="M7 11l3 3 5-5" stroke="var(--accent2)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div style="font-size:10px;color:var(--text3);">PPV Pack 1</div>
+            </div>
+            <div style="aspect-ratio:1;background:var(--bg4);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all 0.15s;" onmouseenter="this.style.borderColor='var(--border2)'" onmouseleave="this.style.borderColor='var(--border)'">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="1" width="20" height="20" rx="4" stroke="var(--text3)" stroke-width="1.3"/><path d="M7 11l3 3 5-5" stroke="var(--accent2)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div style="font-size:10px;color:var(--text3);">PPV Pack 2</div>
+            </div>
+            <div style="aspect-ratio:1;background:var(--bg4);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all 0.15s;" onmouseenter="this.style.borderColor='var(--border2)'" onmouseleave="this.style.borderColor='var(--border)'">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="1" width="20" height="20" rx="4" stroke="var(--text3)" stroke-width="1.3"/><path d="M7 11l3 3 5-5" stroke="var(--green)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div style="font-size:10px;color:var(--text3);">Scripts</div>
+            </div>
+            <div style="aspect-ratio:1;background:var(--bg2);border:2px dashed var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all 0.15s;" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <div style="font-size:10px;color:var(--text3);" data-en="Add folder" data-ru="Добавить папку">Add folder</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);" data-en="24 files · Last updated 3 days ago" data-ru="24 файла · Последнее обновление 3 дня назад">24 files · Last updated 3 days ago</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="PPV Prices" data-ru="Цены PPV">PPV Prices</div>
+          <div class="field-grid-3">
+            <div class="field">
+              <div class="field-label" data-en="Photo set" data-ru="Фото сет">Photo set</div>
+              <input class="field-input" type="text" value="$8">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Video (short)" data-ru="Видео (короткое)">Video (short)</div>
+              <input class="field-input" type="text" value="$15">
+            </div>
+            <div class="field">
+              <div class="field-label" data-en="Video (long)" data-ru="Видео (длинное)">Video (long)</div>
+              <input class="field-input" type="text" value="$25">
+            </div>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <div class="save-hint" data-en="Last saved: 2 hours ago" data-ru="Последнее сохранение: 2 часа назад">Last saved: 2 hours ago</div>
+          <div class="save-actions">
+            <button class="btn btn-primary" data-en="Save Changes" data-ru="Сохранить">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ACCESS -->
+      <div class="detail-body" id="tab-access" style="display:none;">
+        <div class="section">
+          <div class="section-title" data-en="Team Access" data-ru="Доступ команды">Team Access</div>
+          <div class="access-item">
+            <div class="access-ava" style="background:rgba(108,99,255,0.2);color:#8b84ff;">MC</div>
+            <div>
+              <div class="access-name">@mike_c</div>
+              <div class="access-role" data-en="Chatter · Full access" data-ru="Чаттер · Полный доступ">Chatter · Full access</div>
+            </div>
+            <div class="access-time" data-en="Since Apr 1" data-ru="С 1 апр">Since Apr 1</div>
+            <div class="toggle-sm" style="margin-left:12px;"></div>
+          </div>
+          <div class="access-item">
+            <div class="access-ava" style="background:rgba(34,197,94,0.15);color:#22c55e;">AK</div>
+            <div>
+              <div class="access-name">@anna_k</div>
+              <div class="access-role" data-en="Manager · Read only" data-ru="Менеджер · Только чтение">Manager · Read only</div>
+            </div>
+            <div class="access-time" data-en="Since Mar 15" data-ru="С 15 мар">Since Mar 15</div>
+            <div class="toggle-sm" style="margin-left:12px;"></div>
+          </div>
+          <div class="access-item">
+            <div class="access-ava" style="background:rgba(245,158,11,0.15);color:#f59e0b;">JD</div>
+            <div>
+              <div class="access-name">@john_d</div>
+              <div class="access-role" data-en="Chatter · Chat only" data-ru="Чаттер · Только чат">Chatter · Chat only</div>
+            </div>
+            <div class="access-time" data-en="Since Apr 20" data-ru="С 20 апр">Since Apr 20</div>
+            <div class="toggle-sm off" style="margin-left:12px;"></div>
+          </div>
+          <button class="btn btn-ghost" style="margin-top:10px;">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span data-en="Add team member" data-ru="Добавить участника">Add team member</span>
+          </button>
+        </div>
+
+        <div class="section">
+          <div class="section-title" data-en="Access Log" data-ru="Журнал доступа">Access Log</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);padding:7px 0;border-bottom:1px solid var(--border);">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>
+              <span style="color:var(--text);">@mike_c</span>
+              <span data-en="opened card" data-ru="открыл карточку">opened card</span>
+              <span style="margin-left:auto;color:var(--text3);">Today, 11:42</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);padding:7px 0;border-bottom:1px solid var(--border);">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--accent2);flex-shrink:0;"></div>
+              <span style="color:var(--text);">@anna_k</span>
+              <span data-en="edited persona" data-ru="изменила персону">edited persona</span>
+              <span style="margin-left:auto;color:var(--text3);">Yesterday, 16:05</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);padding:7px 0;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
+              <span style="color:var(--text);">@mike_c</span>
+              <span data-en="uploaded materials" data-ru="загрузил материалы">uploaded materials</span>
+              <span style="margin-left:auto;color:var(--text3);">Apr 25, 09:30</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let lang = 'en';
+
+  function setLang(l) {
+    lang = l;
+    document.getElementById('btn-en').classList.toggle('active', l === 'en');
+    document.getElementById('btn-ru').classList.toggle('active', l === 'ru');
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const v = el.getAttribute('data-' + l);
+      if (v && el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && el.tagName !== 'SELECT') {
+        el.innerHTML = v;
+      }
+    });
+    document.querySelectorAll('[data-placeholder-' + l + ']').forEach(el => {
+      el.placeholder = el.getAttribute('data-placeholder-' + l);
+    });
+    updateSatCount();
+  }
+
+  function switchTab(el, tabId) {
+    document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    ['tab-profile','tab-instagram','tab-persona','tab-media','tab-access'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = id === tabId ? '' : 'none';
+    });
+  }
+
+  function selectCard(idx) {
+    document.querySelectorAll('.card-item').forEach((c,i) => {
+      c.classList.toggle('active', i === idx);
+    });
+  }
+
+  // Satellites
+  let satCount = 8;
+  const maxSat = 30;
+
+  function updateSatCount() {
+    const el = document.getElementById('sat-count');
+    if (!el) return;
+    satCount = document.querySelectorAll('.satellite-tag').length;
+    el.textContent = lang === 'ru'
+      ? satCount + ' / ' + maxSat + ' аккаунтов добавлено'
+      : satCount + ' / ' + maxSat + ' accounts added';
+    el.style.color = satCount >= maxSat ? 'var(--amber)' : 'var(--text3)';
+  }
+
+  function addSat() {
+    const inp = document.getElementById('new-sat');
+    const val = inp.value.trim().replace('@','');
+    if (!val) return;
+    if (satCount >= maxSat) {
+      inp.style.borderColor = 'var(--amber)';
+      setTimeout(() => inp.style.borderColor = '', 1500);
+      return;
+    }
+    const grid = document.getElementById('satellites');
+    const tag = document.createElement('div');
+    tag.className = 'satellite-tag';
+    tag.innerHTML = '<span>@</span><span>' + val + '</span><button class="satellite-remove" onclick="removeSat(this)"><svg viewBox="0 0 8 8" fill="none"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>';
+    grid.appendChild(tag);
+    inp.value = '';
+    updateSatCount();
+  }
+
+  function removeSat(btn) {
+    btn.closest('.satellite-tag').remove();
+    updateSatCount();
+  }
+
+  // Toggles
+  document.querySelectorAll('.toggle-sm').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('off'));
+  });
+
+  // Topic tags
+  document.querySelectorAll('.topic-tag:not(.forbidden)').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('active'));
+  });
+
+  updateSatCount();
+</script>
+</body>
+</html>

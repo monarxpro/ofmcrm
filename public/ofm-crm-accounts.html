@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Accounts</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0b; --bg2: #111113; --bg3: #18181b; --bg4: #1f1f23;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f0; --text2: #888890; --text3: #555560;
+    --accent: #6c63ff; --accent2: #8b84ff; --accent-bg: rgba(108,99,255,0.12);
+    --green: #22c55e; --green-bg: rgba(34,197,94,0.1);
+    --red: #ef4444; --red-bg: rgba(239,68,68,0.1);
+    --amber: #f59e0b; --amber-bg: rgba(245,158,11,0.1);
+    --sidebar-w: 224px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+  /* SIDEBAR */
+  .sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+  .sidebar::-webkit-scrollbar { width: 0; }
+  .logo { padding: 16px 14px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .logo-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; line-height: 1; }
+  .logo-sub { font-size: 9px; color: var(--text3); letter-spacing: 0.5px; margin-top: 3px; text-transform: uppercase; }
+  .nav-section { padding: 8px 8px 2px; }
+  .nav-label { font-size: 9.5px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.9px; padding: 4px 8px 3px; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; }
+  .nav-label svg { width: 11px; height: 11px; opacity: 0.4; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 6.5px 8px; border-radius: 7px; cursor: pointer; color: var(--text2); font-size: 12.5px; transition: all 0.15s; text-decoration: none; }
+  .nav-item:hover { background: var(--bg4); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent2); font-weight: 500; }
+  .nav-item svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.65; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-badge { margin-left: auto; font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 4px; background: var(--accent-bg); color: var(--accent2); }
+  .nav-badge.new { background: var(--green-bg); color: var(--green); }
+  .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding: 8px; }
+
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 50px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 22px; gap: 10px; flex-shrink: 0; background: var(--bg2); }
+  .topbar-title { font-size: 14px; font-weight: 500; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+  .lang-switcher { display: flex; background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+  .lang-btn { padding: 4px 11px; font-size: 11px; font-weight: 700; font-family: var(--font); cursor: pointer; border: none; background: transparent; color: var(--text2); transition: all 0.15s; letter-spacing: 0.4px; }
+  .lang-btn.active { background: var(--accent); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--text); }
+  .icon-btn { width: 30px; height: 30px; border-radius: 7px; background: var(--bg4); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: all 0.15s; color: var(--text2); }
+  .icon-btn:hover { background: var(--bg3); color: var(--text); }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .notif-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; position: absolute; top: 5px; right: 5px; border: 1.5px solid var(--bg2); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; cursor: pointer; }
+  .avatar-name { font-size: 12px; color: var(--text2); }
+
+  .content { flex: 1; overflow-y: auto; padding: 22px; background: var(--bg); }
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+
+  /* PAGE HEADER */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .page-title { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; }
+  .btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-family: var(--font); font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-ghost:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+  .btn svg { width: 13px; height: 13px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tab { padding: 9px 16px; font-size: 13px; font-weight: 400; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent); font-weight: 500; }
+
+  /* FILTERS BAR */
+  .filters-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-select { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; font-family: var(--font); padding: 6px 26px 6px 10px; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; transition: border-color 0.15s; }
+  .filter-select:hover { border-color: var(--border2); }
+  .filter-select option { background: var(--bg3); }
+  .search-wrap { display: flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; flex: 1; max-width: 260px; transition: border-color 0.15s; }
+  .search-wrap:focus-within { border-color: var(--accent); }
+  .search-wrap svg { width: 13px; height: 13px; color: var(--text3); flex-shrink: 0; }
+  .search-wrap input { background: none; border: none; outline: none; color: var(--text); font-size: 12px; font-family: var(--font); width: 100%; }
+  .search-wrap input::placeholder { color: var(--text3); }
+  .filter-tags { display: flex; gap: 6px; margin-left: auto; }
+  .filter-tag { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; background: var(--bg4); border: 1px solid var(--border); color: var(--text2); cursor: pointer; transition: all 0.15s; }
+  .filter-tag:hover { border-color: var(--border2); color: var(--text); }
+  .filter-tag.active { background: var(--accent-bg); border-color: rgba(108,99,255,0.3); color: var(--accent2); }
+  .filter-tag svg { width: 10px; height: 10px; }
+
+  /* TABLE */
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { border-bottom: 1px solid var(--border); }
+  th { text-align: left; padding: 10px 14px; font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; cursor: pointer; user-select: none; }
+  th:hover { color: var(--text2); }
+  th .sort { opacity: 0.4; margin-left: 3px; font-size: 9px; }
+  td { padding: 11px 14px; font-size: 12.5px; border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.1s; cursor: pointer; }
+  tbody tr:hover { background: var(--bg3); }
+  .account-cell { display: flex; align-items: center; gap: 10px; }
+  .account-ava { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; border: 1.5px solid transparent; }
+  .account-name { font-weight: 500; font-size: 13px; }
+  .account-handle { font-size: 11px; color: var(--text2); margin-top: 1px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 5px; font-size: 10.5px; font-weight: 600; }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-gray { background: var(--bg4); color: var(--text2); }
+  .badge-purple { background: var(--accent-bg); color: var(--accent2); }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .mono { font-family: var(--mono); font-size: 11.5px; color: var(--text2); }
+  .actions-cell { display: flex; align-items: center; gap: 6px; }
+  .action-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text2); padding: 4px 9px; font-size: 11px; font-family: var(--font); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .action-btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .action-btn.danger:hover { background: var(--red-bg); color: var(--red); border-color: rgba(239,68,68,0.3); }
+  .icon-action { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .icon-action:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .icon-action svg { width: 12px; height: 12px; }
+  .pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--text2); }
+  .page-btns { display: flex; gap: 3px; }
+  .page-btn { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text2); font-family: var(--font); transition: all 0.15s; }
+  .page-btn:hover { background: var(--bg4); color: var(--text); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* MODAL OVERLAY */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .overlay.open { opacity: 1; pointer-events: all; }
+
+  /* MODAL */
+  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto; transform: translateY(16px) scale(0.98); transition: transform 0.2s; }
+  .overlay.open .modal { transform: translateY(0) scale(1); }
+  .modal::-webkit-scrollbar { width: 0; }
+  .modal-header { padding: 20px 22px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; }
+  .modal-title { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+  .modal-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .modal-close { width: 28px; height: 28px; border-radius: 7px; background: var(--bg4); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); transition: all 0.15s; flex-shrink: 0; }
+  .modal-close:hover { background: var(--bg3); color: var(--text); }
+  .modal-close svg { width: 12px; height: 12px; }
+  .modal-body { padding: 20px 22px; }
+  .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* PLATFORM SELECT */
+  .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .platform-card { background: var(--bg3); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 12px; }
+  .platform-card:hover { border-color: var(--border2); background: var(--bg4); }
+  .platform-card.selected { border-color: var(--accent); background: var(--accent-bg); }
+  .platform-card.disabled { opacity: 0.4; cursor: not-allowed; }
+  .platform-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .platform-name { font-size: 13px; font-weight: 500; }
+  .platform-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .platform-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border2); margin-left: auto; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .platform-card.selected .platform-check { background: var(--accent); border-color: var(--accent); }
+  .platform-check svg { width: 10px; height: 10px; color: #fff; display: none; }
+  .platform-card.selected .platform-check svg { display: block; }
+
+  /* FORM */
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 11.5px; font-weight: 500; color: var(--text2); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+  .form-label span { font-size: 10px; color: var(--red); }
+  .form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: var(--font); padding: 9px 12px; outline: none; transition: border-color 0.15s; }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--text3); }
+  .form-input.error { border-color: var(--red); }
+  .form-select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; font-family: var(--font); padding: 9px 30px 9px 12px; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; transition: border-color 0.15s; }
+  .form-select:focus { border-color: var(--accent); }
+  .form-select option { background: var(--bg3); }
+  .form-hint { font-size: 11px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  /* OAUTH BUTTON */
+  .oauth-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 11px 16px; border-radius: 10px; border: 1.5px solid var(--accent); background: var(--accent-bg); color: var(--accent2); font-size: 13px; font-weight: 500; font-family: var(--font); cursor: pointer; transition: all 0.15s; margin-bottom: 16px; }
+  .oauth-btn:hover { background: var(--accent); color: #fff; }
+  .oauth-btn svg { width: 16px; height: 16px; }
+  .oauth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .oauth-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .oauth-divider-text { font-size: 11px; color: var(--text3); white-space: nowrap; }
+
+  /* STEPS */
+  .steps { display: flex; align-items: center; gap: 6px; margin-bottom: 22px; }
+  .step { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .step.active .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .step.active { color: var(--text); font-weight: 500; }
+  .step.done .step-num { background: var(--green); border-color: var(--green); color: #fff; }
+  .step.done { color: var(--text2); }
+  .step-sep { flex: 1; height: 1px; background: var(--border); }
+
+  /* INFO BOX */
+  .info-box { background: var(--bg4); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; display: flex; gap: 10px; }
+  .info-box svg { width: 14px; height: 14px; color: var(--accent2); flex-shrink: 0; margin-top: 1px; }
+  .info-box-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .info-box-text strong { color: var(--text); font-weight: 500; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 80px 20px; }
+  .empty-icon { width: 52px; height: 52px; background: var(--bg4); border-radius: 14px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+  .empty-icon svg { width: 24px; height: 24px; color: var(--text3); }
+  .empty-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 7px; }
+  .empty-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+
+  /* STAT CHIPS */
+  .stat-chips { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .stat-chip { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+  .stat-chip-val { font-size: 16px; font-weight: 600; font-family: var(--mono); }
+  .stat-chip-label { font-size: 11px; color: var(--text2); }
+  .stat-chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">OFM</div>
+    <div>
+      <div class="logo-name">OFM CRM</div>
+      <div class="logo-sub" data-en="Fanvue Management" data-ru="Управление Fanvue">Fanvue Management</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Analytics" data-ru="Аналитика">Analytics</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" rx="1" fill="currentColor"/><rect x="6" y="5" width="3" height="10" rx="1" fill="currentColor"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor"/></svg>
+      <span data-en="Dashboard" data-ru="Дашборд">Dashboard</span>
+    </a>
+    <a class="nav-item active" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 4v4l3 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Accounts" data-ru="Аккаунты">Accounts</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 12l4-5 3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-en="Account Insights" data-ru="Инсайты">Account Insights</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M1 8h2m10 0h2M8 1v2m0 10v2M3.5 3.5l1.4 1.4m6.2 6.2l1.4 1.4M3.5 12.5l1.4-1.4m6.2-6.2l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span data-en="Traffic Metrics" data-ru="Метрики трафика">Traffic Metrics</span>
+      <span class="nav-badge">Beta</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-en="Tracking Links" data-ru="Трекинг ссылки">Tracking Links</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Team Performance" data-ru="Команда">Team Performance</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span data-en="Chatting Metrics" data-ru="Метрики чата">Chatting Metrics</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 3V1M11 3V1M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Chatting Shifts" data-ru="Смены чаттеров">Chatting Shifts</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Message Templates" data-ru="Шаблоны">Message Templates</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Automations" data-ru="Автоматизация">Automations</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M1 5h14M1 9h14M5 5V1M11 5V1M5 15v-4M11 15v-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Mass Messages" data-ru="Массовая рассылка">Mass Messages</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2v3m0 6v3M2 8h3m6 0h3M4.2 4.2l2.1 2.1m3.4 3.4l2.1 2.1M4.2 11.8l2.1-2.1m3.4-3.4l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Fan Retention" data-ru="Удержание фанов">Fan Retention</span>
+      <span class="nav-badge new">New</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span data-en="Media Hub" data-ru="Медиа-хаб">Media Hub</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Models" data-ru="Модели">Models</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="7" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 13s.5-2.5 4-2.5S12 13 12 13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Model Cards" data-ru="Карточки моделей">Model Cards</span>
+      <span class="nav-badge new">New</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 3h12M2 7h8M2 11h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Knowledge Base" data-ru="База знаний">Knowledge Base</span>
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Help Center" data-ru="Помощь">Help Center</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="My Profile" data-ru="Мой профиль">My Profile</span>
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" data-en="Accounts" data-ru="Аккаунты">Accounts</div>
+    <div class="topbar-right">
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" id="btn-ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <div class="icon-btn" style="position:relative;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 015 5v2l1.5 2.5h-13L3 9V7a5 5 0 015-5zM6 13.5a2 2 0 004 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="avatar-name">Pride Agency</div>
+      <div class="avatar">PA</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="page-title" data-en="Accounts" data-ru="Аккаунты">Accounts</div>
+      <button class="btn btn-primary" onclick="openModal()">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span data-en="Connect Account" data-ru="Подключить аккаунт">Connect Account</span>
+      </button>
+    </div>
+
+    <!-- STAT CHIPS -->
+    <div class="stat-chips">
+      <div class="stat-chip">
+        <div class="stat-chip-dot" style="background:var(--text2);"></div>
+        <div>
+          <div class="stat-chip-val">12</div>
+          <div class="stat-chip-label" data-en="Total accounts" data-ru="Всего аккаунтов">Total accounts</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-dot" style="background:var(--green);"></div>
+        <div>
+          <div class="stat-chip-val" style="color:var(--green);">9</div>
+          <div class="stat-chip-label" data-en="Active" data-ru="Активные">Active</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-dot" style="background:var(--amber);"></div>
+        <div>
+          <div class="stat-chip-val" style="color:var(--amber);">2</div>
+          <div class="stat-chip-label" data-en="Reconnect needed" data-ru="Требуют переподключения">Reconnect needed</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-dot" style="background:var(--red);"></div>
+        <div>
+          <div class="stat-chip-val" style="color:var(--red);">1</div>
+          <div class="stat-chip-label" data-en="Offline" data-ru="Офлайн">Offline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" data-en="Accounts" data-ru="Аккаунты">Accounts</div>
+      <div class="tab" data-en="Groups" data-ru="Группы">Groups</div>
+    </div>
+
+    <!-- FILTERS BAR -->
+    <div class="filters-bar">
+      <select class="filter-select">
+        <option data-en="All Groups" data-ru="Все группы">All Groups</option>
+        <option data-en="Top Earners" data-ru="Топ заработок">Top Earners</option>
+        <option data-en="New Models" data-ru="Новые модели">New Models</option>
+      </select>
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4zm0 0" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search accounts..." data-placeholder-en="Search accounts..." data-placeholder-ru="Поиск аккаунтов...">
+      </div>
+      <div class="filter-tags">
+        <div class="filter-tag active">
+          <span data-en="All" data-ru="Все">All</span>
+        </div>
+        <div class="filter-tag">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>
+          <span data-en="Active" data-ru="Активные">Active</span>
+        </div>
+        <div class="filter-tag">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
+          <span data-en="Reconnect" data-ru="Переподключить">Reconnect</span>
+        </div>
+        <div class="filter-tag">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;"></div>
+          <span data-en="Offline" data-ru="Офлайн">Offline</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><span data-en="Account" data-ru="Аккаунт">Account</span> <span class="sort">↕</span></th>
+            <th><span data-en="Platform" data-ru="Платформа">Platform</span></th>
+            <th><span data-en="Status" data-ru="Статус">Status</span></th>
+            <th><span data-en="Group" data-ru="Группа">Group</span></th>
+            <th><span data-en="Sub Price" data-ru="Цена подписки">Sub Price</span> <span class="sort">↕</span></th>
+            <th><span data-en="Fans" data-ru="Фаны">Fans</span> <span class="sort">↕</span></th>
+            <th><span data-en="Chatter" data-ru="Чаттер">Chatter</span></th>
+            <th><span data-en="Plan" data-ru="План">Plan</span></th>
+            <th><span data-en="Actions" data-ru="Действия">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,0.2);color:#8b84ff;border-color:rgba(108,99,255,0.3);">AV</div><div><div class="account-name">Aurora Voss</div><div class="account-handle">@aurora_voss</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-en="Active" data-ru="Активен">Active</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px;" data-en="Top Earners" data-ru="Топ заработок">Top Earners</span></td>
+            <td class="mono">$9.99</td>
+            <td class="mono">342</td>
+            <td style="color:var(--text2);font-size:12px;">@mike_c</td>
+            <td><span class="badge badge-purple">Pro</span></td>
+            <td><div class="actions-cell">
+              <button class="action-btn"><span data-en="Open" data-ru="Открыть">Open</span></button>
+              <button class="icon-action" title="Settings"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M3.2 3.2l1.4 1.4M9.4 9.4l1.4 1.4M3.2 10.8l1.4-1.4M9.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+              <button class="icon-action danger" title="Disconnect"><svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(34,197,94,0.15);color:#22c55e;border-color:rgba(34,197,94,0.3);">SM</div><div><div class="account-name">Stella Moon</div><div class="account-handle">@stella_moon</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-en="Active" data-ru="Активен">Active</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px;" data-en="Top Earners" data-ru="Топ заработок">Top Earners</span></td>
+            <td class="mono">$14.99</td>
+            <td class="mono">287</td>
+            <td style="color:var(--text2);font-size:12px;">@anna_k</td>
+            <td><span class="badge badge-purple">Pro</span></td>
+            <td><div class="actions-cell">
+              <button class="action-btn"><span data-en="Open" data-ru="Открыть">Open</span></button>
+              <button class="icon-action"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M3.2 3.2l1.4 1.4M9.4 9.4l1.4 1.4M3.2 10.8l1.4-1.4M9.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+              <button class="icon-action danger"><svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.3);">LR</div><div><div class="account-name">Luna Ray</div><div class="account-handle">@luna_ray</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-amber"><span class="badge-dot"></span><span data-en="Reconnect" data-ru="Переподключить">Reconnect</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px;" data-en="New Models" data-ru="Новые модели">New Models</span></td>
+            <td class="mono">$7.99</td>
+            <td class="mono">198</td>
+            <td style="color:var(--text2);font-size:12px;">@mike_c</td>
+            <td><span class="badge badge-gray">Basic</span></td>
+            <td><div class="actions-cell">
+              <button class="action-btn" style="color:var(--amber);border-color:rgba(245,158,11,0.3);background:var(--amber-bg);"><span data-en="Reconnect" data-ru="Переподключить">Reconnect</span></button>
+              <button class="icon-action"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M3.2 3.2l1.4 1.4M9.4 9.4l1.4 1.4M3.2 10.8l1.4-1.4M9.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+              <button class="icon-action danger"><svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(239,68,68,0.15);color:#ef4444;border-color:rgba(239,68,68,0.3);">NV</div><div><div class="account-name">Nova Vale</div><div class="account-handle">@nova_vale</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-red"><span class="badge-dot"></span><span data-en="Offline" data-ru="Офлайн">Offline</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px;">—</span></td>
+            <td class="mono">$4.99</td>
+            <td class="mono">156</td>
+            <td style="color:var(--text2);font-size:12px;">—</td>
+            <td><span class="badge badge-gray">Basic</span></td>
+            <td><div class="actions-cell">
+              <button class="action-btn"><span data-en="Open" data-ru="Открыть">Open</span></button>
+              <button class="icon-action"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M3.2 3.2l1.4 1.4M9.4 9.4l1.4 1.4M3.2 10.8l1.4-1.4M9.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+              <button class="icon-action danger"><svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,0.15);color:#8b84ff;border-color:rgba(108,99,255,0.2);">IB</div><div><div class="account-name">Ivy Bloom</div><div class="account-handle">@ivy_bloom</div></div></div></td>
+            <td><span class="badge badge-purple">Fanvue</span></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-en="Active" data-ru="Активен">Active</span></span></td>
+            <td><span style="color:var(--text2);font-size:12px;" data-en="Top Earners" data-ru="Топ заработок">Top Earners</span></td>
+            <td class="mono">$19.99</td>
+            <td class="mono">121</td>
+            <td style="color:var(--text2);font-size:12px;">@anna_k</td>
+            <td><span class="badge badge-purple">Agency</span></td>
+            <td><div class="actions-cell">
+              <button class="action-btn"><span data-en="Open" data-ru="Открыть">Open</span></button>
+              <button class="icon-action"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M3.2 3.2l1.4 1.4M9.4 9.4l1.4 1.4M3.2 10.8l1.4-1.4M9.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+              <button class="icon-action danger"><svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+            </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span id="pag-text">Showing 5 of 12 accounts</span>
+        <div class="page-btns">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeOnBg(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" data-en="Connect Account" data-ru="Подключить аккаунт">Connect Account</div>
+        <div class="modal-sub" data-en="Link your Fanvue account securely via OAuth" data-ru="Подключите аккаунт Fanvue через OAuth">Link your Fanvue account securely via OAuth</div>
+      </div>
+      <div class="modal-close" onclick="closeModal()">
+        <svg viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="modal-body">
+
+      <!-- STEPS -->
+      <div class="steps">
+        <div class="step active" id="step1">
+          <div class="step-num">1</div>
+          <span data-en="Platform" data-ru="Платформа">Platform</span>
+        </div>
+        <div class="step-sep"></div>
+        <div class="step" id="step2">
+          <div class="step-num">2</div>
+          <span data-en="Connect" data-ru="Подключение">Connect</span>
+        </div>
+        <div class="step-sep"></div>
+        <div class="step" id="step3">
+          <div class="step-num">3</div>
+          <span data-en="Settings" data-ru="Настройки">Settings</span>
+        </div>
+      </div>
+
+      <!-- STEP 1: Platform -->
+      <div id="s1">
+        <div class="form-label" style="margin-bottom:10px;" data-en="Select platform" data-ru="Выберите платформу">Select platform</div>
+        <div class="platform-grid">
+          <div class="platform-card selected" onclick="selectPlatform(this)">
+            <div class="platform-icon" style="background:rgba(108,99,255,0.15);">🎯</div>
+            <div>
+              <div class="platform-name">Fanvue</div>
+              <div class="platform-desc" data-en="Official API" data-ru="Официальный API">Official API</div>
+            </div>
+            <div class="platform-check">
+              <svg viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="platform-card disabled">
+            <div class="platform-icon" style="background:rgba(34,197,94,0.1);">💠</div>
+            <div>
+              <div class="platform-name">OnlyFans</div>
+              <div class="platform-desc" data-en="Coming soon" data-ru="Скоро">Coming soon</div>
+            </div>
+            <div class="platform-check"></div>
+          </div>
+          <div class="platform-card disabled">
+            <div class="platform-icon" style="background:rgba(245,158,11,0.1);">⭐</div>
+            <div>
+              <div class="platform-name">Fansly</div>
+              <div class="platform-desc" data-en="Coming soon" data-ru="Скоро">Coming soon</div>
+            </div>
+            <div class="platform-check"></div>
+          </div>
+          <div class="platform-card disabled">
+            <div class="platform-icon" style="background:rgba(239,68,68,0.1);">🔥</div>
+            <div>
+              <div class="platform-name">Passes</div>
+              <div class="platform-desc" data-en="Coming soon" data-ru="Скоро">Coming soon</div>
+            </div>
+            <div class="platform-check"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Connect (hidden) -->
+      <div id="s2" style="display:none;">
+        <div class="info-box">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <div class="info-box-text" data-en="We use <strong>Fanvue's official OAuth 2.0 API</strong>. Your password is never shared with us — you authorise directly on Fanvue's website." data-ru="Мы используем <strong>официальный OAuth 2.0 API Fanvue</strong>. Ваш пароль никогда не передаётся нам — вы авторизуетесь напрямую на сайте Fanvue.">We use <strong>Fanvue's official OAuth 2.0 API</strong>. Your password is never shared with us — you authorise directly on Fanvue's website.</div>
+        </div>
+        <button class="oauth-btn">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2z" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span data-en="Connect with Fanvue" data-ru="Подключить через Fanvue">Connect with Fanvue</span>
+        </button>
+        <div class="oauth-divider">
+          <div class="oauth-divider-line"></div>
+          <div class="oauth-divider-text" data-en="or enter credentials manually" data-ru="или введите вручную">or enter credentials manually</div>
+          <div class="oauth-divider-line"></div>
+        </div>
+        <div class="form-group">
+          <div class="form-label"><span data-en="Fanvue Username" data-ru="Имя пользователя Fanvue">Fanvue Username</span> <span>*</span></div>
+          <input class="form-input" type="text" placeholder="@username">
+        </div>
+        <div class="form-group">
+          <div class="form-label"><span data-en="API Token" data-ru="API Токен">API Token</span> <span>*</span></div>
+          <input class="form-input" type="password" placeholder="fv_live_...">
+          <div class="form-hint" data-en="Find your API token in Fanvue → Settings → Developer → Builder Area" data-ru="Найдите токен в Fanvue → Настройки → Разработчик → Builder Area">Find your API token in Fanvue → Settings → Developer → Builder Area</div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Settings (hidden) -->
+      <div id="s3" style="display:none;">
+        <div class="form-group">
+          <div class="form-label" data-en="Display Name" data-ru="Отображаемое имя">Display Name</div>
+          <input class="form-input" type="text" placeholder="Aurora Voss">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <div class="form-label" data-en="Assign to Group" data-ru="Группа">Assign to Group</div>
+            <select class="form-select">
+              <option data-en="No group" data-ru="Без группы">No group</option>
+              <option data-en="Top Earners" data-ru="Топ заработок">Top Earners</option>
+              <option data-en="New Models" data-ru="Новые модели">New Models</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label" data-en="Assign Chatter" data-ru="Назначить чаттера">Assign Chatter</div>
+            <select class="form-select">
+              <option data-en="Unassigned" data-ru="Не назначен">Unassigned</option>
+              <option>@mike_c</option>
+              <option>@anna_k</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-label" data-en="Link Model Card" data-ru="Привязать карточку модели">Link Model Card</div>
+          <select class="form-select">
+            <option data-en="Select model card..." data-ru="Выберите карточку...">Select model card...</option>
+            <option>Aurora Voss</option>
+            <option>Stella Moon</option>
+            <option data-en="+ Create new card" data-ru="+ Создать новую карточку">+ Create new card</option>
+          </select>
+          <div class="form-hint" data-en="AI will use the model card persona when responding to fans" data-ru="AI будет использовать персону из карточки при общении с фанами">AI will use the model card persona when responding to fans</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="btn-back" onclick="prevStep()" style="display:none;" data-en="Back" data-ru="Назад">Back</button>
+      <button class="btn btn-ghost" onclick="closeModal()" data-en="Cancel" data-ru="Отмена">Cancel</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextStep()">
+        <span data-en="Next →" data-ru="Далее →">Next →</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let lang = 'en';
+  let currentStep = 1;
+
+  function setLang(l) {
+    lang = l;
+    document.getElementById('btn-en').classList.toggle('active', l === 'en');
+    document.getElementById('btn-ru').classList.toggle('active', l === 'ru');
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const v = el.getAttribute('data-' + l);
+      if (v) {
+        if (el.tagName === 'INPUT' && el.type !== 'button') return;
+        el.innerHTML = v;
+      }
+    });
+    document.querySelectorAll('[data-placeholder-' + l + ']').forEach(el => {
+      el.placeholder = el.getAttribute('data-placeholder-' + l);
+    });
+    document.getElementById('pag-text').textContent =
+      l === 'ru' ? 'Показано 5 из 12 аккаунтов' : 'Showing 5 of 12 accounts';
+  }
+
+  function openModal() {
+    document.getElementById('overlay').classList.add('open');
+    currentStep = 1;
+    showStep(1);
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function closeOnBg(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  function showStep(n) {
+    [1,2,3].forEach(i => {
+      document.getElementById('s' + i).style.display = i === n ? '' : 'none';
+      const stepEl = document.getElementById('step' + i);
+      stepEl.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+    });
+    document.getElementById('btn-back').style.display = n > 1 ? '' : 'none';
+    const btnNext = document.getElementById('btn-next');
+    if (n === 3) {
+      btnNext.innerHTML = '<span data-en="Connect" data-ru="Подключить">' + (lang === 'ru' ? 'Подключить' : 'Connect') + '</span>';
+    } else {
+      btnNext.innerHTML = '<span data-en="Next →" data-ru="Далее →">' + (lang === 'ru' ? 'Далее →' : 'Next →') + '</span>';
+    }
+  }
+
+  function nextStep() {
+    if (currentStep < 3) {
+      currentStep++;
+      showStep(currentStep);
+    } else {
+      closeModal();
+    }
+  }
+
+  function prevStep() {
+    if (currentStep > 1) {
+      currentStep--;
+      showStep(currentStep);
+    }
+  }
+
+  function selectPlatform(el) {
+    document.querySelectorAll('.platform-card:not(.disabled)').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.filter-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+      tag.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0b; --bg2: #111113; --bg3: #18181b; --bg4: #1f1f23;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f0; --text2: #888890; --text3: #555560;
+    --accent: #6c63ff; --accent2: #8b84ff; --accent-bg: rgba(108,99,255,0.12);
+    --green: #22c55e; --green-bg: rgba(34,197,94,0.1);
+    --red: #ef4444; --red-bg: rgba(239,68,68,0.1);
+    --amber: #f59e0b; --amber-bg: rgba(245,158,11,0.1);
+    --sidebar-w: 224px; --font: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+  .sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+  .sidebar::-webkit-scrollbar { width: 0; }
+  .logo { padding: 16px 14px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; letter-spacing: -0.2px; flex-shrink: 0; }
+  .logo-text { display: flex; flex-direction: column; }
+  .logo-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; line-height: 1; }
+  .logo-sub { font-size: 9px; color: var(--text3); letter-spacing: 0.5px; margin-top: 3px; text-transform: uppercase; }
+  .nav-section { padding: 8px 8px 2px; }
+  .nav-label { font-size: 9.5px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.9px; padding: 4px 8px 3px; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .nav-label svg { width: 11px; height: 11px; opacity: 0.4; transition: transform 0.2s; }
+  .nav-label.collapsed svg { transform: rotate(-90deg); }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 6.5px 8px; border-radius: 7px; cursor: pointer; color: var(--text2); font-size: 12.5px; font-weight: 400; transition: all 0.15s; position: relative; text-decoration: none; }
+  .nav-item:hover { background: var(--bg4); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent2); font-weight: 500; }
+  .nav-item svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.65; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-badge { margin-left: auto; font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 4px; background: var(--accent-bg); color: var(--accent2); }
+  .nav-badge.new { background: var(--green-bg); color: var(--green); }
+  .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding: 8px; }
+
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 50px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 22px; gap: 10px; flex-shrink: 0; background: var(--bg2); }
+  .topbar-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+
+  .lang-switcher { display: flex; background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+  .lang-btn { padding: 4px 11px; font-size: 11px; font-weight: 700; font-family: var(--font); cursor: pointer; border: none; background: transparent; color: var(--text2); transition: all 0.15s; letter-spacing: 0.4px; }
+  .lang-btn.active { background: var(--accent); color: #fff; }
+  .lang-btn:hover:not(.active) { color: var(--text); }
+
+  .icon-btn { width: 30px; height: 30px; border-radius: 7px; background: var(--bg4); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: all 0.15s; color: var(--text2); }
+  .icon-btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .notif-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; position: absolute; top: 5px; right: 5px; border: 1.5px solid var(--bg2); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; cursor: pointer; flex-shrink: 0; }
+  .avatar-name { font-size: 12px; color: var(--text2); }
+
+  .content { flex: 1; overflow-y: auto; padding: 20px 22px; background: var(--bg); }
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+
+  .org-header { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 15px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .org-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .org-info h2 { font-size: 14px; font-weight: 600; }
+  .org-info p { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .org-stats { margin-left: auto; display: flex; gap: 28px; }
+  .org-stat { text-align: center; }
+  .org-stat-val { font-size: 19px; font-weight: 600; font-family: var(--mono); }
+  .org-stat-val.pos { color: var(--green); }
+  .org-stat-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  .filters-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-label { font-size: 9.5px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; font-weight: 600; }
+  .filter-select { background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-size: 12px; font-family: var(--font); padding: 5px 26px 5px 9px; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; min-width: 130px; }
+  .filter-select option { background: var(--bg3); }
+  .toggle-group { display: flex; align-items: center; gap: 7px; margin-top: 2px; }
+  .toggle { width: 34px; height: 19px; background: var(--accent); border-radius: 10px; position: relative; cursor: pointer; flex-shrink: 0; }
+  .toggle::after { content: ''; position: absolute; width: 13px; height: 13px; background: #fff; border-radius: 50%; top: 3px; right: 3px; transition: all 0.2s; }
+  .toggle.off { background: var(--bg4); }
+  .toggle.off::after { right: auto; left: 3px; }
+
+  .metrics-scroll { overflow-x: auto; margin-bottom: 16px; padding-bottom: 3px; }
+  .metrics-scroll::-webkit-scrollbar { height: 3px; }
+  .metrics-scroll::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+  .metrics-row { display: flex; gap: 8px; min-width: max-content; }
+  .metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; min-width: 118px; cursor: default; transition: border-color 0.15s; }
+  .metric-card:hover { border-color: var(--border2); }
+  .metric-label { font-size: 10px; color: var(--text2); margin-bottom: 5px; white-space: nowrap; display: flex; align-items: center; gap: 3px; }
+  .metric-label svg { width: 10px; height: 10px; opacity: 0.45; }
+  .metric-val { font-size: 17px; font-weight: 600; font-family: var(--mono); letter-spacing: -0.5px; }
+  .metric-change { font-size: 10px; margin-top: 3px; }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+  .flat { color: var(--text3); }
+  .pos { color: var(--green); }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .section-title { font-size: 13px; font-weight: 500; }
+  .section-actions { display: flex; align-items: center; gap: 7px; }
+  .btn { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 7px; font-size: 12px; font-family: var(--font); font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-ghost:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .btn-primary { background: var(--accent); color: #fff; border: 1px solid transparent; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn svg { width: 12px; height: 12px; }
+  .select-sm { background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; color: var(--text2); font-size: 11px; font-family: var(--font); padding: 4px 22px 4px 8px; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; }
+
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { border-bottom: 1px solid var(--border); }
+  th { text-align: left; padding: 9px 13px; font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; cursor: pointer; user-select: none; }
+  th:hover { color: var(--text2); }
+  td { padding: 10px 13px; font-size: 12.5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg3); }
+  .account-cell { display: flex; align-items: center; gap: 9px; }
+  .account-ava { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .account-name { font-weight: 500; font-size: 12.5px; }
+  .account-handle { font-size: 10.5px; color: var(--text2); margin-top: 1px; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 5px; font-size: 10px; font-weight: 600; }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-gray { background: var(--bg4); color: var(--text2); }
+  .badge-purple { background: var(--accent-bg); color: var(--accent2); }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .mono { font-family: var(--mono); font-size: 12px; }
+  .action-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text2); padding: 4px 9px; font-size: 11px; font-family: var(--font); cursor: pointer; transition: all 0.15s; }
+  .action-btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .pagination { display: flex; align-items: center; justify-content: space-between; padding: 9px 13px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--text2); }
+  .page-btns { display: flex; gap: 3px; }
+  .page-btn { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text2); font-family: var(--font); transition: all 0.15s; }
+  .page-btn:hover { background: var(--bg4); color: var(--text); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">OFM</div>
+    <div class="logo-text">
+      <div class="logo-name">OFM CRM</div>
+      <div class="logo-sub" data-en="Fanvue Management" data-ru="Управление Fanvue">Fanvue Management</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Analytics" data-ru="Аналитика">Analytics</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item active" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="9" width="3" height="6" rx="1" fill="currentColor"/><rect x="6" y="5" width="3" height="10" rx="1" fill="currentColor"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor"/></svg>
+      <span data-en="Dashboard" data-ru="Дашборд">Dashboard</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 4v4l3 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Accounts Overview" data-ru="Обзор аккаунтов">Accounts Overview</span>
+      <span class="nav-badge">Beta</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 12l4-5 3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-en="Account Insights" data-ru="Инсайты">Account Insights</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M1 8h2m10 0h2M8 1v2m0 10v2M3.5 3.5l1.4 1.4m6.2 6.2l1.4 1.4M3.5 12.5l1.4-1.4m6.2-6.2l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span data-en="Traffic Metrics" data-ru="Метрики трафика">Traffic Metrics</span>
+      <span class="nav-badge">Beta</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-en="Tracking Links" data-ru="Трекинг ссылки">Tracking Links</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M6 6h4M6 9h4M6 12h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Trial Links" data-ru="Пробные ссылки">Trial Links</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Team Performance" data-ru="Команда">Team Performance</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span data-en="Chatting Metrics" data-ru="Метрики чата">Chatting Metrics</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 3V1M11 3V1M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Chatting Shifts" data-ru="Смены чаттеров">Chatting Shifts</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Message Tracker" data-ru="Трекер сообщений">Message Tracker</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L2 6v8h12V6L8 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      <span data-en="Message Guard" data-ru="Защита сообщений">Message Guard</span>
+      <span class="nav-badge">Beta</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h6M3 12h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Message Templates" data-ru="Шаблоны">Message Templates</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Automations" data-ru="Автоматизация">Automations</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 4a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V4z" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span data-en="Auto Messages" data-ru="Авто-сообщения">Auto Messages</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M1 5h14M1 9h14M5 5V1M11 5V1M5 15v-4M11 15v-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Mass Messages" data-ru="Массовая рассылка">Mass Messages</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 5h12v7a2 2 0 01-2 2H4a2 2 0 01-2-2V5zM5 5V3a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span data-en="Dynamic Lists" data-ru="Динамические листы">Dynamic Lists</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2v3m0 6v3M2 8h3m6 0h3M4.2 4.2l2.1 2.1m3.4 3.4l2.1 2.1M4.2 11.8l2.1-2.1m3.4-3.4l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Fan Retention" data-ru="Удержание фанов">Fan Retention</span>
+      <span class="nav-badge new">New</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span data-en="Media Hub" data-ru="Медиа-хаб">Media Hub</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Models" data-ru="Модели">Models</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="7" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 13s.5-2.5 4-2.5S12 13 12 13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Model Cards" data-ru="Карточки моделей">Model Cards</span>
+      <span class="nav-badge new">New</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 3h12M2 7h8M2 11h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Knowledge Base" data-ru="База знаний">Knowledge Base</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">
+      <span data-en="Organization" data-ru="Организация">Organization</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M13 7v4M11 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Team Members" data-ru="Участники команды">Team Members</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L2 5v4c0 3 2.5 5.5 6 6.5C14 14.5 14 9 14 9V5L8 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      <span data-en="Settings" data-ru="Настройки">Settings</span>
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Help Center" data-ru="Помощь">Help Center</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10v8a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM1 4h14" stroke="currentColor" stroke-width="1.3"/><path d="M6 2h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="Change Log" data-ru="Изменения">Change Log</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span data-en="My Profile" data-ru="Мой профиль">My Profile</span>
+    </a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" data-en="Dashboard" data-ru="Дашборд">Dashboard</div>
+    <div class="topbar-right">
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" id="btn-ru" onclick="setLang('ru')">RU</button>
+      </div>
+      <div class="icon-btn">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4zm0 0" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div class="icon-btn" style="position:relative;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 015 5v2l1.5 2.5h-13L3 9V7a5 5 0 015-5zM6 13.5a2 2 0 004 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="avatar-name">Pride Agency</div>
+      <div class="avatar">PA</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="org-header">
+      <div class="org-avatar">🏢</div>
+      <div class="org-info">
+        <h2>Pride Agency</h2>
+        <p data-en="Organization · Fanvue Management" data-ru="Организация · Управление Fanvue">Organization · Fanvue Management</p>
+      </div>
+      <div class="org-stats">
+        <div class="org-stat">
+          <div class="org-stat-val">12</div>
+          <div class="org-stat-label" data-en="Accounts" data-ru="Аккаунты">Accounts</div>
+        </div>
+        <div class="org-stat">
+          <div class="org-stat-val">8</div>
+          <div class="org-stat-label" data-en="Team Members" data-ru="Команда">Team Members</div>
+        </div>
+        <div class="org-stat">
+          <div class="org-stat-val">1,240</div>
+          <div class="org-stat-label" data-en="Total Fans" data-ru="Всего фанов">Total Fans</div>
+        </div>
+        <div class="org-stat">
+          <div class="org-stat-val pos">$48.2K</div>
+          <div class="org-stat-label" data-en="This Month" data-ru="Этот месяц">This Month</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-row">
+      <div class="filter-group">
+        <div class="filter-label" data-en="Group" data-ru="Группа">Group</div>
+        <select class="filter-select">
+          <option data-en="All Groups" data-ru="Все группы">All Groups</option>
+          <option data-en="Top Earners" data-ru="Топ заработок">Top Earners</option>
+          <option data-en="New Models" data-ru="Новые модели">New Models</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" data-en="Account" data-ru="Аккаунт">Account</div>
+        <select class="filter-select">
+          <option data-en="All Accounts" data-ru="Все аккаунты">All Accounts</option>
+          <option>@aurora_v</option>
+          <option>@stella_m</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" data-en="Time Range" data-ru="Период">Time Range</div>
+        <select class="filter-select" style="min-width:190px;">
+          <option>04-20-2026 → 04-27-2026</option>
+          <option data-en="Last 7 days" data-ru="7 дней">Last 7 days</option>
+          <option data-en="Last 30 days" data-ru="30 дней">Last 30 days</option>
+          <option data-en="This month" data-ru="Этот месяц">This month</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" data-en="Earning Type" data-ru="Тип дохода">Earning Type</div>
+        <select class="filter-select" style="min-width:85px;">
+          <option>Net</option>
+          <option>Gross</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" data-en="Compare to" data-ru="Сравнить с">Compare to</div>
+        <select class="filter-select" style="min-width:190px;">
+          <option>04-13-2026 → 04-20-2026</option>
+          <option data-en="Previous period" data-ru="Предыдущий период">Previous period</option>
+        </select>
+      </div>
+      <div class="filter-group" style="margin-left:auto;">
+        <div class="filter-label" data-en="Include Subscriptions" data-ru="С подписками">Include Subscriptions</div>
+        <div class="toggle-group">
+          <div class="toggle" id="tog1"></div>
+          <span style="font-size:11px;color:var(--text2);" data-en="Enabled" data-ru="Включено">Enabled</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics-scroll">
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="Total Revenue" data-ru="Общий доход">Total Revenue</span><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v3M6 8.5v.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+          <div class="metric-val">$48,240</div>
+          <div class="metric-change up">▲ 12.4%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="Sales Revenue" data-ru="Продажи">Sales Revenue</span></div>
+          <div class="metric-val">$31,580</div>
+          <div class="metric-change up">▲ 8.1%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="Subscription Rev." data-ru="Подписки">Subscription Rev.</span></div>
+          <div class="metric-val">$12,460</div>
+          <div class="metric-change up">▲ 5.3%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="PPV Revenue" data-ru="PPV доход">PPV Revenue</span></div>
+          <div class="metric-val">$4,200</div>
+          <div class="metric-change down">▼ 2.0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="Tips Revenue" data-ru="Чаевые">Tips Revenue</span></div>
+          <div class="metric-val">$8,750</div>
+          <div class="metric-change up">▲ 19.2%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="Sales Ratio" data-ru="Доля продаж">Sales Ratio</span></div>
+          <div class="metric-val">68.4%</div>
+          <div class="metric-change up">▲ 3.1%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="Monthly RR" data-ru="Рекур. доход">Monthly RR</span></div>
+          <div class="metric-val">$12,460</div>
+          <div class="metric-change flat">— 0.0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="Total Spenders" data-ru="Плательщики">Total Spenders</span></div>
+          <div class="metric-val">384</div>
+          <div class="metric-change up">▲ 7.5%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span data-en="Transactions" data-ru="Транзакции">Transactions</span></div>
+          <div class="metric-val">1,842</div>
+          <div class="metric-change up">▲ 11.0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span>APC</span><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 4v3M6 8.5v.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+          <div class="metric-val">$26.14</div>
+          <div class="metric-change down">▼ 1.2%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span>APV</span></div>
+          <div class="metric-val">$4.80</div>
+          <div class="metric-change up">▲ 4.4%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label"><span>ARPPU</span></div>
+          <div class="metric-val">$125.62</div>
+          <div class="metric-change up">▲ 6.2%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title" data-en="Overview" data-ru="Обзор">Overview</div>
+      <div class="section-actions">
+        <select class="select-sm">
+          <option data-en="20 per page" data-ru="20 на стр.">20 per page</option>
+          <option data-en="50 per page" data-ru="50 на стр.">50 per page</option>
+        </select>
+        <button class="btn btn-ghost">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M4 7h6M6 10h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span data-en="Columns" data-ru="Колонки">Columns</span>
+        </button>
+        <button class="btn btn-ghost">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 10V2M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-en="Export" data-ru="Экспорт">Export</span>
+        </button>
+        <button class="btn btn-primary">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span data-en="Connect Account" data-ru="Добавить аккаунт">Connect Account</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><span data-en="Account" data-ru="Аккаунт">Account</span></th>
+            <th><span data-en="Status" data-ru="Статус">Status</span></th>
+            <th><span data-en="Total Revenue" data-ru="Доход">Total Revenue</span></th>
+            <th>PPV</th>
+            <th><span data-en="Subs" data-ru="Подп.">Subs</span></th>
+            <th><span data-en="Fans" data-ru="Фаны">Fans</span></th>
+            <th><span data-en="Chatter" data-ru="Чаттер">Chatter</span></th>
+            <th><span data-en="Plan" data-ru="План">Plan</span></th>
+            <th><span data-en="Actions" data-ru="Действия">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,0.2);color:#8b84ff;">AV</div><div><div class="account-name">Aurora Voss</div><div class="account-handle">@aurora_v</div></div></div></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-en="Active" data-ru="Активен">Active</span></span></td>
+            <td class="mono pos">$14,820</td><td class="mono">$4,100</td><td class="mono">$8,200</td><td class="mono">342</td>
+            <td style="color:var(--text2);font-size:11.5px;">@mike_c</td>
+            <td><span class="badge badge-purple">Pro</span></td>
+            <td><button class="action-btn"><span data-en="Manage" data-ru="Управлять">Manage</span></button></td>
+          </tr>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(34,197,94,0.15);color:#22c55e;">SM</div><div><div class="account-name">Stella Moon</div><div class="account-handle">@stella_m</div></div></div></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-en="Active" data-ru="Активен">Active</span></span></td>
+            <td class="mono pos">$11,340</td><td class="mono">$3,200</td><td class="mono">$5,400</td><td class="mono">287</td>
+            <td style="color:var(--text2);font-size:11.5px;">@anna_k</td>
+            <td><span class="badge badge-purple">Pro</span></td>
+            <td><button class="action-btn"><span data-en="Manage" data-ru="Управлять">Manage</span></button></td>
+          </tr>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(245,158,11,0.15);color:#f59e0b;">LR</div><div><div class="account-name">Luna Ray</div><div class="account-handle">@luna_ray</div></div></div></td>
+            <td><span class="badge badge-amber"><span class="badge-dot"></span><span data-en="Reconnect" data-ru="Переподключить">Reconnect</span></span></td>
+            <td class="mono pos">$9,680</td><td class="mono">$2,800</td><td class="mono">$4,100</td><td class="mono">198</td>
+            <td style="color:var(--text2);font-size:11.5px;">@mike_c</td>
+            <td><span class="badge badge-gray">Basic</span></td>
+            <td><button class="action-btn"><span data-en="Manage" data-ru="Управлять">Manage</span></button></td>
+          </tr>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(239,68,68,0.15);color:#ef4444;">NV</div><div><div class="account-name">Nova Vale</div><div class="account-handle">@nova_v</div></div></div></td>
+            <td><span class="badge badge-red"><span class="badge-dot"></span><span data-en="Offline" data-ru="Офлайн">Offline</span></span></td>
+            <td class="mono">$7,240</td><td class="mono">$1,900</td><td class="mono">$3,800</td><td class="mono">156</td>
+            <td style="color:var(--text2);font-size:11.5px;">—</td>
+            <td><span class="badge badge-gray">Basic</span></td>
+            <td><button class="action-btn"><span data-en="Manage" data-ru="Управлять">Manage</span></button></td>
+          </tr>
+          <tr>
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,0.15);color:#8b84ff;">IB</div><div><div class="account-name">Ivy Bloom</div><div class="account-handle">@ivy_bloom</div></div></div></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-en="Active" data-ru="Активен">Active</span></span></td>
+            <td class="mono pos">$5,160</td><td class="mono">$980</td><td class="mono">$2,960</td><td class="mono">121</td>
+            <td style="color:var(--text2);font-size:11.5px;">@anna_k</td>
+            <td><span class="badge badge-purple">Agency</span></td>
+            <td><button class="action-btn"><span data-en="Manage" data-ru="Управлять">Manage</span></button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span id="pag-text">Showing 5 of 12 accounts</span>
+        <div class="page-btns">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let lang = 'en';
+
+  function setLang(l) {
+    lang = l;
+    document.getElementById('btn-en').classList.toggle('active', l === 'en');
+    document.getElementById('btn-ru').classList.toggle('active', l === 'ru');
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const v = el.getAttribute('data-' + l);
+      if (v) el.textContent = v;
+    });
+    document.getElementById('pag-text').textContent =
+      l === 'ru' ? 'Показано 5 из 12 аккаунтов' : 'Showing 5 of 12 accounts';
+  }
+
+  document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('off'));
+  });
+
+  document.querySelectorAll('.nav-label').forEach(label => {
+    label.addEventListener('click', () => {
+      label.classList.toggle('collapsed');
+      let el = label.nextElementSibling;
+      while (el && el.classList.contains('nav-item')) {
+        el.style.display = label.classList.contains('collapsed') ? 'none' : '';
+        el = el.nextElementSibling;
+      }
+    });
+  });
+</script>
+</body>
+</html>
