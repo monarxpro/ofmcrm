@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Team Members</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:20px}
+.member-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .15s;cursor:pointer}
+.member-card:hover{border-color:var(--border2)}
+.member-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.member-ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.member-info{flex:1}
+.member-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.member-role{font-size:11.5px;color:var(--text2)}
+.member-handle{font-size:11px;color:var(--text3);margin-top:2px}
+.member-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.mstat{text-align:center;background:var(--bg3);border-radius:7px;padding:7px 6px}
+.mstat-val{font-size:14px;font-weight:600;font-family:var(--mono)}
+.mstat-label{font-size:9.5px;color:var(--text2);margin-top:2px}
+.member-footer{display:flex;align-items:center;justify-content:space-between}
+.member-accounts{display:flex;gap:-6px}
+.member-account-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;margin-left:-6px}
+.member-account-dot:first-child{margin-left:0}
+.shift-badge{display:flex;align-items:center;gap:4px;font-size:10.5px;padding:3px 8px;border-radius:5px}
+.shift-on{background:var(--green-bg);color:var(--green)}
+.shift-off{background:var(--bg4);color:var(--text2)}
+.invite-card{background:var(--bg2);border:2px dashed var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .15s;min-height:180px}
+.invite-card:hover{border-color:var(--accent);background:var(--accent-bg)}
+.invite-icon{width:44px;height:44px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center}
+.invite-icon svg{width:20px;height:20px;color:var(--text3)}
+.invite-text{font-size:13px;font-weight:500;color:var(--text2)}
+.invite-hint{font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title" id="page-title">Team Members</div>
+      <button class="btn btn-primary" onclick="alert('Invite member')">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span id="btn-invite">Invite Member</span>
+      </button>
+    </div>
+    <div class="stat-chips">
+      <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--text2)"></div><div><div class="stat-chip-val">8</div><div class="stat-chip-label" id="lbl-total">Total members</div></div></div>
+      <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--green)"></div><div><div class="stat-chip-val" style="color:var(--green)">5</div><div class="stat-chip-label" id="lbl-online">Online now</div></div></div>
+      <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--accent2)"></div><div><div class="stat-chip-val" style="color:var(--accent2)">3</div><div class="stat-chip-label" id="lbl-chatters">Chatters</div></div></div>
+      <div class="stat-chip"><div class="stat-chip-dot" style="background:var(--amber)"></div><div><div class="stat-chip-val" style="color:var(--amber)">2</div><div class="stat-chip-label" id="lbl-managers">Managers</div></div></div>
+    </div>
+    <div class="team-grid">
+      <div class="member-card">
+        <div class="member-top">
+          <div class="member-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">MC</div>
+          <div class="member-info">
+            <div class="member-name">Mike Chen</div>
+            <div class="member-role" id="role-chatter">Chatter</div>
+            <div class="member-handle">@mike_c</div>
+          </div>
+          <span class="badge badge-green" style="flex-shrink:0"><span class="badge-dot"></span><span id="st-online">Online</span></span>
+        </div>
+        <div class="member-stats">
+          <div class="mstat"><div class="mstat-val">284</div><div class="mstat-label" id="ms-msgs">Messages</div></div>
+          <div class="mstat"><div class="mstat-val pos">$4.2K</div><div class="mstat-label" id="ms-sales">Sales</div></div>
+          <div class="mstat"><div class="mstat-val">7.2h</div><div class="mstat-label" id="ms-time">Today</div></div>
+        </div>
+        <div class="member-footer">
+          <div class="member-accounts">
+            <div class="member-account-dot" style="background:rgba(108,99,255,.2);color:#8b84ff">AV</div>
+            <div class="member-account-dot" style="background:rgba(245,158,11,.15);color:#f59e0b">LR</div>
+          </div>
+          <span class="shift-badge shift-on">● <span id="shift-on">On shift</span></span>
+        </div>
+      </div>
+      <div class="member-card">
+        <div class="member-top">
+          <div class="member-ava" style="background:rgba(34,197,94,.15);color:#22c55e">AK</div>
+          <div class="member-info">
+            <div class="member-name">Anna Kim</div>
+            <div class="member-role" id="role-manager">Manager</div>
+            <div class="member-handle">@anna_k</div>
+          </div>
+          <span class="badge badge-green" style="flex-shrink:0"><span class="badge-dot"></span><span class="st-online">Online</span></span>
+        </div>
+        <div class="member-stats">
+          <div class="mstat"><div class="mstat-val">156</div><div class="mstat-label">Messages</div></div>
+          <div class="mstat"><div class="mstat-val pos">$6.8K</div><div class="mstat-label">Sales</div></div>
+          <div class="mstat"><div class="mstat-val">8.0h</div><div class="mstat-label">Today</div></div>
+        </div>
+        <div class="member-footer">
+          <div class="member-accounts">
+            <div class="member-account-dot" style="background:rgba(34,197,94,.15);color:#22c55e">SM</div>
+            <div class="member-account-dot" style="background:rgba(108,99,255,.15);color:#8b84ff">IB</div>
+          </div>
+          <span class="shift-badge shift-on">● <span class="shift-on-text">On shift</span></span>
+        </div>
+      </div>
+      <div class="member-card">
+        <div class="member-top">
+          <div class="member-ava" style="background:rgba(245,158,11,.15);color:#f59e0b">JD</div>
+          <div class="member-info">
+            <div class="member-name">John Davis</div>
+            <div class="member-role">Chatter</div>
+            <div class="member-handle">@john_d</div>
+          </div>
+          <span class="badge badge-gray" style="flex-shrink:0"><span id="st-offline">Offline</span></span>
+        </div>
+        <div class="member-stats">
+          <div class="mstat"><div class="mstat-val">98</div><div class="mstat-label">Messages</div></div>
+          <div class="mstat"><div class="mstat-val pos">$1.9K</div><div class="mstat-label">Sales</div></div>
+          <div class="mstat"><div class="mstat-val">0h</div><div class="mstat-label">Today</div></div>
+        </div>
+        <div class="member-footer">
+          <div class="member-accounts">
+            <div class="member-account-dot" style="background:rgba(239,68,68,.15);color:#ef4444">NV</div>
+          </div>
+          <span class="shift-badge shift-off"><span id="shift-off">Off shift</span></span>
+        </div>
+      </div>
+      <div class="invite-card" onclick="alert('Invite')">
+        <div class="invite-icon"><svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="invite-text" id="invite-text">Invite Team Member</div>
+        <div class="invite-hint" id="invite-hint">Send invite via email or Telegram</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE='Team Members';
+const TR={
+  en:{title:'Team Members',invite:'Invite Member',total:'Total members',online:'Online now',chatters:'Chatters',managers:'Managers',chatter:'Chatter',manager:'Manager',onlineStatus:'Online',offline:'Offline',msgs:'Messages',sales:'Sales',today:'Today',onShift:'On shift',offShift:'Off shift',inviteText:'Invite Team Member',inviteHint:'Send invite via email or Telegram'},
+  ru:{title:'Команда',invite:'Пригласить',total:'Всего участников',online:'Онлайн сейчас',chatters:'Чаттеров',managers:'Менеджеров',chatter:'Чаттер',manager:'Менеджер',onlineStatus:'Онлайн',offline:'Офлайн',msgs:'Сообщений',sales:'Продажи',today:'Сегодня',onShift:'На смене',offShift:'Не на смене',inviteText:'Пригласить участника',inviteHint:'Отправить приглашение по email или Telegram'}
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  const l=getLang(),t=TR[l];
+  document.getElementById('page-title').textContent=t.title;
+  document.getElementById('btn-invite').textContent=t.invite;
+  document.getElementById('lbl-total').textContent=t.total;
+  document.getElementById('lbl-online').textContent=t.online;
+  document.getElementById('lbl-chatters').textContent=t.chatters;
+  document.getElementById('lbl-managers').textContent=t.managers;
+  document.getElementById('role-chatter').textContent=t.chatter;
+  document.getElementById('role-manager').textContent=t.manager;
+  document.getElementById('st-online').textContent=t.onlineStatus;
+  document.querySelectorAll('.st-online').forEach(e=>e.textContent=t.onlineStatus);
+  document.getElementById('st-offline').textContent=t.offline;
+  document.querySelectorAll('[id^=ms-]').forEach(e=>{
+    const key=e.id.replace('ms-','');
+    if(t[key])e.textContent=t[key];
+  });
+  document.getElementById('ms-msgs').textContent=t.msgs;
+  document.getElementById('ms-sales').textContent=t.sales;
+  document.getElementById('ms-time').textContent=t.today;
+  document.getElementById('shift-on').textContent=t.onShift;
+  document.querySelectorAll('.shift-on-text').forEach(e=>e.textContent=t.onShift);
+  document.getElementById('shift-off').textContent=t.offShift;
+  document.getElementById('invite-text').textContent=t.inviteText;
+  document.getElementById('invite-hint').textContent=t.inviteHint;
+  window.PAGE_TITLE=t.title;
+});
+</script>
+</body>
+</html>

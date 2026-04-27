@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — AI Chat</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.chat-layout{display:grid;grid-template-columns:260px 1fr 280px;height:calc(100vh - 100px);gap:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.chat-list{border-right:1px solid var(--border);display:flex;flex-direction:column}
+.chat-list-header{padding:12px 14px;border-bottom:1px solid var(--border)}
+.chat-search{display:flex;align-items:center;gap:7px;background:var(--bg4);border:1px solid var(--border);border-radius:7px;padding:6px 10px}
+.chat-search svg{width:12px;height:12px;color:var(--text3);flex-shrink:0}
+.chat-search input{background:none;border:none;outline:none;color:var(--text);font-size:12px;font-family:var(--font);width:100%}
+.chat-scroll{flex:1;overflow-y:auto}
+.chat-scroll::-webkit-scrollbar{width:0}
+.chat-item{padding:10px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.chat-item:hover{background:var(--bg3)}
+.chat-item.active{background:var(--accent-bg)}
+.chat-ava{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;position:relative}
+.online-dot{position:absolute;bottom:0;right:0;width:9px;height:9px;background:var(--green);border-radius:50%;border:2px solid var(--bg2)}
+.chat-item-info{flex:1;min-width:0}
+.chat-item-top{display:flex;align-items:center;justify-content:space-between}
+.chat-fan-name{font-size:12.5px;font-weight:500}
+.chat-time{font-size:10px;color:var(--text3)}
+.chat-preview{font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.chat-unread{width:16px;height:16px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.chat-main{display:flex;flex-direction:column}
+.chat-topbar{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.chat-fan-ava{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.chat-fan-info{flex:1}
+.chat-fan-nm{font-size:13px;font-weight:500}
+.chat-fan-status{font-size:11px;color:var(--green)}
+.chat-actions{display:flex;gap:6px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-messages::-webkit-scrollbar{width:3px}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.msg{max-width:75%;display:flex;flex-direction:column;gap:3px}
+.msg.fan{align-self:flex-start}
+.msg.model{align-self:flex-end}
+.msg-bubble{padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.5}
+.msg.fan .msg-bubble{background:var(--bg4);color:var(--text);border-bottom-left-radius:3px}
+.msg.model .msg-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:3px}
+.msg-time{font-size:10px;color:var(--text3)}
+.msg.model .msg-time{text-align:right}
+.msg-ppv{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;max-width:240px}
+.msg-ppv-icon{font-size:24px}
+.msg-ppv-label{font-size:11.5px;color:var(--text2)}
+.msg-ppv-price{font-size:15px;font-weight:700;color:var(--accent2);font-family:var(--mono)}
+.msg-ppv-btn{margin-left:auto;padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:11.5px;font-family:var(--font);cursor:pointer}
+.chat-input-wrap{padding:12px 16px;border-top:1px solid var(--border)}
+.ai-suggestions{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px}
+.ai-suggestions::-webkit-scrollbar{height:0}
+.ai-suggestion{padding:5px 12px;background:var(--accent-bg);border:1px solid rgba(108,99,255,.2);border-radius:20px;font-size:11.5px;color:var(--accent2);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.ai-suggestion:hover{background:var(--accent);color:#fff}
+.chat-input-row{display:flex;align-items:flex-end;gap:8px}
+.chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:var(--font);padding:9px 13px;outline:none;resize:none;min-height:40px;max-height:120px;transition:border-color .15s;line-height:1.5}
+.chat-input:focus{border-color:var(--accent)}
+.send-btn{width:38px;height:38px;background:var(--accent);border:none;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s}
+.send-btn:hover{background:var(--accent2)}
+.send-btn svg{width:16px;height:16px;color:#fff}
+.attach-btn{width:34px;height:34px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--text2);transition:all .15s}
+.attach-btn:hover{background:var(--bg3);color:var(--text)}
+.attach-btn svg{width:14px;height:14px}
+.fan-panel{border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.fan-panel::-webkit-scrollbar{width:0}
+.fan-panel-header{padding:14px 16px;border-bottom:1px solid var(--border)}
+.fan-panel-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
+.fan-profile{padding:16px;border-bottom:1px solid var(--border);text-align:center}
+.fan-profile-ava{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
+.fan-profile-name{font-size:14px;font-weight:600;margin-bottom:3px}
+.fan-profile-sub{font-size:11.5px;color:var(--text2)}
+.fan-stats{padding:12px 16px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fan-stat-card{background:var(--bg3);border-radius:7px;padding:8px 10px}
+.fan-stat-val{font-size:15px;font-weight:600;font-family:var(--mono)}
+.fan-stat-label{font-size:10px;color:var(--text2);margin-top:2px}
+.fan-ai-block{padding:14px 16px}
+.fan-ai-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.ai-mode-toggle{display:flex;background:var(--bg4);border-radius:8px;padding:2px;margin-bottom:12px}
+.ai-mode-btn{flex:1;padding:5px;border-radius:6px;font-size:11px;font-family:var(--font);cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all .15s;text-align:center}
+.ai-mode-btn.active{background:var(--bg2);color:var(--text);font-weight:500}
+.ai-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.ai-toggle-row:last-child{border-bottom:none}
+.ai-toggle-label{font-size:12px;font-weight:500}
+.ai-toggle-desc{font-size:10.5px;color:var(--text2);margin-top:1px}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content" style="overflow:hidden;padding:16px 22px">
+    <div class="chat-layout">
+
+      <!-- CHAT LIST -->
+      <div class="chat-list">
+        <div class="chat-list-header">
+          <div class="chat-search">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <input type="text" id="chat-search-input" placeholder="Search fans...">
+          </div>
+        </div>
+        <div class="chat-scroll">
+          <div class="chat-item active" onclick="selectChat(this)">
+            <div class="chat-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">JD<div class="online-dot"></div></div>
+            <div class="chat-item-info">
+              <div class="chat-item-top"><div class="chat-fan-name">John D.</div><div class="chat-time">2m</div></div>
+              <div class="chat-preview">Hey Aurora! When's your next...</div>
+            </div>
+            <div class="chat-unread">3</div>
+          </div>
+          <div class="chat-item" onclick="selectChat(this)">
+            <div class="chat-ava" style="background:rgba(34,197,94,.15);color:#22c55e">MK</div>
+            <div class="chat-item-info">
+              <div class="chat-item-top"><div class="chat-fan-name">Mike K.</div><div class="chat-time">15m</div></div>
+              <div class="chat-preview">Thank you so much! 💕</div>
+            </div>
+          </div>
+          <div class="chat-item" onclick="selectChat(this)">
+            <div class="chat-ava" style="background:rgba(245,158,11,.15);color:#f59e0b">AR<div class="online-dot"></div></div>
+            <div class="chat-item-info">
+              <div class="chat-item-top"><div class="chat-fan-name">Alex R.</div><div class="chat-time">1h</div></div>
+              <div class="chat-preview">Can you do a custom for me?</div>
+            </div>
+            <div class="chat-unread">1</div>
+          </div>
+          <div class="chat-item" onclick="selectChat(this)">
+            <div class="chat-ava" style="background:rgba(236,72,153,.15);color:#ec4899">ST</div>
+            <div class="chat-item-info">
+              <div class="chat-item-top"><div class="chat-fan-name">Sam T.</div><div class="chat-time">3h</div></div>
+              <div class="chat-preview">Miss you! 🥺</div>
+            </div>
+          </div>
+          <div class="chat-item" onclick="selectChat(this)">
+            <div class="chat-ava" style="background:rgba(239,68,68,.15);color:#ef4444">PL</div>
+            <div class="chat-item-info">
+              <div class="chat-item-top"><div class="chat-fan-name">Paul L.</div><div class="chat-time">5h</div></div>
+              <div class="chat-preview">Loved the last PPV 🔥</div>
+            </div>
+          </div>
+          <div class="chat-item" onclick="selectChat(this)">
+            <div class="chat-ava" style="background:rgba(108,99,255,.15);color:#8b84ff">TW<div class="online-dot"></div></div>
+            <div class="chat-item-info">
+              <div class="chat-item-top"><div class="chat-fan-name">Tom W.</div><div class="chat-time">6h</div></div>
+              <div class="chat-preview">Are you online tonight?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT MAIN -->
+      <div class="chat-main">
+        <div class="chat-topbar">
+          <div class="chat-fan-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">JD</div>
+          <div class="chat-fan-info">
+            <div class="chat-fan-nm">John D.</div>
+            <div class="chat-fan-status" id="fan-online">● Online now</div>
+          </div>
+          <div class="chat-actions">
+            <div class="icon-btn"><svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div class="icon-btn"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2L2 6v8h12V6L8 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg fan">
+            <div class="msg-bubble">Hey Aurora! When's your next post? 😍</div>
+            <div class="msg-time">14:22</div>
+          </div>
+          <div class="msg model">
+            <div class="msg-bubble">Hey babe! 🌸 I'm uploading something special tonight just for my loyal fans like you 💕</div>
+            <div class="msg-time">14:23 ✓✓</div>
+          </div>
+          <div class="msg fan">
+            <div class="msg-bubble">Omg I can't wait!! Will it be PPV?</div>
+            <div class="msg-time">14:24</div>
+          </div>
+          <div class="msg model">
+            <div class="msg-bubble">Yes babe, special price just for you 🔥 Check this out:</div>
+            <div class="msg-time">14:25 ✓✓</div>
+          </div>
+          <div class="msg model">
+            <div class="msg-ppv">
+              <div class="msg-ppv-icon">🎬</div>
+              <div>
+                <div class="msg-ppv-label" id="ppv-label">Exclusive Video</div>
+                <div class="msg-ppv-price">$15</div>
+              </div>
+              <button class="msg-ppv-btn" id="ppv-unlock">Unlock</button>
+            </div>
+            <div class="msg-time" style="text-align:right">14:25 ✓✓</div>
+          </div>
+          <div class="msg fan">
+            <div class="msg-bubble">Just bought it! You're amazing Aurora 😍❤️</div>
+            <div class="msg-time">14:26</div>
+          </div>
+          <div class="msg fan">
+            <div class="msg-bubble">Can you do a custom video for me?</div>
+            <div class="msg-time">14:28</div>
+          </div>
+        </div>
+
+        <!-- AI SUGGESTIONS -->
+        <div class="chat-input-wrap">
+          <div class="ai-suggestions" id="ai-suggestions">
+            <div class="ai-suggestion" onclick="usesuggestion(this)">Of course babe! 💕 DM me the details</div>
+            <div class="ai-suggestion" onclick="usesuggestion(this)">I'd love to do that for you! What did you have in mind? 😊</div>
+            <div class="ai-suggestion" onclick="usesuggestion(this)">Custom videos start at $50 🎬 Let me know your idea!</div>
+            <div class="ai-suggestion" onclick="usesuggestion(this)">You're so sweet! Tell me more 🌸</div>
+          </div>
+          <div class="chat-input-row">
+            <div class="attach-btn">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M13 6.5L7.5 12a3.5 3.5 0 01-5-5l6-6a2 2 0 013 3L6 9.5a.5.5 0 01-1-1L10 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <textarea class="chat-input" id="chat-input" placeholder="Type a message..." rows="1"></textarea>
+            <button class="send-btn" onclick="sendMessage()">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M14 2L7 9M14 2L9.5 14 7 9 2 6.5 14 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAN PANEL -->
+      <div class="fan-panel">
+        <div class="fan-panel-header"><div class="fan-panel-title" id="fan-info-title">Fan Info</div></div>
+        <div class="fan-profile">
+          <div class="fan-profile-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">JD</div>
+          <div class="fan-profile-name">John D.</div>
+          <div class="fan-profile-sub" id="fan-sub-since">Subscriber since Mar 2025</div>
+        </div>
+        <div class="fan-stats">
+          <div class="fan-stat-card">
+            <div class="fan-stat-val pos">$840</div>
+            <div class="fan-stat-label" id="fstat-spent">Total spent</div>
+          </div>
+          <div class="fan-stat-card">
+            <div class="fan-stat-val">24</div>
+            <div class="fan-stat-label" id="fstat-purchases">Purchases</div>
+          </div>
+          <div class="fan-stat-card">
+            <div class="fan-stat-val">14</div>
+            <div class="fan-stat-label" id="fstat-months">Months sub</div>
+          </div>
+          <div class="fan-stat-card">
+            <div class="fan-stat-val" style="color:var(--green)">VIP</div>
+            <div class="fan-stat-label" id="fstat-tier">Tier</div>
+          </div>
+        </div>
+        <div class="fan-ai-block">
+          <div class="fan-ai-title" id="ai-mode-title">AI Mode</div>
+          <div class="ai-mode-toggle">
+            <button class="ai-mode-btn active" id="ai-suggest-btn">Suggestions</button>
+            <button class="ai-mode-btn" id="ai-auto-btn">Auto-reply</button>
+          </div>
+          <div class="ai-toggle-row">
+            <div><div class="ai-toggle-label" id="ai-ppv-label">PPV Promotion</div><div class="ai-toggle-desc" id="ai-ppv-desc">AI suggests PPV at right moment</div></div>
+            <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+          <div class="ai-toggle-row">
+            <div><div class="ai-toggle-label" id="ai-persona-label">Use Persona</div><div class="ai-toggle-desc" id="ai-persona-desc">Aurora Voss character active</div></div>
+            <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+          <div class="ai-toggle-row">
+            <div><div class="ai-toggle-label" id="ai-lang-label">Auto Language</div><div class="ai-toggle-desc" id="ai-lang-desc">Match fan's language</div></div>
+            <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE='AI Chat';
+const TR={
+  en:{title:'AI Chat',searchFans:'Search fans...',online:'● Online now',fanInfo:'Fan Info',subSince:'Subscriber since Mar 2025',totalSpent:'Total spent',purchases:'Purchases',months:'Months sub',tier:'Tier',aiMode:'AI Mode',suggestions:'Suggestions',autoReply:'Auto-reply',ppvPromo:'PPV Promotion',ppvPromoDesc:'AI suggests PPV at right moment',persona:'Use Persona',personaDesc:'Aurora Voss character active',autoLang:'Auto Language',autoLangDesc:"Match fan's language",ppvLabel:'Exclusive Video',ppvUnlock:'Unlock'},
+  ru:{title:'AI Чат',searchFans:'Поиск фанов...',online:'● Онлайн',fanInfo:'Инфо о фане',subSince:'Подписчик с марта 2025',totalSpent:'Всего потрачено',purchases:'Покупки',months:'Месяцев подписки',tier:'Уровень',aiMode:'Режим AI',suggestions:'Подсказки',autoReply:'Авто-ответ',ppvPromo:'Промо PPV',ppvPromoDesc:'AI предлагает PPV в нужный момент',persona:'Персона',personaDesc:'Персонаж Aurora Voss активен',autoLang:'Авто язык',autoLangDesc:'Отвечать на языке фана',ppvLabel:'Эксклюзивное видео',ppvUnlock:'Разблокировать'}
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  const l=getLang(),t=TR[l];
+  window.PAGE_TITLE=t.title;
+  document.getElementById('chat-search-input').placeholder=t.searchFans;
+  document.getElementById('fan-online').textContent=t.online;
+  document.getElementById('fan-info-title').textContent=t.fanInfo;
+  document.getElementById('fan-sub-since').textContent=t.subSince;
+  document.getElementById('fstat-spent').textContent=t.totalSpent;
+  document.getElementById('fstat-purchases').textContent=t.purchases;
+  document.getElementById('fstat-months').textContent=t.months;
+  document.getElementById('fstat-tier').textContent=t.tier;
+  document.getElementById('ai-mode-title').textContent=t.aiMode;
+  document.getElementById('ai-suggest-btn').textContent=t.suggestions;
+  document.getElementById('ai-auto-btn').textContent=t.autoReply;
+  document.getElementById('ai-ppv-label').textContent=t.ppvPromo;
+  document.getElementById('ai-ppv-desc').textContent=t.ppvPromoDesc;
+  document.getElementById('ai-persona-label').textContent=t.persona;
+  document.getElementById('ai-persona-desc').textContent=t.personaDesc;
+  document.getElementById('ai-lang-label').textContent=t.autoLang;
+  document.getElementById('ai-lang-desc').textContent=t.autoLangDesc;
+  document.getElementById('ppv-label').textContent=t.ppvLabel;
+  document.getElementById('ppv-unlock').textContent=t.ppvUnlock;
+  document.querySelectorAll('.ai-mode-btn').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.ai-mode-btn').forEach(b=>b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+  const input=document.getElementById('chat-input');
+  input.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
+  input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+  scrollToBottom();
+});
+function selectChat(el){document.querySelectorAll('.chat-item').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+function usesuggestion(el){document.getElementById('chat-input').value=el.textContent;document.getElementById('chat-input').focus();}
+function sendMessage(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim();
+  if(!text)return;
+  const msgs=document.getElementById('chat-messages');
+  const msg=document.createElement('div');
+  msg.className='msg model';
+  msg.innerHTML=`<div class="msg-bubble">${text}</div><div class="msg-time">${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')} ✓✓</div>`;
+  msgs.appendChild(msg);
+  input.value='';
+  input.style.height='auto';
+  scrollToBottom();
+}
+function scrollToBottom(){const msgs=document.getElementById('chat-messages');msgs.scrollTop=msgs.scrollHeight;}
+</script>
+</body>
+</html>

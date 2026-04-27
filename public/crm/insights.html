@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Account Insights</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+.filters-row{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 18px;display:flex;align-items:flex-end;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.filter-group{display:flex;flex-direction:column;gap:4px}
+.filter-label{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;font-weight:600}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;transition:border-color .15s}
+.kpi-card:hover{border-color:var(--border2)}
+.kpi-label{font-size:10.5px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.kpi-val{font-size:24px;font-weight:700;font-family:var(--mono);letter-spacing:-1px}
+.kpi-change{font-size:11px;margin-top:5px;display:flex;align-items:center;gap:4px}
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:18px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.chart-title{font-size:13px;font-weight:500}
+.chart-tabs{display:flex;gap:2px;background:var(--bg4);border-radius:7px;padding:2px}
+.chart-tab{padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;color:var(--text2);transition:all .15s}
+.chart-tab.active{background:var(--bg2);color:var(--text);font-weight:500}
+.fans-list{display:flex;flex-direction:column;gap:6px}
+.fan-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border-radius:8px;transition:background .15s}
+.fan-item:hover{background:var(--bg4)}
+.fan-ava{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.fan-name{font-size:12.5px;font-weight:500}
+.fan-spent{font-size:11px;color:var(--text2)}
+.fan-val{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--green)}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.time-grid{display:grid;grid-template-columns:repeat(24,1fr);gap:2px}
+.time-cell{height:28px;border-radius:3px;background:var(--bg4);position:relative;cursor:pointer;transition:opacity .15s}
+.time-cell:hover{opacity:.8}
+.day-labels{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin-bottom:4px}
+.day-label{font-size:9px;color:var(--text3);text-align:center}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title" id="page-title">Account Insights</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost"><svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 10V2M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="btn-export">Export</span></button>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-row">
+      <div class="filter-group">
+        <div class="filter-label" id="lbl-account">Account</div>
+        <select class="filter-select" style="min-width:160px">
+          <option id="opt-all">All accounts</option>
+          <option>Aurora Voss (@aurora_voss)</option>
+          <option>Stella Moon (@stella_moon)</option>
+          <option>Luna Ray (@luna_ray)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" id="lbl-timerange">Time Range</div>
+        <select class="filter-select" style="min-width:190px">
+          <option>04-20-2026 → 04-27-2026</option>
+          <option id="opt-7d">Last 7 days</option>
+          <option id="opt-30d">Last 30 days</option>
+          <option id="opt-month">This month</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" id="lbl-earning">Earning Type</div>
+        <select class="filter-select" style="min-width:85px"><option>Net</option><option>Gross</option></select>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label"><span id="kpi-totalearnings">Total Earnings</span></div>
+        <div class="kpi-val pos">$14,820</div>
+        <div class="kpi-change up">▲ 12.4% <span style="color:var(--text3)" id="vs-prev">vs prev period</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><span id="kpi-purchases">Total Purchases</span></div>
+        <div class="kpi-val">342</div>
+        <div class="kpi-change up">▲ 8.1% <span style="color:var(--text3)" id="vs-prev2">vs prev period</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><span id="kpi-spenders">Spenders</span></div>
+        <div class="kpi-val">89</div>
+        <div class="kpi-change up">▲ 5.3% <span style="color:var(--text3)" id="vs-prev3">vs prev period</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><span id="kpi-avgfan">Avg. Per Fan</span></div>
+        <div class="kpi-val">$166</div>
+        <div class="kpi-change down">▼ 2.1% <span style="color:var(--text3)" id="vs-prev4">vs prev period</span></div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title" id="chart-earnings-title">Earnings Chart</div>
+          <div class="chart-tabs">
+            <div class="chart-tab active" onclick="switchChartType(this,'all')" id="ct-all">All</div>
+            <div class="chart-tab" onclick="switchChartType(this,'subs')" id="ct-subs">Subs</div>
+            <div class="chart-tab" onclick="switchChartType(this,'ppv')" id="ct-ppv">PPV</div>
+            <div class="chart-tab" onclick="switchChartType(this,'tips')" id="ct-tips">Tips</div>
+            <div class="chart-tab" onclick="switchChartType(this,'msgs')" id="ct-msgs">Messages</div>
+          </div>
+        </div>
+        <canvas id="earningsChart" height="160"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title" id="top-spenders-title">Top Spenders</div>
+          <a href="accounts.html" style="font-size:11px;color:var(--accent2);text-decoration:none" id="lnk-all">View all</a>
+        </div>
+        <div class="fans-list">
+          <div class="fan-item"><div class="fan-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">JD</div><div><div class="fan-name">John D.</div><div class="fan-spent" id="lbl-spent">24 purchases</div></div><div class="fan-val">$840</div></div>
+          <div class="fan-item"><div class="fan-ava" style="background:rgba(34,197,94,.15);color:#22c55e">MK</div><div><div class="fan-name">Mike K.</div><div class="fan-spent">18 purchases</div></div><div class="fan-val">$620</div></div>
+          <div class="fan-item"><div class="fan-ava" style="background:rgba(245,158,11,.15);color:#f59e0b">AR</div><div><div class="fan-name">Alex R.</div><div class="fan-spent">15 purchases</div></div><div class="fan-val">$510</div></div>
+          <div class="fan-item"><div class="fan-ava" style="background:rgba(236,72,153,.15);color:#ec4899">ST</div><div><div class="fan-name">Sam T.</div><div class="fan-spent">12 purchases</div></div><div class="fan-val">$430</div></div>
+          <div class="fan-item"><div class="fan-ava" style="background:rgba(239,68,68,.15);color:#ef4444">PL</div><div><div class="fan-name">Paul L.</div><div class="fan-spent">10 purchases</div></div><div class="fan-val">$380</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEST DAY / BEST HOUR -->
+    <div class="bottom-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title" id="best-day-title">Best Day</div>
+          <div class="chart-tabs">
+            <div class="chart-tab active" id="bd-all">All</div>
+            <div class="chart-tab" id="bd-subs">Subs</div>
+            <div class="chart-tab" id="bd-ppv">PPV</div>
+            <div class="chart-tab" id="bd-tips">Tips</div>
+          </div>
+        </div>
+        <canvas id="bestDayChart" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title" id="best-hour-title">Best Hour</div>
+          <div class="chart-tabs">
+            <div class="chart-tab active" id="bh-all">All</div>
+            <div class="chart-tab" id="bh-subs">Subs</div>
+            <div class="chart-tab" id="bh-ppv">PPV</div>
+          </div>
+        </div>
+        <div class="day-labels" id="hour-labels"></div>
+        <div class="time-grid" id="hour-grid"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'Account Insights';
+const TR = {
+  en:{title:'Account Insights',export:'Export',account:'Account',timeRange:'Time Range',earningType:'Earning Type',allAccounts:'All accounts',last7:'Last 7 days',last30:'Last 30 days',thisMonth:'This month',totalEarnings:'Total Earnings',purchases:'Total Purchases',spenders:'Spenders',avgFan:'Avg. Per Fan',vsPrev:'vs prev period',earningsChart:'Earnings Chart',topSpenders:'Top Spenders',viewAll:'View all',spent:'purchases',bestDay:'Best Day',bestHour:'Best Hour',all:'All',subs:'Subs',ppv:'PPV',tips:'Tips',msgs:'Messages'},
+  ru:{title:'Инсайты аккаунта',export:'Экспорт',account:'Аккаунт',timeRange:'Период',earningType:'Тип дохода',allAccounts:'Все аккаунты',last7:'7 дней',last30:'30 дней',thisMonth:'Этот месяц',totalEarnings:'Общий доход',purchases:'Покупки',spenders:'Плательщики',avgFan:'Ср. на фана',vsPrev:'vs предыдущий',earningsChart:'График доходов',topSpenders:'Топ плательщики',viewAll:'Все',spent:'покупок',bestDay:'Лучший день',bestHour:'Лучший час',all:'Все',subs:'Подп.',ppv:'PPV',tips:'Чаевые',msgs:'Сообщения'}
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  const l=getLang(),t=TR[l];
+  document.getElementById('page-title').textContent=t.title;
+  document.getElementById('btn-export').textContent=t.export;
+  document.getElementById('lbl-account').textContent=t.account;
+  document.getElementById('lbl-timerange').textContent=t.timeRange;
+  document.getElementById('lbl-earning').textContent=t.earningType;
+  document.getElementById('opt-all').textContent=t.allAccounts;
+  document.getElementById('opt-7d').textContent=t.last7;
+  document.getElementById('opt-30d').textContent=t.last30;
+  document.getElementById('opt-month').textContent=t.thisMonth;
+  document.getElementById('kpi-totalearnings').textContent=t.totalEarnings;
+  document.getElementById('kpi-purchases').textContent=t.purchases;
+  document.getElementById('kpi-spenders').textContent=t.spenders;
+  document.getElementById('kpi-avgfan').textContent=t.avgFan;
+  ['vs-prev','vs-prev2','vs-prev3','vs-prev4'].forEach(id=>document.getElementById(id).textContent=t.vsPrev);
+  document.getElementById('chart-earnings-title').textContent=t.earningsChart;
+  document.getElementById('top-spenders-title').textContent=t.topSpenders;
+  document.getElementById('lnk-all').textContent=t.viewAll;
+  document.getElementById('lbl-spent').textContent='24 '+t.spent;
+  document.getElementById('best-day-title').textContent=t.bestDay;
+  document.getElementById('best-hour-title').textContent=t.bestHour;
+  ['ct-all','bd-all','bh-all'].forEach(id=>document.getElementById(id).textContent=t.all);
+  ['ct-subs','bd-subs','bh-subs'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t.subs;});
+  ['ct-ppv','bd-ppv','bh-ppv'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t.ppv;});
+  document.getElementById('ct-tips').textContent=t.tips;
+  document.getElementById('bd-tips').textContent=t.tips;
+  document.getElementById('ct-msgs').textContent=t.msgs;
+  window.PAGE_TITLE=t.title;
+  initCharts();
+  initHeatmap();
+  document.querySelectorAll('.chart-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      const parent=tab.parentElement;
+      parent.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+});
+
+function initCharts(){
+  const labels=['Apr 20','Apr 21','Apr 22','Apr 23','Apr 24','Apr 25','Apr 26','Apr 27'];
+  const earningsCtx=document.getElementById('earningsChart').getContext('2d');
+  new Chart(earningsCtx,{type:'line',data:{labels,datasets:[{label:'Earnings',data:[1200,1850,1400,2100,1750,2400,1900,2220],borderColor:'#6c63ff',backgroundColor:'rgba(108,99,255,.1)',fill:true,tension:.4,borderWidth:2,pointRadius:3,pointBackgroundColor:'#6c63ff'},{label:'PPV',data:[400,600,350,800,500,900,600,700],borderColor:'#22c55e',backgroundColor:'transparent',tension:.4,borderWidth:1.5,pointRadius:2,borderDash:[4,2]}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#18181b',borderColor:'rgba(255,255,255,.1)',borderWidth:1,titleColor:'#f0f0f0',bodyColor:'#888890'}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555560',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555560',font:{size:10},callback:v=>'$'+v}}}}});
+  const bestDayCtx=document.getElementById('bestDayChart').getContext('2d');
+  new Chart(bestDayCtx,{type:'bar',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{data:[1200,1800,1400,2100,1750,2800,2200],backgroundColor:['rgba(108,99,255,.3)','rgba(108,99,255,.3)','rgba(108,99,255,.3)','rgba(108,99,255,.3)','rgba(108,99,255,.3)','rgba(108,99,255,.9)','rgba(108,99,255,.6)'],borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#555560',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#555560',font:{size:10},callback:v=>'$'+v}}}}});
+}
+
+function initHeatmap(){
+  const grid=document.getElementById('hour-grid');
+  const labels=document.getElementById('hour-labels');
+  const values=[0,0,0,0,0,0,10,25,40,55,70,80,60,50,45,65,85,95,100,90,75,50,30,10];
+  for(let h=0;h<24;h++){
+    const lbl=document.createElement('div');
+    lbl.className='day-label';
+    lbl.textContent=h%3===0?h+'h':'';
+    labels.appendChild(lbl);
+    const cell=document.createElement('div');
+    cell.className='time-cell';
+    const intensity=values[h]/100;
+    cell.style.background=`rgba(108,99,255,${0.05+intensity*0.9})`;
+    cell.title=h+':00 — $'+Math.round(intensity*500);
+    grid.appendChild(cell);
+  }
+}
+
+function switchChartType(tab,type){
+  const parent=tab.parentElement;
+  parent.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+}
+</script>
+</body>
+</html>

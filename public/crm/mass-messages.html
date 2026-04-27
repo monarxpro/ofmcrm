@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Mass Messages</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.mm-layout{display:grid;grid-template-columns:1fr 340px;gap:16px;height:calc(100vh - 130px)}
+.mm-main{display:flex;flex-direction:column;gap:14px;overflow-y:auto;padding-right:4px}
+.mm-main::-webkit-scrollbar{width:3px}
+.mm-main::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.compose-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.compose-title{font-size:13px;font-weight:500;margin-bottom:14px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field-label{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:5px}
+.field-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);padding:8px 11px;outline:none;transition:border-color .15s}
+.field-input:focus{border-color:var(--accent)}
+.field-input::placeholder{color:var(--text3)}
+.field-select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);padding:8px 28px 8px 11px;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;cursor:pointer;transition:border-color .15s}
+.field-select:focus{border-color:var(--accent)}
+.field-select option{background:var(--bg3)}
+.field-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);padding:10px 11px;outline:none;transition:border-color .15s;resize:vertical;min-height:90px;line-height:1.6}
+.field-textarea:focus{border-color:var(--accent)}
+.field-textarea::placeholder{color:var(--text3)}
+.media-upload{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;margin-bottom:12px}
+.media-upload:hover{border-color:var(--accent);background:var(--accent-bg)}
+.media-upload-icon{font-size:24px;margin-bottom:6px}
+.media-upload-text{font-size:12px;color:var(--text2)}
+.media-upload-hint{font-size:10.5px;color:var(--text3);margin-top:2px}
+.price-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.price-toggle{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;flex:1}
+.price-toggle:hover{border-color:var(--border2)}
+.price-toggle.active{border-color:var(--accent);background:var(--accent-bg)}
+.price-toggle-label{font-size:12px;font-weight:500}
+.price-toggle-desc{font-size:10.5px;color:var(--text2);margin-top:1px}
+.compose-actions{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border)}
+.compose-hint{font-size:11px;color:var(--text3)}
+.history-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.history-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.history-title{font-size:13px;font-weight:500}
+.history-item{padding:12px 16px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer}
+.history-item:hover{background:var(--bg3)}
+.history-item:last-child{border-bottom:none}
+.history-item-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.history-name{font-size:12.5px;font-weight:500}
+.history-date{font-size:10.5px;color:var(--text3)}
+.history-preview{font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.history-stats{display:flex;gap:10px}
+.history-stat{font-size:10.5px;color:var(--text3);display:flex;align-items:center;gap:3px}
+.history-stat span{color:var(--text2);font-weight:500}
+.side-panel{display:flex;flex-direction:column;gap:12px}
+.side-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.side-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.audience-option{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.audience-option:hover{background:var(--bg4)}
+.audience-option.selected{background:var(--accent-bg);border-color:rgba(108,99,255,.3)}
+.audience-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.audience-name{font-size:12.5px;font-weight:500}
+.audience-count{font-size:11px;color:var(--text2)}
+.audience-check{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border2);margin-left:auto;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.audience-option.selected .audience-check{background:var(--accent);border-color:var(--accent)}
+.est-card{background:var(--bg3);border-radius:8px;padding:12px 14px}
+.est-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.est-row:last-child{margin-bottom:0}
+.est-label{font-size:11.5px;color:var(--text2)}
+.est-val{font-size:12px;font-weight:600;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content" style="overflow:hidden;padding-bottom:0">
+    <div class="page-header" style="margin-bottom:14px">
+      <div class="page-title" id="page-title">Mass Messages</div>
+    </div>
+    <div class="mm-layout">
+
+      <!-- LEFT: COMPOSE + HISTORY -->
+      <div class="mm-main">
+        <div class="compose-card">
+          <div class="compose-title" id="compose-title">Compose Message</div>
+          <div class="field-row">
+            <div>
+              <div class="field-label" id="lbl-account">Account</div>
+              <select class="field-select">
+                <option id="opt-all">All accounts</option>
+                <option>Aurora Voss</option>
+                <option>Stella Moon</option>
+              </select>
+            </div>
+            <div>
+              <div class="field-label" id="lbl-sendtime">Send Time</div>
+              <select class="field-select">
+                <option id="opt-now">Send now</option>
+                <option id="opt-schedule">Schedule...</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div class="field-label" id="lbl-message">Message</div>
+            <textarea class="field-textarea" id="msg-input" placeholder="Hey babe! I have something special just for you... 🔥"></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:4px">
+              <span style="font-size:10.5px;color:var(--text3)" id="char-count">0 / 500</span>
+            </div>
+          </div>
+          <div class="media-upload" onclick="this.style.borderColor='var(--accent)'">
+            <div class="media-upload-icon">📎</div>
+            <div class="media-upload-text" id="upload-text">Click to attach photo or video</div>
+            <div class="media-upload-hint" id="upload-hint">JPG, PNG, MP4 up to 500MB</div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div class="field-label" id="lbl-ppv-type">Message Type</div>
+            <div class="price-row">
+              <div class="price-toggle active" onclick="togglePPV(this,'free')">
+                <div>
+                  <div class="price-toggle-label" id="pt-free">Free</div>
+                  <div class="price-toggle-desc" id="pt-free-desc">No unlock required</div>
+                </div>
+              </div>
+              <div class="price-toggle" onclick="togglePPV(this,'ppv')">
+                <div>
+                  <div class="price-toggle-label" id="pt-ppv">PPV</div>
+                  <div class="price-toggle-desc" id="pt-ppv-desc">Fans pay to unlock</div>
+                </div>
+              </div>
+            </div>
+            <div id="ppv-price-wrap" style="display:none">
+              <div class="field-label" id="lbl-price">Price ($)</div>
+              <input class="field-input" type="number" placeholder="9.99" style="max-width:140px">
+            </div>
+          </div>
+          <div class="compose-actions">
+            <div class="compose-hint" id="compose-hint">Recipients will be calculated based on your audience selection</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" id="btn-preview">Preview</button>
+              <button class="btn btn-primary" id="btn-send">
+                <svg viewBox="0 0 14 14" fill="none"><path d="M12 2L6 8M12 2L8 12 6 8 2 6l10-4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                <span id="btn-send-text">Send Message</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="history-card">
+          <div class="history-header">
+            <div class="history-title" id="history-title">Message History</div>
+            <span style="font-size:11px;color:var(--text2)" id="history-count">12 campaigns</span>
+          </div>
+          <div class="history-item">
+            <div class="history-item-top"><div class="history-name">Aurora Voss</div><div class="history-date">Apr 26, 14:30</div></div>
+            <div class="history-preview">Hey babe! I have something special just for you... 🔥</div>
+            <div class="history-stats">
+              <div class="history-stat" id="hs-sent">Sent: <span>342</span></div>
+              <div class="history-stat" id="hs-opened">Opened: <span>287 (84%)</span></div>
+              <div class="history-stat" id="hs-earned">Earned: <span class="pos">$1,240</span></div>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="history-item-top"><div class="history-name">Stella Moon</div><div class="history-date">Apr 25, 11:00</div></div>
+            <div class="history-preview">Miss you so much! I recorded something exclusive 💕</div>
+            <div class="history-stats">
+              <div class="history-stat">Sent: <span>287</span></div>
+              <div class="history-stat">Opened: <span>241 (84%)</span></div>
+              <div class="history-stat">Earned: <span class="pos">$890</span></div>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="history-item-top"><div class="history-name">All Accounts</div><div class="history-date">Apr 24, 20:00</div></div>
+            <div class="history-preview">Weekend special! Only for my loyal fans 🎁</div>
+            <div class="history-stats">
+              <div class="history-stat">Sent: <span>1,024</span></div>
+              <div class="history-stat">Opened: <span>891 (87%)</span></div>
+              <div class="history-stat">Earned: <span class="pos">$3,420</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: AUDIENCE + ESTIMATES -->
+      <div class="side-panel">
+        <div class="side-card">
+          <div class="side-title" id="audience-title">Select Audience</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="audience-option selected" onclick="selectAudience(this)">
+              <div class="audience-icon" style="background:rgba(108,99,255,.15)">👥</div>
+              <div><div class="audience-name" id="aud-all">All Fans</div><div class="audience-count">1,240 fans</div></div>
+              <div class="audience-check"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+            <div class="audience-option" onclick="selectAudience(this)">
+              <div class="audience-icon" style="background:rgba(34,197,94,.1)">💎</div>
+              <div><div class="audience-name" id="aud-active">Active Subscribers</div><div class="audience-count">847 fans</div></div>
+              <div class="audience-check"></div>
+            </div>
+            <div class="audience-option" onclick="selectAudience(this)">
+              <div class="audience-icon" style="background:rgba(245,158,11,.1)">⏰</div>
+              <div><div class="audience-name" id="aud-expired">Expired Fans</div><div class="audience-count">393 fans</div></div>
+              <div class="audience-check"></div>
+            </div>
+            <div class="audience-option" onclick="selectAudience(this)">
+              <div class="audience-icon" style="background:rgba(239,68,68,.1)">💸</div>
+              <div><div class="audience-name" id="aud-spenders">Top Spenders</div><div class="audience-count">89 fans</div></div>
+              <div class="audience-check"></div>
+            </div>
+            <div class="audience-option" onclick="selectAudience(this)">
+              <div class="audience-icon" style="background:rgba(236,72,153,.1)">🆕</div>
+              <div><div class="audience-name" id="aud-new">New Fans (7 days)</div><div class="audience-count">54 fans</div></div>
+              <div class="audience-check"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <div class="side-title" id="est-title">Estimated Results</div>
+          <div class="est-card">
+            <div class="est-row"><div class="est-label" id="est-recipients">Recipients</div><div class="est-val">1,240</div></div>
+            <div class="est-row"><div class="est-label" id="est-open">Est. Open Rate</div><div class="est-val">~84%</div></div>
+            <div class="est-row"><div class="est-label" id="est-revenue">Est. Revenue</div><div class="est-val pos">$1,800–$2,400</div></div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <div class="side-title" id="ai-title">AI Assistant</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6" id="ai-desc">Let AI help you write a message that converts fans into buyers.</div>
+          <button class="btn btn-ghost" style="width:100%;justify-content:center" id="ai-btn">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v3m0 6v3M1 7h3m6 0h3M3.2 3.2l2.1 2.1m3.4 3.4l2.1 2.1M3.2 10.8l2.1-2.1m3.4-3.4l2.1-2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Generate with AI
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE='Mass Messages';
+const TR={
+  en:{title:'Mass Messages',compose:'Compose Message',account:'Account',sendtime:'Send Time',message:'Message',sendNow:'Send now',schedule:'Schedule...',allAccounts:'All accounts',upload:'Click to attach photo or video',uploadHint:'JPG, PNG, MP4 up to 500MB',msgType:'Message Type',free:'Free',freeDesc:'No unlock required',ppv:'PPV',ppvDesc:'Fans pay to unlock',price:'Price ($)',hint:'Recipients will be calculated based on your audience selection',preview:'Preview',send:'Send Message',history:'Message History',campaigns:'12 campaigns',sent:'Sent:',opened:'Opened:',earned:'Earned:',audience:'Select Audience',allFans:'All Fans',activeSubs:'Active Subscribers',expired:'Expired Fans',spenders:'Top Spenders',newFans:'New Fans (7 days)',estTitle:'Estimated Results',estRec:'Recipients',estOpen:'Est. Open Rate',estRev:'Est. Revenue',aiTitle:'AI Assistant',aiDesc:'Let AI help you write a message that converts fans into buyers.'},
+  ru:{title:'Массовая рассылка',compose:'Написать сообщение',account:'Аккаунт',sendtime:'Время отправки',message:'Сообщение',sendNow:'Отправить сейчас',schedule:'Запланировать...',allAccounts:'Все аккаунты',upload:'Нажмите чтобы прикрепить фото или видео',uploadHint:'JPG, PNG, MP4 до 500MB',msgType:'Тип сообщения',free:'Бесплатно',freeDesc:'Без разблокировки',ppv:'PPV',ppvDesc:'Фаны платят для просмотра',price:'Цена ($)',hint:'Получатели будут рассчитаны по выбранной аудитории',preview:'Предпросмотр',send:'Отправить',history:'История рассылок',campaigns:'12 кампаний',sent:'Отправлено:',opened:'Открыто:',earned:'Заработано:',audience:'Выбор аудитории',allFans:'Все фаны',activeSubs:'Активные подписчики',expired:'Истёкшие фаны',spenders:'Топ плательщики',newFans:'Новые фаны (7 дней)',estTitle:'Прогноз результатов',estRec:'Получателей',estOpen:'Ожид. открытие',estRev:'Ожид. доход',aiTitle:'AI Ассистент',aiDesc:'Пусть AI поможет написать сообщение которое конвертирует фанов.'}
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  const l=getLang(),t=TR[l];
+  document.getElementById('page-title').textContent=t.title;
+  document.getElementById('compose-title').textContent=t.compose;
+  document.getElementById('lbl-account').textContent=t.account;
+  document.getElementById('lbl-sendtime').textContent=t.sendtime;
+  document.getElementById('lbl-message').textContent=t.message;
+  document.getElementById('opt-now').textContent=t.sendNow;
+  document.getElementById('opt-schedule').textContent=t.schedule;
+  document.getElementById('opt-all').textContent=t.allAccounts;
+  document.getElementById('upload-text').textContent=t.upload;
+  document.getElementById('upload-hint').textContent=t.uploadHint;
+  document.getElementById('lbl-ppv-type').textContent=t.msgType;
+  document.getElementById('pt-free').textContent=t.free;
+  document.getElementById('pt-free-desc').textContent=t.freeDesc;
+  document.getElementById('pt-ppv').textContent=t.ppv;
+  document.getElementById('pt-ppv-desc').textContent=t.ppvDesc;
+  document.getElementById('compose-hint').textContent=t.hint;
+  document.getElementById('btn-preview').textContent=t.preview;
+  document.getElementById('btn-send-text').textContent=t.send;
+  document.getElementById('history-title').textContent=t.history;
+  document.getElementById('history-count').textContent=t.campaigns;
+  document.getElementById('hs-sent').innerHTML=t.sent+' <span>342</span>';
+  document.getElementById('hs-opened').innerHTML=t.opened+' <span>287 (84%)</span>';
+  document.getElementById('hs-earned').innerHTML=t.earned+' <span class="pos">$1,240</span>';
+  document.getElementById('audience-title').textContent=t.audience;
+  document.getElementById('aud-all').textContent=t.allFans;
+  document.getElementById('aud-active').textContent=t.activeSubs;
+  document.getElementById('aud-expired').textContent=t.expired;
+  document.getElementById('aud-spenders').textContent=t.spenders;
+  document.getElementById('aud-new').textContent=t.newFans;
+  document.getElementById('est-title').textContent=t.estTitle;
+  document.getElementById('est-recipients').textContent=t.estRec;
+  document.getElementById('est-open').textContent=t.estOpen;
+  document.getElementById('est-revenue').textContent=t.estRev;
+  document.getElementById('ai-title').textContent=t.aiTitle;
+  document.getElementById('ai-desc').textContent=t.aiDesc;
+  window.PAGE_TITLE=t.title;
+  document.getElementById('msg-input').addEventListener('input',function(){
+    document.getElementById('char-count').textContent=this.value.length+' / 500';
+  });
+});
+function togglePPV(el,type){
+  document.querySelectorAll('.price-toggle').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('ppv-price-wrap').style.display=type==='ppv'?'block':'none';
+}
+function selectAudience(el){
+  document.querySelectorAll('.audience-option').forEach(o=>{
+    o.classList.remove('selected');
+    o.querySelector('.audience-check').innerHTML='';
+  });
+  el.classList.add('selected');
+  el.querySelector('.audience-check').innerHTML='<svg viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+</script>
+</body>
+</html>

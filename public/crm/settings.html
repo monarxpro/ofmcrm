@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Settings</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.settings-layout{display:grid;grid-template-columns:200px 1fr;gap:16px}
+.settings-nav{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:8px;height:fit-content}
+.settings-nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;color:var(--text2);font-size:12.5px;transition:all .15s}
+.settings-nav-item:hover{background:var(--bg4);color:var(--text)}
+.settings-nav-item.active{background:var(--accent-bg);color:var(--accent2);font-weight:500}
+.settings-nav-item svg{width:13px;height:13px;flex-shrink:0;opacity:.65}
+.settings-nav-item.active svg{opacity:1}
+.settings-content{display:flex;flex-direction:column;gap:14px}
+.settings-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.settings-card-header{padding:14px 20px;border-bottom:1px solid var(--border)}
+.settings-card-title{font-size:13px;font-weight:500}
+.settings-card-desc{font-size:11.5px;color:var(--text2);margin-top:2px}
+.settings-card-body{padding:16px 20px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-label{font-size:13px;font-weight:500}
+.settings-row-desc{font-size:11.5px;color:var(--text2);margin-top:2px}
+.field-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.field-label{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:5px}
+.field-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);padding:8px 11px;outline:none;transition:border-color .15s}
+.field-input:focus{border-color:var(--accent)}
+.field-input::placeholder{color:var(--text3)}
+.field-select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);padding:8px 28px 8px 11px;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;cursor:pointer}
+.danger-zone{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:12px;padding:16px 20px}
+.danger-zone-title{font-size:12px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.danger-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(239,68,68,.1)}
+.danger-row:last-child{border-bottom:none}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.2);padding:5px 12px;border-radius:7px;font-size:12px;font-family:var(--font);cursor:pointer;transition:all .15s}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.plan-card{background:var(--accent-bg);border:1px solid rgba(108,99,255,.3);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.plan-icon{font-size:24px}
+.plan-name{font-size:15px;font-weight:700;color:var(--accent2)}
+.plan-price{font-size:12px;color:var(--text2);margin-top:2px}
+.plan-features{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.plan-feature{font-size:10.5px;padding:2px 8px;background:rgba(108,99,255,.15);color:var(--accent2);border-radius:4px}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title" id="page-title">Settings</div>
+      <button class="btn btn-primary" id="btn-save">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="btn-save-text">Save Changes</span>
+      </button>
+    </div>
+    <div class="settings-layout">
+      <div class="settings-nav">
+        <div class="settings-nav-item active" onclick="showSection(this,'general')">
+          <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2M3.2 3.2l1.4 1.4M9.4 9.4l1.4 1.4M3.2 10.8l1.4-1.4M9.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span id="nav-general">General</span>
+        </div>
+        <div class="settings-nav-item" onclick="showSection(this,'security')">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L2 3.5v3c0 3 2.5 5.5 5 6 2.5-.5 5-3 5-6v-3L7 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span id="nav-security">Security & 2FA</span>
+        </div>
+        <div class="settings-nav-item" onclick="showSection(this,'notifications')">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1a4 4 0 014 4v2l1.5 2H1.5L3 7V5a4 4 0 014-4zM5.5 11.5a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span id="nav-notif">Notifications</span>
+        </div>
+        <div class="settings-nav-item" onclick="showSection(this,'billing')">
+          <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 6h12" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span id="nav-billing">Billing & Plan</span>
+        </div>
+        <div class="settings-nav-item" onclick="showSection(this,'api')">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M9 3l3 4-3 4M5 3L2 7l3 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="nav-api">API & Integrations</span>
+        </div>
+      </div>
+
+      <div class="settings-content">
+
+        <!-- GENERAL -->
+        <div id="sec-general" class="settings-content-inner">
+          <div class="settings-card">
+            <div class="settings-card-header"><div class="settings-card-title" id="org-title">Organization Profile</div></div>
+            <div class="settings-card-body">
+              <div class="field-row-2">
+                <div><div class="field-label" id="lbl-orgname">Organization Name</div><input class="field-input" type="text" value="Pride Agency"></div>
+                <div><div class="field-label" id="lbl-timezone">Timezone</div><select class="field-select"><option>UTC+3 Moscow</option><option>UTC+0 London</option><option>UTC-5 New York</option></select></div>
+              </div>
+              <div class="field-row-2">
+                <div><div class="field-label" id="lbl-email">Email</div><input class="field-input" type="email" value="admin@aiofmcrm.pro"></div>
+                <div><div class="field-label" id="lbl-lang">Interface Language</div><select class="field-select" onchange="setLang(this.value)"><option value="en">English</option><option value="ru">Русский</option></select></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECURITY -->
+        <div id="sec-security" style="display:none" class="settings-content-inner">
+          <div class="settings-card">
+            <div class="settings-card-header"><div class="settings-card-title" id="sec-title">Security</div></div>
+            <div class="settings-card-body">
+              <div class="settings-row">
+                <div><div class="settings-row-label" id="lbl-2fa">Two-Factor Authentication</div><div class="settings-row-desc" id="desc-2fa">Use Google Authenticator for extra security</div></div>
+                <div class="toggle" onclick="this.classList.toggle('off')"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label" id="lbl-sessions">Active Sessions</div><div class="settings-row-desc" id="desc-sessions">2 active sessions</div></div>
+                <button class="btn btn-ghost" style="padding:5px 12px;font-size:12px" id="btn-sessions">Manage</button>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label" id="lbl-password">Change Password</div><div class="settings-row-desc" id="desc-password">Last changed 30 days ago</div></div>
+                <button class="btn btn-ghost" style="padding:5px 12px;font-size:12px" id="btn-password">Change</button>
+              </div>
+            </div>
+          </div>
+          <div class="danger-zone">
+            <div class="danger-zone-title" id="danger-title">Danger Zone</div>
+            <div class="danger-row">
+              <div><div class="settings-row-label" id="lbl-delete">Delete Organization</div><div class="settings-row-desc" id="desc-delete">This action cannot be undone</div></div>
+              <button class="btn-danger" id="btn-delete">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div id="sec-notifications" style="display:none" class="settings-content-inner">
+          <div class="settings-card">
+            <div class="settings-card-header"><div class="settings-card-title" id="notif-title">Notification Preferences</div></div>
+            <div class="settings-card-body">
+              <div class="settings-row">
+                <div><div class="settings-row-label" id="notif-new-fan">New fan subscription</div><div class="settings-row-desc">Get notified when a new fan subscribes</div></div>
+                <div class="toggle" onclick="this.classList.toggle('off')"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label" id="notif-unsub">Fan unsubscribes</div><div class="settings-row-desc">Alert when a fan cancels their subscription</div></div>
+                <div class="toggle" onclick="this.classList.toggle('off')"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label" id="notif-ppv">PPV purchase</div><div class="settings-row-desc">Notify on every PPV content purchase</div></div>
+                <div class="toggle" onclick="this.classList.toggle('off')"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label" id="notif-tip">New tip received</div><div class="settings-row-desc">Alert when a fan sends a tip</div></div>
+                <div class="toggle" onclick="this.classList.toggle('off')"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label" id="notif-offline">Chatter goes offline</div><div class="settings-row-desc">Get alerted when a chatter's session ends</div></div>
+                <div class="toggle off" onclick="this.classList.toggle('off')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BILLING -->
+        <div id="sec-billing" style="display:none" class="settings-content-inner">
+          <div class="settings-card">
+            <div class="settings-card-header"><div class="settings-card-title" id="billing-title">Current Plan</div></div>
+            <div class="settings-card-body">
+              <div class="plan-card">
+                <div class="plan-icon">🚀</div>
+                <div>
+                  <div class="plan-name">Agency Pro</div>
+                  <div class="plan-price" id="plan-price">$199/month · Renews May 27, 2026</div>
+                  <div class="plan-features">
+                    <span class="plan-feature" id="pf-accounts">12 Accounts</span>
+                    <span class="plan-feature" id="pf-team">10 Team Members</span>
+                    <span class="plan-feature">AI Chat</span>
+                    <span class="plan-feature">Analytics</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost" id="btn-upgrade">Upgrade Plan</button>
+                <button class="btn btn-ghost" style="color:var(--red);border-color:rgba(239,68,68,.2)" id="btn-cancel-plan">Cancel Plan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API -->
+        <div id="sec-api" style="display:none" class="settings-content-inner">
+          <div class="settings-card">
+            <div class="settings-card-header"><div class="settings-card-title" id="api-title">API Keys & Integrations</div></div>
+            <div class="settings-card-body">
+              <div style="margin-bottom:14px">
+                <div class="field-label" id="lbl-fanvue-key">Fanvue Client ID</div>
+                <input class="field-input" type="text" placeholder="fv_client_..." style="margin-bottom:8px">
+                <div class="field-label" id="lbl-fanvue-secret">Fanvue Client Secret</div>
+                <input class="field-input" type="password" placeholder="fv_secret_...">
+              </div>
+              <div style="margin-bottom:14px">
+                <div class="field-label" id="lbl-claude-key">Claude API Key (Anthropic)</div>
+                <input class="field-input" type="password" placeholder="sk-ant-...">
+                <div style="font-size:11px;color:var(--text3);margin-top:4px" id="claude-hint">Required for AI chat suggestions and auto-replies</div>
+              </div>
+              <div style="margin-bottom:14px">
+                <div class="field-label" id="lbl-stripe-key">Stripe API Key</div>
+                <input class="field-input" type="password" placeholder="sk_live_...">
+              </div>
+              <button class="btn btn-primary" id="btn-save-api">Save API Keys</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE='Settings';
+const TR={
+  en:{title:'Settings',save:'Save Changes',general:'General',security:'Security & 2FA',notif:'Notifications',billing:'Billing & Plan',api:'API & Integrations',orgTitle:'Organization Profile',orgName:'Organization Name',timezone:'Timezone',email:'Email',lang:'Interface Language'},
+  ru:{title:'Настройки',save:'Сохранить',general:'Общие',security:'Безопасность & 2FA',notif:'Уведомления',billing:'Подписка',api:'API & Интеграции',orgTitle:'Профиль организации',orgName:'Название организации',timezone:'Часовой пояс',email:'Email',lang:'Язык интерфейса'}
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  const l=getLang(),t=TR[l];
+  document.getElementById('page-title').textContent=t.title;
+  document.getElementById('btn-save-text').textContent=t.save;
+  document.getElementById('nav-general').textContent=t.general;
+  document.getElementById('nav-security').textContent=t.security;
+  document.getElementById('nav-notif').textContent=t.notif;
+  document.getElementById('nav-billing').textContent=t.billing;
+  document.getElementById('nav-api').textContent=t.api;
+  document.getElementById('org-title').textContent=t.orgTitle;
+  document.getElementById('lbl-orgname').textContent=t.orgName;
+  document.getElementById('lbl-timezone').textContent=t.timezone;
+  document.getElementById('lbl-email').textContent=t.email;
+  document.getElementById('lbl-lang').textContent=t.lang;
+  const langSelect=document.querySelector('.field-select[onchange]');
+  if(langSelect)langSelect.value=l;
+  window.PAGE_TITLE=t.title;
+  document.querySelectorAll('.toggle').forEach(t=>{
+    t.addEventListener('click',()=>t.classList.toggle('off'));
+  });
+});
+function showSection(navItem,section){
+  document.querySelectorAll('.settings-nav-item').forEach(i=>i.classList.remove('active'));
+  navItem.classList.add('active');
+  document.querySelectorAll('.settings-content-inner,[id^=sec-]').forEach(s=>s.style.display='none');
+  document.getElementById('sec-'+section).style.display='flex';
+  document.getElementById('sec-'+section).style.flexDirection='column';
+  document.getElementById('sec-'+section).style.gap='14px';
+}
+</script>
+</body>
+</html>
