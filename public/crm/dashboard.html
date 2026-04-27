@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .org-header { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 15px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .org-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .org-info h2 { font-size: 14px; font-weight: 600; }
+  .org-info p { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .org-stats { margin-left: auto; display: flex; gap: 28px; }
+  .org-stat { text-align: center; }
+  .org-stat-val { font-size: 19px; font-weight: 600; font-family: var(--mono); }
+  .org-stat-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+  .filters-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-label { font-size: 9.5px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; font-weight: 600; }
+  .toggle-group { display: flex; align-items: center; gap: 7px; margin-top: 2px; }
+  .select-sm { background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; color: var(--text2); font-size: 11px; font-family: var(--font); padding: 4px 22px 4px 8px; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; }
+  .btn-sm { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 7px; font-size: 12px; font-family: var(--font); font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-sm svg { width: 12px; height: 12px; }
+</style>
+</head>
+<body>
+
+<aside id="sidebar"></aside>
+
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+
+    <!-- ORG HEADER -->
+    <div class="org-header">
+      <div class="org-avatar">🏢</div>
+      <div class="org-info">
+        <h2>Pride Agency</h2>
+        <p id="org-sub">Organization · Fanvue Management</p>
+      </div>
+      <div class="org-stats">
+        <div class="org-stat">
+          <div class="org-stat-val">12</div>
+          <div class="org-stat-label" data-key="accounts">Accounts</div>
+        </div>
+        <div class="org-stat">
+          <div class="org-stat-val">8</div>
+          <div class="org-stat-label" data-key="teamMembers">Team Members</div>
+        </div>
+        <div class="org-stat">
+          <div class="org-stat-val">1,240</div>
+          <div class="org-stat-label" data-key="totalFans">Total Fans</div>
+        </div>
+        <div class="org-stat">
+          <div class="org-stat-val pos">$48.2K</div>
+          <div class="org-stat-label" data-key="thisMonth">This Month</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-row">
+      <div class="filter-group">
+        <div class="filter-label" data-key="group">Group</div>
+        <select class="filter-select" style="min-width:130px;">
+          <option data-key="allGroups">All Groups</option>
+          <option data-key="topEarners">Top Earners</option>
+          <option data-key="newModels">New Models</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" data-key="account">Account</div>
+        <select class="filter-select" style="min-width:130px;">
+          <option data-key="allAccounts">All Accounts</option>
+          <option>@aurora_v</option>
+          <option>@stella_m</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" data-key="timeRange">Time Range</div>
+        <select class="filter-select" style="min-width:190px;">
+          <option>04-20-2026 → 04-27-2026</option>
+          <option data-key="last7days">Last 7 days</option>
+          <option data-key="last30days">Last 30 days</option>
+          <option data-key="thisMonth">This month</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" data-key="earningType">Earning Type</div>
+        <select class="filter-select" style="min-width:85px;">
+          <option>Net</option><option>Gross</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label" data-key="compareTo">Compare to</div>
+        <select class="filter-select" style="min-width:190px;">
+          <option>04-13-2026 → 04-20-2026</option>
+          <option data-key="previousPeriod">Previous period</option>
+        </select>
+      </div>
+      <div class="filter-group" style="margin-left:auto;">
+        <div class="filter-label" data-key="includeSubscriptions">Include Subscriptions</div>
+        <div class="toggle-group">
+          <div class="toggle" onclick="this.classList.toggle('off')"></div>
+          <span style="font-size:11px;color:var(--text2);" data-key="on">On</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics-scroll">
+      <div class="metrics-row">
+        <div class="metric-card"><div class="metric-label"><span data-key="totalRevenue">Total Revenue</span></div><div class="metric-val">$48,240</div><div class="metric-change up">▲ 12.4%</div></div>
+        <div class="metric-card"><div class="metric-label"><span data-key="salesRevenue">Sales Revenue</span></div><div class="metric-val">$31,580</div><div class="metric-change up">▲ 8.1%</div></div>
+        <div class="metric-card"><div class="metric-label"><span data-key="subscriptionRev">Subscription Rev.</span></div><div class="metric-val">$12,460</div><div class="metric-change up">▲ 5.3%</div></div>
+        <div class="metric-card"><div class="metric-label"><span>PPV Revenue</span></div><div class="metric-val">$4,200</div><div class="metric-change down">▼ 2.0%</div></div>
+        <div class="metric-card"><div class="metric-label"><span data-key="tipsRevenue">Tips Revenue</span></div><div class="metric-val">$8,750</div><div class="metric-change up">▲ 19.2%</div></div>
+        <div class="metric-card"><div class="metric-label"><span data-key="salesRatio">Sales Ratio</span></div><div class="metric-val">68.4%</div><div class="metric-change up">▲ 3.1%</div></div>
+        <div class="metric-card"><div class="metric-label"><span data-key="monthlyRR">Monthly RR</span></div><div class="metric-val">$12,460</div><div class="metric-change flat">— 0.0%</div></div>
+        <div class="metric-card"><div class="metric-label"><span data-key="totalSpenders">Total Spenders</span></div><div class="metric-val">384</div><div class="metric-change up">▲ 7.5%</div></div>
+        <div class="metric-card"><div class="metric-label"><span data-key="transactions">Transactions</span></div><div class="metric-val">1,842</div><div class="metric-change up">▲ 11.0%</div></div>
+        <div class="metric-card"><div class="metric-label"><span>APC</span></div><div class="metric-val">$26.14</div><div class="metric-change down">▼ 1.2%</div></div>
+        <div class="metric-card"><div class="metric-label"><span>APV</span></div><div class="metric-val">$4.80</div><div class="metric-change up">▲ 4.4%</div></div>
+        <div class="metric-card"><div class="metric-label"><span>ARPPU</span></div><div class="metric-val">$125.62</div><div class="metric-change up">▲ 6.2%</div></div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="section-header">
+      <div class="section-title" data-key="overview">Overview</div>
+      <div class="section-actions" style="display:flex;gap:7px;">
+        <select class="select-sm"><option data-key="20perPage">20 per page</option><option>50</option></select>
+        <button class="btn btn-ghost" style="padding:5px 11px;font-size:12px;">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M4 7h6M6 10h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span data-key="columns">Columns</span>
+        </button>
+        <button class="btn btn-ghost" style="padding:5px 11px;font-size:12px;">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 10V2M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-key="export">Export</span>
+        </button>
+        <a href="accounts.html" class="btn btn-primary" style="padding:5px 11px;font-size:12px;text-decoration:none;">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span data-key="connectAccount">Connect Account</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><span data-key="account">Account</span></th>
+            <th><span data-key="status">Status</span></th>
+            <th><span data-key="totalRevenue">Total Revenue</span></th>
+            <th>PPV</th>
+            <th><span data-key="subs">Subs</span></th>
+            <th><span data-key="fans">Fans</span></th>
+            <th><span data-key="chatter">Chatter</span></th>
+            <th><span data-key="plan">Plan</span></th>
+            <th><span data-key="actions">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="location.href='insights.html'" style="cursor:pointer;">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,0.2);color:#8b84ff;">AV</div><div><div class="account-name">Aurora Voss</div><div class="account-handle">@aurora_voss</div></div></div></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-key="active">Active</span></span></td>
+            <td class="mono pos">$14,820</td><td class="mono">$4,100</td><td class="mono">$8,200</td><td class="mono">342</td>
+            <td style="color:var(--text2);font-size:11.5px;">@mike_c</td>
+            <td><span class="badge badge-purple">Pro</span></td>
+            <td><div class="actions-cell"><button class="action-btn" onclick="event.stopPropagation();location.href='insights.html'"><span data-key="open">Open</span></button></div></td>
+          </tr>
+          <tr onclick="location.href='insights.html'" style="cursor:pointer;">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(34,197,94,0.15);color:#22c55e;">SM</div><div><div class="account-name">Stella Moon</div><div class="account-handle">@stella_moon</div></div></div></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-key="active">Active</span></span></td>
+            <td class="mono pos">$11,340</td><td class="mono">$3,200</td><td class="mono">$5,400</td><td class="mono">287</td>
+            <td style="color:var(--text2);font-size:11.5px;">@anna_k</td>
+            <td><span class="badge badge-purple">Pro</span></td>
+            <td><div class="actions-cell"><button class="action-btn" onclick="event.stopPropagation();location.href='insights.html'"><span data-key="open">Open</span></button></div></td>
+          </tr>
+          <tr onclick="location.href='insights.html'" style="cursor:pointer;">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(245,158,11,0.15);color:#f59e0b;">LR</div><div><div class="account-name">Luna Ray</div><div class="account-handle">@luna_ray</div></div></div></td>
+            <td><span class="badge badge-amber"><span class="badge-dot"></span><span data-key="reconnect">Reconnect</span></span></td>
+            <td class="mono pos">$9,680</td><td class="mono">$2,800</td><td class="mono">$4,100</td><td class="mono">198</td>
+            <td style="color:var(--text2);font-size:11.5px;">@mike_c</td>
+            <td><span class="badge badge-gray">Basic</span></td>
+            <td><div class="actions-cell"><button class="action-btn" style="color:var(--amber);border-color:rgba(245,158,11,0.3);background:var(--amber-bg);" onclick="event.stopPropagation()"><span data-key="reconnect">Reconnect</span></button></div></td>
+          </tr>
+          <tr onclick="location.href='insights.html'" style="cursor:pointer;">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(239,68,68,0.15);color:#ef4444;">NV</div><div><div class="account-name">Nova Vale</div><div class="account-handle">@nova_vale</div></div></div></td>
+            <td><span class="badge badge-red"><span class="badge-dot"></span><span data-key="offline">Offline</span></span></td>
+            <td class="mono">$7,240</td><td class="mono">$1,900</td><td class="mono">$3,800</td><td class="mono">156</td>
+            <td style="color:var(--text2);font-size:11.5px;">—</td>
+            <td><span class="badge badge-gray">Basic</span></td>
+            <td><div class="actions-cell"><button class="action-btn" onclick="event.stopPropagation();location.href='insights.html'"><span data-key="open">Open</span></button></div></td>
+          </tr>
+          <tr onclick="location.href='insights.html'" style="cursor:pointer;">
+            <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,0.15);color:#8b84ff;">IB</div><div><div class="account-name">Ivy Bloom</div><div class="account-handle">@ivy_bloom</div></div></div></td>
+            <td><span class="badge badge-green"><span class="badge-dot"></span><span data-key="active">Active</span></span></td>
+            <td class="mono pos">$5,160</td><td class="mono">$980</td><td class="mono">$2,960</td><td class="mono">121</td>
+            <td style="color:var(--text2);font-size:11.5px;">@anna_k</td>
+            <td><span class="badge badge-purple">Agency</span></td>
+            <td><div class="actions-cell"><button class="action-btn" onclick="event.stopPropagation();location.href='insights.html'"><span data-key="open">Open</span></button></div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span id="pag-text">Showing 5 of 12 accounts</span>
+        <div class="page-btns">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'Dashboard';
+
+const EXTRA = {
+  en: {
+    accounts:'Accounts', teamMembers:'Team Members', totalFans:'Total Fans', thisMonth:'This Month',
+    group:'Group', account:'Account', timeRange:'Time Range', earningType:'Earning Type',
+    compareTo:'Compare to', includeSubscriptions:'Include Subscriptions', on:'On',
+    allGroups:'All Groups', topEarners:'Top Earners', newModels:'New Models',
+    allAccounts:'All Accounts', last7days:'Last 7 days', last30days:'Last 30 days',
+    previousPeriod:'Previous period', totalRevenue:'Total Revenue', salesRevenue:'Sales Revenue',
+    subscriptionRev:'Subscription Rev.', tipsRevenue:'Tips Revenue', salesRatio:'Sales Ratio',
+    monthlyRR:'Monthly RR', totalSpenders:'Total Spenders', transactions:'Transactions',
+    overview:'Overview', columns:'Columns', export:'Export', connectAccount:'Connect Account',
+    status:'Status', subs:'Subs', fans:'Fans', chatter:'Chatter', plan:'Plan', actions:'Actions',
+    active:'Active', reconnect:'Reconnect', offline:'Offline', open:'Open',
+    '20perPage':'20 per page',
+  },
+  ru: {
+    accounts:'Аккаунты', teamMembers:'Команда', totalFans:'Всего фанов', thisMonth:'Этот месяц',
+    group:'Группа', account:'Аккаунт', timeRange:'Период', earningType:'Тип дохода',
+    compareTo:'Сравнить с', includeSubscriptions:'С подписками', on:'Вкл',
+    allGroups:'Все группы', topEarners:'Топ заработок', newModels:'Новые модели',
+    allAccounts:'Все аккаунты', last7days:'7 дней', last30days:'30 дней',
+    previousPeriod:'Предыдущий период', totalRevenue:'Общий доход', salesRevenue:'Продажи',
+    subscriptionRev:'Подписки', tipsRevenue:'Чаевые', salesRatio:'Доля продаж',
+    monthlyRR:'Рекур. доход', totalSpenders:'Плательщики', transactions:'Транзакции',
+    overview:'Обзор', columns:'Колонки', export:'Экспорт', connectAccount:'Добавить аккаунт',
+    status:'Статус', subs:'Подп.', fans:'Фаны', chatter:'Чаттер', plan:'План', actions:'Действия',
+    active:'Активен', reconnect:'Переподключить', offline:'Офлайн', open:'Открыть',
+    '20perPage':'20 на стр.',
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const lang = getLang();
+  const tr = EXTRA[lang];
+  document.querySelectorAll('[data-key]').forEach(el => {
+    if (tr[el.dataset.key]) el.textContent = tr[el.dataset.key];
+  });
+  document.getElementById('org-sub').textContent =
+    lang === 'ru' ? 'Организация · Управление Fanvue' : 'Organization · Fanvue Management';
+  document.getElementById('pag-text').textContent =
+    lang === 'ru' ? 'Показано 5 из 12 аккаунтов' : 'Showing 5 of 12 accounts';
+  window.PAGE_TITLE = lang === 'ru' ? 'Дашборд' : 'Dashboard';
+});
+</script>
+</body>
+</html>
