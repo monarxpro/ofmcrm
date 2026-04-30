@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0b; --bg2: #111113; --bg3: #18181b; --bg4: #1f1f23;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+  --text: #f0f0f0; --text2: #888890; --text3: #555560;
+  --accent: #6c63ff; --accent2: #8b84ff; --accent-bg: rgba(108,99,255,0.12);
+  --green: #22c55e; --green-bg: rgba(34,197,94,0.1);
+  --red: #ef4444; --red-bg: rgba(239,68,68,0.1);
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background glow */
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.login-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  padding: 0 16px;
+}
+
+/* Logo */
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+.login-logo-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--accent);
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  box-shadow: 0 0 24px rgba(108,99,255,0.35);
+}
+.login-logo-text { }
+.login-logo-name { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+.login-logo-sub { font-size: 9.5px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+/* Card */
+.login-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+}
+
+.login-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  margin-bottom: 4px;
+}
+.login-sub {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* Form */
+.form-group {
+  margin-bottom: 14px;
+}
+.form-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.input-wrap {
+  position: relative;
+}
+.input-wrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--text3);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.form-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font);
+  padding: 10px 38px 10px 36px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+}
+.form-input::placeholder { color: var(--text3); }
+
+.eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+.eye-btn:hover { color: var(--text2); }
+.eye-btn svg { width: 14px; height: 14px; }
+
+/* Error */
+.error-box {
+  display: none;
+  background: var(--red-bg);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--red);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.error-box svg { width: 14px; height: 14px; flex-shrink: 0; }
+.error-box.hidden { display: none; }
+
+/* Button */
+.btn-login {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+  box-shadow: 0 4px 20px rgba(108,99,255,0.3);
+  letter-spacing: -0.2px;
+}
+.btn-login:hover {
+  background: #7c74ff;
+  box-shadow: 0 6px 24px rgba(108,99,255,0.4);
+  transform: translateY(-1px);
+}
+.btn-login:active { transform: translateY(0); }
+.btn-login.loading { opacity: 0.7; pointer-events: none; }
+.btn-login svg { width: 14px; height: 14px; }
+
+/* Spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+.btn-login.loading .spinner { display: block; }
+.btn-login.loading .btn-text { display: none; }
+
+/* Divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 16px;
+}
+.login-divider-line { flex: 1; height: 1px; background: var(--border); }
+.login-divider-text { font-size: 10.5px; color: var(--text3); white-space: nowrap; }
+
+/* Remember me */
+.remember-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text2);
+  user-select: none;
+}
+.remember-label input[type=checkbox] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  background: var(--bg3);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.remember-label input[type=checkbox]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.remember-label input[type=checkbox]:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 1px;
+  width: 5px;
+  height: 8px;
+  border: 1.5px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+/* Footer */
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-logo">
+    <div class="login-logo-icon">OFM</div>
+    <div class="login-logo-text">
+      <div class="login-logo-name">OFM CRM</div>
+      <div class="login-logo-sub">Fanvue Management</div>
+    </div>
+  </div>
+
+  <div class="login-card">
+    <div class="login-title" id="lbl-title">Welcome back</div>
+    <div class="login-sub" id="lbl-sub">Sign in to access your CRM dashboard</div>
+
+    <!-- Error -->
+    <div class="error-box hidden" id="error-box">
+      <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v3.5M7 9.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span id="error-text">Invalid login or password</span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" id="lbl-login">Login</label>
+      <div class="input-wrap">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <input
+          class="form-input"
+          type="text"
+          id="input-login"
+          placeholder="your_login"
+          autocomplete="username"
+          spellcheck="false"
+          autocapitalize="none"
+        >
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" id="lbl-password">Password</label>
+      <div class="input-wrap">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M4 7V5a4 4 0 018 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="2" y="7" width="12" height="7" rx="2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="10.5" r="1" fill="currentColor"/></svg>
+        <input
+          class="form-input"
+          type="password"
+          id="input-password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        >
+        <button class="eye-btn" type="button" onclick="togglePassword()" id="eye-btn" title="Show password">
+          <svg id="eye-icon-show" viewBox="0 0 16 16" fill="none"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg>
+          <svg id="eye-icon-hide" viewBox="0 0 16 16" fill="none" style="display:none"><path d="M2 2l12 12M6.5 6.6A2 2 0 0011 10M4.5 4.6C2.8 5.8 1 8 1 8s2.5 5 7 5c1.5 0 2.8-.4 4-1M7 3.1C7.3 3 7.6 3 8 3c4.5 0 7 5 7 5s-.6 1.3-1.7 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="remember-row">
+      <label class="remember-label">
+        <input type="checkbox" id="remember-me" checked>
+        <span id="lbl-remember">Remember me</span>
+      </label>
+    </div>
+
+    <button class="btn-login" id="btn-login" onclick="doLogin()">
+      <div class="spinner"></div>
+      <span class="btn-text" id="lbl-btn">Sign In</span>
+    </button>
+  </div>
+
+  <div class="login-footer" id="lbl-footer">
+    Access restricted. Contact your administrator<br>to get credentials.
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+// Зашитые учётные данные (до подключения БД)
+// Замени на свои перед деплоем
+const CREDENTIALS = [
+  { login: 'admin',   password: 'ofmcrm2026!', role: 'admin'   },
+  { login: 'manager', password: 'manager123',  role: 'manager' },
+];
+
+const COOKIE_NAME   = 'ofmcrm_auth';
+const COOKIE_DAYS   = 7;    // сколько дней живёт кука при "Remember me"
+const COOKIE_HOURS  = 8;    // часов при выключенном "Remember me"
+const REDIRECT_TO   = 'dashboard.html';
+// ───────────────────────────────────────────────────────────────────────────
+
+const TR = {
+  en: {
+    title: 'Welcome back', sub: 'Sign in to access your CRM dashboard',
+    login: 'Login', password: 'Password', remember: 'Remember me',
+    btn: 'Sign In', error: 'Invalid login or password',
+    footer: 'Access restricted. Contact your administrator\nto get credentials.'
+  },
+  ru: {
+    title: 'Добро пожаловать', sub: 'Войдите в CRM-систему',
+    login: 'Логин', password: 'Пароль', remember: 'Запомнить меня',
+    btn: 'Войти', error: 'Неверный логин или пароль',
+    footer: 'Доступ ограничен. Обратитесь к администратору\nдля получения данных.'
+  }
+};
+
+function getLang() {
+  return localStorage.getItem('ofmcrm_lang') || 'en';
+}
+
+// Apply translations
+(function applyLang() {
+  const l = getLang(), t = TR[l];
+  document.getElementById('lbl-title').textContent    = t.title;
+  document.getElementById('lbl-sub').textContent      = t.sub;
+  document.getElementById('lbl-login').textContent    = t.login;
+  document.getElementById('lbl-password').textContent = t.password;
+  document.getElementById('lbl-remember').textContent = t.remember;
+  document.getElementById('lbl-btn').textContent      = t.btn;
+  document.getElementById('lbl-footer').innerHTML     = t.footer.replace('\n','<br>');
+})();
+
+// Cookie helpers
+function setCookie(name, value, days) {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
+}
+function getCookie(name) {
+  const v = document.cookie.split('; ').find(r => r.startsWith(name + '='));
+  return v ? decodeURIComponent(v.split('=')[1]) : null;
+}
+function deleteCookie(name) {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Strict`;
+}
+
+// Check if already logged in → redirect
+(function checkAuth() {
+  const token = getCookie(COOKIE_NAME);
+  if (token) {
+    try {
+      const data = JSON.parse(atob(token));
+      if (data && data.login && data.ts) {
+        window.location.replace(REDIRECT_TO);
+      }
+    } catch(e) {
+      deleteCookie(COOKIE_NAME);
+    }
+  }
+})();
+
+// Toggle password visibility
+function togglePassword() {
+  const input = document.getElementById('input-password');
+  const isPass = input.type === 'password';
+  input.type = isPass ? 'text' : 'password';
+  document.getElementById('eye-icon-show').style.display = isPass ? 'none' : '';
+  document.getElementById('eye-icon-hide').style.display = isPass ? '' : 'none';
+}
+
+// Show error
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  document.getElementById('error-text').textContent = msg || TR[getLang()].error;
+  box.classList.remove('hidden');
+  // Shake animation
+  box.style.animation = 'none';
+  box.offsetHeight; // reflow
+  box.style.animation = 'shake 0.35s ease';
+}
+function hideError() {
+  document.getElementById('error-box').classList.add('hidden');
+}
+
+// Add shake keyframes dynamically
+const style = document.createElement('style');
+style.textContent = `@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}`;
+document.head.appendChild(style);
+
+// Login logic
+function doLogin() {
+  hideError();
+
+  const login    = document.getElementById('input-login').value.trim();
+  const password = document.getElementById('input-password').value;
+  const remember = document.getElementById('remember-me').checked;
+
+  if (!login || !password) {
+    showError(TR[getLang()].error);
+    return;
+  }
+
+  const btn = document.getElementById('btn-login');
+  btn.classList.add('loading');
+
+  // Small delay for UX realism
+  setTimeout(() => {
+    const match = CREDENTIALS.find(c => c.login === login && c.password === password);
+
+    if (match) {
+      const payload = {
+        login: match.login,
+        role:  match.role,
+        ts:    Date.now()
+      };
+      const token = btoa(JSON.stringify(payload));
+      const days  = remember ? COOKIE_DAYS : (COOKIE_HOURS / 24);
+      setCookie(COOKIE_NAME, token, days);
+      window.location.replace(REDIRECT_TO);
+    } else {
+      btn.classList.remove('loading');
+      showError(TR[getLang()].error);
+      document.getElementById('input-password').value = '';
+      document.getElementById('input-password').focus();
+    }
+  }, 600);
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// Clear error on input
+['input-login','input-password'].forEach(id => {
+  document.getElementById(id).addEventListener('input', hideError);
+});
+
+// Focus login field on load
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('input-login').focus();
+});
+</script>
+</body>
+</html>

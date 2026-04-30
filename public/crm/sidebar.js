@@ -15,7 +15,7 @@ const TRANSLATIONS = {
     models: 'Models', modelCards: 'Model Cards', knowledgeBase: 'Knowledge Base',
     organization: 'Organization', teamMembers: 'Team Members', settings: 'Settings',
     helpCenter: 'Help Center', changeLog: 'Change Log', myProfile: 'My Profile',
-    fanvueManagement: 'Fanvue Management',
+    fanvueManagement: 'Fanvue Management', aiChat: 'AI Chat',
   },
   ru: {
     analytics: 'Аналитика', dashboard: 'Дашборд', accountsOverview: 'Обзор аккаунтов',
@@ -30,7 +30,7 @@ const TRANSLATIONS = {
     models: 'Модели', modelCards: 'Карточки моделей', knowledgeBase: 'База знаний',
     organization: 'Организация', teamMembers: 'Участники команды', settings: 'Настройки',
     helpCenter: 'Помощь', changeLog: 'Изменения', myProfile: 'Мой профиль',
-    fanvueManagement: 'Управление Fanvue',
+    fanvueManagement: 'Управление Fanvue', aiChat: 'AI Чат',
   }
 };
 
@@ -59,10 +59,11 @@ const NAV = [
   {
     section: 'automations',
     items: [
+      { key: 'aiChat', href: 'ai-chat.html', icon: 'ai', badge: 'New' },
       { key: 'autoMessages', href: 'auto-messages.html', icon: 'chat' },
       { key: 'massMessages', href: 'mass-messages.html', icon: 'mass' },
       { key: 'dynamicLists', href: 'dynamic-lists.html', icon: 'lock' },
-      { key: 'fanRetention', href: 'fan-retention.html', icon: 'star', badge: 'New' },
+      { key: 'fanRetention', href: 'fan-retention.html', icon: 'star' },
       { key: 'mediaHub', href: 'media-hub.html', icon: 'grid' },
     ]
   },
@@ -112,6 +113,7 @@ const ICONS = {
   'info': `<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
   'changelog': `<svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10v8a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM1 4h14" stroke="currentColor" stroke-width="1.3"/><path d="M6 2h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
   'profile': `<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+  'ai': `<svg viewBox="0 0 16 16" fill="none"><path d="M8 2a2 2 0 012 2v1h1a2 2 0 010 4h-1v1a2 2 0 01-4 0v-1H5a2 2 0 010-4h1V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>`,
   'chevron': `<svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
   'bell': `<svg viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 015 5v2l1.5 2.5h-13L3 9V7a5 5 0 015-5zM6 13.5a2 2 0 004 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`,
   'search': `<svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
