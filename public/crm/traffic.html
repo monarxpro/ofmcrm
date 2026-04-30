@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Traffic Metrics</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.filter-chips-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:11.5px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.filter-chip:hover{border-color:var(--border2);color:var(--text)}
+.filter-chip.active{background:var(--accent-bg);border-color:rgba(108,99,255,.3);color:var(--accent2)}
+.filter-chip-x{display:flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.08);font-size:10px;line-height:1;color:var(--text3);flex-shrink:0}
+.filter-chip-x:hover{background:rgba(255,255,255,.15);color:var(--text)}
+
+.adv-filters{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.adv-filter-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;font-size:11.5px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.adv-filter-btn:hover{border-color:var(--border2);color:var(--text)}
+.adv-filter-btn svg{width:11px;height:11px}
+.adv-filter-sep{width:1px;height:20px;background:var(--border)}
+
+.toggle-row{display:flex;align-items:center;gap:14px;margin-left:auto}
+.toggle-item{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text2);cursor:pointer;user-select:none}
+
+.tab-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:16px;padding:0 5px;border-radius:4px;font-size:9.5px;font-weight:600;background:var(--bg4);color:var(--text3);margin-left:5px}
+.tab.active .tab-count{background:var(--accent-bg);color:var(--accent2)}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:14px;text-align:center}
+.empty-icon{width:80px;height:80px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:38px}
+.empty-title{font-size:15px;font-weight:600;color:var(--text)}
+.empty-desc{font-size:12.5px;color:var(--text2);max-width:280px;line-height:1.6}
+
+.metrics-kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color .15s}
+.kpi-card:hover{border-color:var(--border2)}
+.kpi-label{font-size:10px;color:var(--text2);margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.kpi-val{font-size:22px;font-weight:700;font-family:var(--mono);letter-spacing:-1px}
+.kpi-change{font-size:10.5px;margin-top:4px;display:flex;align-items:center;gap:3px}
+
+.traffic-table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.traffic-th-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)}
+
+.link-cell{display:flex;align-items:center;gap:9px}
+.link-icon{width:26px;height:26px;border-radius:6px;background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.link-icon svg{width:12px;height:12px;color:var(--text2)}
+.link-url{font-size:12px;color:var(--accent2);font-family:var(--mono)}
+.link-label{font-size:11px;color:var(--text2);margin-top:1px}
+
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite;border-radius:5px;height:12px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.shared-table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+
+.report-link-cell{display:flex;align-items:center;gap:9px}
+.report-link-icon{width:28px;height:28px;border-radius:7px;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.report-link-icon svg{width:13px;height:13px;color:var(--accent2)}
+.expiry-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:500}
+.expiry-active{background:var(--green-bg);color:var(--green)}
+.expiry-soon{background:var(--amber-bg);color:var(--amber)}
+.expiry-expired{background:var(--red-bg);color:var(--red)}
+
+/* Modal */
+.date-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+
+    <div class="page-header">
+      <div class="page-title" id="page-title">Traffic Metrics</div>
+      <button class="btn btn-ghost" id="btn-export">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M7 10V2M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="lbl-export">Export</span>
+      </button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" id="tab-traffic" onclick="switchTab('traffic')">
+        <span id="lbl-tab-traffic">Traffic Metrics</span>
+      </div>
+      <div class="tab" id="tab-shared" onclick="switchTab('shared')">
+        <span id="lbl-tab-shared">Shared Reports</span>
+        <span class="badge badge-purple" style="margin-left:6px;font-size:9px;padding:1px 6px">Beta</span>
+      </div>
+    </div>
+
+    <!-- ===== TRAFFIC METRICS TAB ===== -->
+    <div id="pane-traffic">
+
+      <!-- Advanced filter chips (active filters) -->
+      <div class="filter-chips-row" id="active-filters">
+        <div class="filter-chip">
+          <svg viewBox="0 0 12 12" fill="none" style="width:11px;height:11px"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 6h5M3.5 4h5M3.5 8h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span id="fc-subscription">Fan Subscription</span>
+          <span style="font-size:10px;color:var(--text3)">Mar 31 – Apr 30, 2026</span>
+          <span class="filter-chip-x" onclick="removeFilter(this)">✕</span>
+        </div>
+        <div class="filter-chip">
+          <svg viewBox="0 0 12 12" fill="none" style="width:11px;height:11px"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6l1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span id="fc-earnings">Earnings</span>
+          <span style="font-size:10px;color:var(--text3)">Mar 31 – Apr 30, 2026</span>
+          <span class="filter-chip-x" onclick="removeFilter(this)">✕</span>
+        </div>
+        <div class="filter-chip">
+          <svg viewBox="0 0 12 12" fill="none" style="width:11px;height:11px"><rect x="1" y="2" width="10" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 1v2M8 1v2M1 5h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span id="fc-created">Created at</span>
+          <span style="font-size:10px;color:var(--text3)">Jan 30 – Apr 30, 2026</span>
+          <span class="filter-chip-x" onclick="removeFilter(this)">✕</span>
+        </div>
+        <div class="filter-chip">
+          <span id="fc-attribution">Assign Earnings to</span>
+          <span style="font-size:10px;font-weight:500;color:var(--text)">Rolling Attribution</span>
+          <svg viewBox="0 0 10 6" fill="none" style="width:10px;height:10px"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="filter-chip">
+          <span id="fc-earningtype">Earning Type</span>
+          <span style="font-size:10px;font-weight:500;color:var(--text)">Net</span>
+          <svg viewBox="0 0 10 6" fill="none" style="width:10px;height:10px"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="filter-chip">
+          <span id="fc-tags">Tags</span>
+          <svg viewBox="0 0 10 6" fill="none" style="width:10px;height:10px"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <button class="btn btn-ghost" style="padding:5px 11px;font-size:11.5px" onclick="openFilterModal()">
+          <svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><path d="M2 4h10M4 7h6M6 10h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span id="lbl-addfilter">Add Filter</span>
+        </button>
+      </div>
+
+      <!-- Sub-tabs + toggles -->
+      <div class="adv-filters">
+        <div class="adv-filter-btn active" id="subtab-all" onclick="switchSubtab('all')">
+          <span id="lbl-alltraffic">All Traffic</span>
+          <span class="tab-count">0</span>
+        </div>
+        <div class="adv-filter-btn" id="subtab-tracking" onclick="switchSubtab('tracking')">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M3 8h8M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="lbl-trackinglinks">Tracking Links</span>
+          <span class="tab-count">0</span>
+        </div>
+        <div class="adv-filter-btn" id="subtab-trial" onclick="switchSubtab('trial')">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M4 2h6a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M5 5h4M5 7h4M5 9h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span id="lbl-triallinks">Trial Links</span>
+          <span class="tab-count">0</span>
+        </div>
+        <div class="adv-filter-sep"></div>
+        <div class="toggle-row">
+          <label class="toggle-item">
+            <div class="toggle" id="toggle-zero" onclick="toggleSwitch(this)"></div>
+            <span id="lbl-hidezero">Hide Zero Earnings</span>
+          </label>
+          <label class="toggle-item">
+            <div class="toggle off" id="toggle-deleted" onclick="toggleSwitch(this)"></div>
+            <span id="lbl-showdeleted">Show Deleted</span>
+          </label>
+        </div>
+        <div class="search-wrap" style="margin-left:auto;width:200px">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input type="text" id="search-input" placeholder="Search...">
+        </div>
+        <button class="icon-action" title="Columns">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M1 3h12M1 7h12M1 11h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="traffic-empty">
+        <div class="empty-icon">🐱</div>
+        <div class="empty-title" id="lbl-nolinks">No Links Yet</div>
+        <div class="empty-desc" id="lbl-nolinks-desc">Create your first links in Fanvue to start measuring traffic</div>
+        <button class="btn btn-primary" onclick="openNewLinkModal()">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="lbl-createlink">Create Link</span>
+        </button>
+      </div>
+
+      <!-- Traffic Table (hidden when empty) -->
+      <div id="traffic-table" style="display:none">
+        <div class="metrics-kpi">
+          <div class="kpi-card">
+            <div class="kpi-label" id="kpi-clicks">Clicks</div>
+            <div class="kpi-val">4,821</div>
+            <div class="kpi-change up">▲ 14.2%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label" id="kpi-subs">New Subs</div>
+            <div class="kpi-val">138</div>
+            <div class="kpi-change up">▲ 8.7%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label" id="kpi-ctr">CTR</div>
+            <div class="kpi-val">2.86%</div>
+            <div class="kpi-change down">▼ 1.1%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label" id="kpi-earnings">Earnings</div>
+            <div class="kpi-val pos">$3,240</div>
+            <div class="kpi-change up">▲ 19.4%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label" id="kpi-epc">EPC</div>
+            <div class="kpi-val">$0.67</div>
+            <div class="kpi-change flat">— 0.0%</div>
+          </div>
+        </div>
+        <div class="traffic-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th id="th-link">Link</th>
+                <th id="th-account">Account</th>
+                <th id="th-clicks">Clicks</th>
+                <th id="th-newsubs">New Subs</th>
+                <th id="th-renewals">Renewals</th>
+                <th id="th-earnings">Earnings</th>
+                <th id="th-epc">EPC</th>
+                <th id="th-created2">Created</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="link-cell"><div class="link-icon"><svg viewBox="0 0 14 14" fill="none"><path d="M6 3H3a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8" stroke="currentColor" stroke-width="1.3"/><path d="M9 1h4m0 0v4m0-4L7 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div><div><div class="link-url">onlyfans.com/aurora_v?ref=ig1</div><div class="link-label">Instagram BIO</div></div></div></td>
+                <td><div class="account-cell"><div class="account-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">AV</div><div><div class="account-name">Aurora Voss</div><div class="account-handle">@aurora_voss</div></div></div></td>
+                <td class="mono">1,842</td>
+                <td class="mono">54</td>
+                <td class="mono">120</td>
+                <td class="mono pos">$1,240</td>
+                <td class="mono">$0.67</td>
+                <td style="color:var(--text2)">Apr 1</td>
+                <td><div class="actions-cell"><button class="action-btn">Copy</button><button class="icon-action"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="11" cy="7" r="1" fill="currentColor"/><circle cx="3" cy="7" r="1" fill="currentColor"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td><div class="link-cell"><div class="link-icon"><svg viewBox="0 0 14 14" fill="none"><path d="M6 3H3a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8" stroke="currentColor" stroke-width="1.3"/><path d="M9 1h4m0 0v4m0-4L7 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div><div><div class="link-url">onlyfans.com/stella_m?ref=tg</div><div class="link-label">Telegram Channel</div></div></div></td>
+                <td><div class="account-cell"><div class="account-ava" style="background:rgba(34,197,94,.15);color:#22c55e">SM</div><div><div class="account-name">Stella Moon</div><div class="account-handle">@stella_moon</div></div></div></td>
+                <td class="mono">982</td>
+                <td class="mono">31</td>
+                <td class="mono">88</td>
+                <td class="mono pos">$980</td>
+                <td class="mono">$1.00</td>
+                <td style="color:var(--text2)">Apr 8</td>
+                <td><div class="actions-cell"><button class="action-btn">Copy</button><button class="icon-action"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="11" cy="7" r="1" fill="currentColor"/><circle cx="3" cy="7" r="1" fill="currentColor"/></svg></button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== SHARED REPORTS TAB ===== -->
+    <div id="pane-shared" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:13px;color:var(--text2)" id="lbl-shared-desc">Share traffic reports with clients or team members via a secure link.</div>
+        </div>
+        <button class="btn btn-primary" onclick="openNewReportModal()">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="lbl-newreport">New Shared Report</span>
+        </button>
+      </div>
+
+      <div class="shared-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th id="th-reportlink">Report Link</th>
+              <th id="th-created3">Creation Date</th>
+              <th id="th-expiry">Expiration Date</th>
+              <th id="th-campaigns">Campaigns</th>
+              <th id="th-metrics">Metrics</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="shared-tbody">
+            <!-- Skeleton rows -->
+            <tr><td><div class="report-link-cell"><div class="report-link-icon"><svg viewBox="0 0 14 14" fill="none"><path d="M6 3H3a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8" stroke="currentColor" stroke-width="1.3"/><path d="M9 1h4m0 0v4m0-4L7 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div><div><div class="skeleton" style="width:220px;margin-bottom:5px"></div><div class="skeleton" style="width:100px;height:10px"></div></div></div></td><td><div class="skeleton" style="width:80px"></div></td><td><div class="skeleton" style="width:80px"></div></td><td><div class="skeleton" style="width:140px"></div></td><td><div class="skeleton" style="width:120px"></div></td><td></td></tr>
+            <tr><td><div class="report-link-cell"><div class="report-link-icon"><svg viewBox="0 0 14 14" fill="none"><path d="M6 3H3a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8" stroke="currentColor" stroke-width="1.3"/><path d="M9 1h4m0 0v4m0-4L7 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div><div><div class="skeleton" style="width:180px;margin-bottom:5px"></div><div class="skeleton" style="width:90px;height:10px"></div></div></div></td><td><div class="skeleton" style="width:80px"></div></td><td><div class="skeleton" style="width:80px"></div></td><td><div class="skeleton" style="width:160px"></div></td><td><div class="skeleton" style="width:100px"></div></td><td></td></tr>
+            <tr><td><div class="report-link-cell"><div class="report-link-icon"><svg viewBox="0 0 14 14" fill="none"><path d="M6 3H3a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1V8" stroke="currentColor" stroke-width="1.3"/><path d="M9 1h4m0 0v4m0-4L7 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div><div><div class="skeleton" style="width:200px;margin-bottom:5px"></div><div class="skeleton" style="width:110px;height:10px"></div></div></div></td><td><div class="skeleton" style="width:80px"></div></td><td><div class="skeleton" style="width:80px"></div></td><td><div class="skeleton" style="width:130px"></div></td><td><div class="skeleton" style="width:140px"></div></td><td></td></tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <span id="lbl-showing">Showing 0 reports</span>
+          <div class="page-btns">
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- NEW LINK MODAL -->
+<div class="overlay" id="modal-link">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="ml-title">Create Tracking Link</div>
+        <div class="modal-sub" id="ml-sub">Generate a new trackable link for your Fanvue account</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('modal-link')">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" id="ml-lbl-account">Account</label>
+        <select class="form-select">
+          <option>Aurora Voss (@aurora_voss)</option>
+          <option>Stella Moon (@stella_moon)</option>
+          <option>Luna Ray (@luna_ray)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="ml-lbl-type">Link Type</label>
+        <select class="form-select" id="link-type-sel" onchange="updateLinkType()">
+          <option value="tracking" id="lopt-tracking">Tracking Link</option>
+          <option value="trial" id="lopt-trial">Trial Link</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="ml-lbl-label">Label / Campaign Name</label>
+        <input class="form-input" type="text" placeholder="e.g. Instagram BIO, Telegram, Reddit">
+      </div>
+      <div class="form-group" id="trial-days-group" style="display:none">
+        <label class="form-label" id="ml-lbl-days">Trial Days</label>
+        <input class="form-input" type="number" value="7" min="1" max="30">
+        <div class="form-hint" id="ml-hint-days">Fan gets free access for this many days before being charged</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="ml-lbl-tags">Tags (optional)</label>
+        <input class="form-input" type="text" placeholder="instagram, organic, promo...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-link')" id="ml-cancel">Cancel</button>
+      <button class="btn btn-primary" id="ml-create">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Create Link
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW SHARED REPORT MODAL -->
+<div class="overlay" id="modal-report">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="mr-title">New Shared Report</div>
+        <div class="modal-sub" id="mr-sub">Create a shareable traffic report for clients or partners</div>
+      </div>
+      <div class="modal-close" onclick="closeModal('modal-report')">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" id="mr-lbl-name">Report Name</label>
+        <input class="form-input" type="text" placeholder="e.g. April Client Report">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="mr-lbl-campaigns">Include Campaigns</label>
+        <select class="form-select" multiple style="height:90px;padding:6px 10px">
+          <option>Aurora Voss — Instagram BIO</option>
+          <option>Stella Moon — Telegram</option>
+          <option>Luna Ray — Reddit</option>
+        </select>
+        <div class="form-hint" id="mr-hint-campaigns">Hold Ctrl / Cmd to select multiple</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="mr-lbl-metrics">Visible Metrics</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" checked> Clicks</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" checked> New Subs</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox"> Earnings</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox"> EPC</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" checked> CTR</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="mr-lbl-expiry">Expiration Date</label>
+        <input class="form-input" type="date" value="2026-05-31">
+        <div class="form-hint" id="mr-hint-expiry">Leave blank for no expiration</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-report')" id="mr-cancel">Cancel</button>
+      <button class="btn btn-primary" id="mr-create">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Create Report
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'Traffic Metrics';
+
+const TR = {
+  en:{
+    title:'Traffic Metrics',export:'Export',tabTraffic:'Traffic Metrics',tabShared:'Shared Reports',
+    fcSubscription:'Fan Subscription',fcEarnings:'Earnings',fcCreated:'Created at',
+    fcAttribution:'Assign Earnings to',fcEarningType:'Earning Type',fcTags:'Tags',addFilter:'Add Filter',
+    allTraffic:'All Traffic',trackingLinks:'Tracking Links',trialLinks:'Trial Links',
+    hideZero:'Hide Zero Earnings',showDeleted:'Show Deleted',
+    noLinks:'No Links Yet',noLinksDesc:'Create your first links in Fanvue to start measuring traffic',
+    createLink:'Create Link',
+    kpiClicks:'Clicks',kpiSubs:'New Subs',kpiCtr:'CTR',kpiEarnings:'Earnings',kpiEpc:'EPC',
+    thLink:'Link',thAccount:'Account',thClicks:'Clicks',thNewSubs:'New Subs',thRenewals:'Renewals',
+    thEarnings:'Earnings',thEpc:'EPC',thCreated:'Created',
+    sharedDesc:'Share traffic reports with clients or team members via a secure link.',
+    newReport:'New Shared Report',thReportLink:'Report Link',thCreated3:'Creation Date',
+    thExpiry:'Expiration Date',thCampaigns:'Campaigns',thMetrics:'Metrics',showing:'Showing 0 reports',
+    mlTitle:'Create Tracking Link',mlSub:'Generate a new trackable link for your Fanvue account',
+    mlAccount:'Account',mlType:'Link Type',mlLabel:'Label / Campaign Name',mlDays:'Trial Days',
+    mlHintDays:'Fan gets free access for this many days before being charged',
+    mlTags:'Tags (optional)',mlCancel:'Cancel',mlCreate:'Create Link',
+    loptTracking:'Tracking Link',loptTrial:'Trial Link',
+    mrTitle:'New Shared Report',mrSub:'Create a shareable traffic report for clients or partners',
+    mrName:'Report Name',mrCampaigns:'Include Campaigns',mrHintCampaigns:'Hold Ctrl / Cmd to select multiple',
+    mrMetrics:'Visible Metrics',mrExpiry:'Expiration Date',mrHintExpiry:'Leave blank for no expiration',
+    mrCancel:'Cancel',mrCreate:'Create Report'
+  },
+  ru:{
+    title:'Метрики трафика',export:'Экспорт',tabTraffic:'Метрики трафика',tabShared:'Общие отчёты',
+    fcSubscription:'Подписка фана',fcEarnings:'Доходы',fcCreated:'Создано',
+    fcAttribution:'Атрибуция',fcEarningType:'Тип дохода',fcTags:'Теги',addFilter:'Фильтр',
+    allTraffic:'Весь трафик',trackingLinks:'Трекинг-ссылки',trialLinks:'Пробные ссылки',
+    hideZero:'Скрыть нулевые',showDeleted:'Показать удалённые',
+    noLinks:'Нет ссылок',noLinksDesc:'Создайте первые ссылки в Fanvue для отслеживания трафика',
+    createLink:'Создать ссылку',
+    kpiClicks:'Клики',kpiSubs:'Новые подписки',kpiCtr:'CTR',kpiEarnings:'Доходы',kpiEpc:'EPC',
+    thLink:'Ссылка',thAccount:'Аккаунт',thClicks:'Клики',thNewSubs:'Новые подп.',thRenewals:'Продления',
+    thEarnings:'Доходы',thEpc:'EPC',thCreated:'Создано',
+    sharedDesc:'Делитесь отчётами с клиентами или командой через защищённую ссылку.',
+    newReport:'Новый отчёт',thReportLink:'Ссылка на отчёт',thCreated3:'Дата создания',
+    thExpiry:'Дата истечения',thCampaigns:'Кампании',thMetrics:'Метрики',showing:'Показано 0 отчётов',
+    mlTitle:'Создать ссылку',mlSub:'Создайте новую трекинг-ссылку для аккаунта Fanvue',
+    mlAccount:'Аккаунт',mlType:'Тип ссылки',mlLabel:'Название / кампания',mlDays:'Дней пробного доступа',
+    mlHintDays:'Фан получает бесплатный доступ на это количество дней',
+    mlTags:'Теги (необязательно)',mlCancel:'Отмена',mlCreate:'Создать',
+    loptTracking:'Трекинг-ссылка',loptTrial:'Пробная ссылка',
+    mrTitle:'Новый общий отчёт',mrSub:'Создайте ссылку для просмотра трафика клиентами',
+    mrName:'Название отчёта',mrCampaigns:'Включить кампании',mrHintCampaigns:'Удержите Ctrl / Cmd для выбора нескольких',
+    mrMetrics:'Видимые метрики',mrExpiry:'Дата истечения',mrHintExpiry:'Оставьте пустым — без ограничений',
+    mrCancel:'Отмена',mrCreate:'Создать отчёт'
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const l = getLang(), t = TR[l];
+  document.getElementById('page-title').textContent = t.title;
+  document.getElementById('lbl-export').textContent = t.export;
+  document.getElementById('lbl-tab-traffic').textContent = t.tabTraffic;
+  document.getElementById('lbl-tab-shared').textContent = t.tabShared;
+  document.getElementById('fc-subscription').textContent = t.fcSubscription;
+  document.getElementById('fc-earnings').textContent = t.fcEarnings;
+  document.getElementById('fc-created').textContent = t.fcCreated;
+  document.getElementById('fc-attribution').textContent = t.fcAttribution;
+  document.getElementById('fc-earningtype').textContent = t.fcEarningType;
+  document.getElementById('fc-tags').textContent = t.fcTags;
+  document.getElementById('lbl-addfilter').textContent = t.addFilter;
+  document.getElementById('lbl-alltraffic').textContent = t.allTraffic;
+  document.getElementById('lbl-trackinglinks').textContent = t.trackingLinks;
+  document.getElementById('lbl-triallinks').textContent = t.trialLinks;
+  document.getElementById('lbl-hidezero').textContent = t.hideZero;
+  document.getElementById('lbl-showdeleted').textContent = t.showDeleted;
+  document.getElementById('lbl-nolinks').textContent = t.noLinks;
+  document.getElementById('lbl-nolinks-desc').textContent = t.noLinksDesc;
+  document.getElementById('lbl-createlink').textContent = t.createLink;
+  document.getElementById('kpi-clicks').textContent = t.kpiClicks;
+  document.getElementById('kpi-subs').textContent = t.kpiSubs;
+  document.getElementById('kpi-ctr').textContent = t.kpiCtr;
+  document.getElementById('kpi-earnings').textContent = t.kpiEarnings;
+  document.getElementById('kpi-epc').textContent = t.kpiEpc;
+  document.getElementById('th-link').textContent = t.thLink;
+  document.getElementById('th-account').textContent = t.thAccount;
+  document.getElementById('th-clicks').textContent = t.thClicks;
+  document.getElementById('th-newsubs').textContent = t.thNewSubs;
+  document.getElementById('th-renewals').textContent = t.thRenewals;
+  document.getElementById('th-earnings').textContent = t.thEarnings;
+  document.getElementById('th-epc').textContent = t.thEpc;
+  document.getElementById('th-created2').textContent = t.thCreated;
+  document.getElementById('lbl-shared-desc').textContent = t.sharedDesc;
+  document.getElementById('lbl-newreport').textContent = t.newReport;
+  document.getElementById('th-reportlink').textContent = t.thReportLink;
+  document.getElementById('th-created3').textContent = t.thCreated3;
+  document.getElementById('th-expiry').textContent = t.thExpiry;
+  document.getElementById('th-campaigns').textContent = t.thCampaigns;
+  document.getElementById('th-metrics').textContent = t.thMetrics;
+  document.getElementById('lbl-showing').textContent = t.showing;
+  document.getElementById('ml-title').textContent = t.mlTitle;
+  document.getElementById('ml-sub').textContent = t.mlSub;
+  document.getElementById('ml-lbl-account').textContent = t.mlAccount;
+  document.getElementById('ml-lbl-type').textContent = t.mlType;
+  document.getElementById('ml-lbl-label').textContent = t.mlLabel;
+  document.getElementById('ml-lbl-days').textContent = t.mlDays;
+  document.getElementById('ml-hint-days').textContent = t.mlHintDays;
+  document.getElementById('ml-lbl-tags').textContent = t.mlTags;
+  document.getElementById('ml-cancel').textContent = t.mlCancel;
+  document.getElementById('ml-create').textContent = t.mlCreate;
+  document.getElementById('lopt-tracking').textContent = t.loptTracking;
+  document.getElementById('lopt-trial').textContent = t.loptTrial;
+  document.getElementById('mr-title').textContent = t.mrTitle;
+  document.getElementById('mr-sub').textContent = t.mrSub;
+  document.getElementById('mr-lbl-name').textContent = t.mrName;
+  document.getElementById('mr-lbl-campaigns').textContent = t.mrCampaigns;
+  document.getElementById('mr-hint-campaigns').textContent = t.mrHintCampaigns;
+  document.getElementById('mr-lbl-metrics').textContent = t.mrMetrics;
+  document.getElementById('mr-lbl-expiry').textContent = t.mrExpiry;
+  document.getElementById('mr-hint-expiry').textContent = t.mrHintExpiry;
+  document.getElementById('mr-cancel').textContent = t.mrCancel;
+  document.getElementById('mr-create').textContent = t.mrCreate;
+  window.PAGE_TITLE = t.title;
+
+  // Demo: show table if data exists (toggle to true to test)
+  const HAS_DATA = false;
+  if (HAS_DATA) {
+    document.getElementById('traffic-empty').style.display = 'none';
+    document.getElementById('traffic-table').style.display = 'block';
+  }
+});
+
+function switchTab(tab) {
+  document.getElementById('pane-traffic').style.display = tab === 'traffic' ? '' : 'none';
+  document.getElementById('pane-shared').style.display = tab === 'shared' ? '' : 'none';
+  document.getElementById('tab-traffic').classList.toggle('active', tab === 'traffic');
+  document.getElementById('tab-shared').classList.toggle('active', tab === 'shared');
+}
+
+function switchSubtab(sub) {
+  ['all','tracking','trial'].forEach(s => {
+    document.getElementById('subtab-' + s).classList.toggle('active', s === sub);
+  });
+}
+
+function toggleSwitch(el) {
+  el.classList.toggle('off');
+}
+
+function removeFilter(btn) {
+  btn.closest('.filter-chip').remove();
+}
+
+function openModal(id) {
+  document.getElementById(id || 'modal-link').classList.add('open');
+}
+function openNewLinkModal() { openModal('modal-link'); }
+function openNewReportModal() { openModal('modal-report'); }
+function openFilterModal() { openModal('modal-link'); }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function updateLinkType() {
+  const isTrial = document.getElementById('link-type-sel').value === 'trial';
+  document.getElementById('trial-days-group').style.display = isTrial ? '' : 'none';
+}
+
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
