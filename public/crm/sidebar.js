@@ -5,7 +5,6 @@ const TRANSLATIONS = {
   en: {
     analytics: 'Analytics', dashboard: 'Dashboard', accountsOverview: 'Accounts Overview',
     accountInsights: 'Account Insights', trafficMetrics: 'Traffic Metrics',
-    trackingLinks: 'Tracking Links', trialLinks: 'Trial Links',
     teamPerformance: 'Team Performance', chattingMetrics: 'Chatting Metrics',
     chattingShifts: 'Chatting Shifts', messageTracker: 'Message Tracker',
     messageGuard: 'Message Guard', messageTemplates: 'Message Templates',
@@ -14,13 +13,12 @@ const TRANSLATIONS = {
     fanRetention: 'Fan Retention', mediaHub: 'Media Hub',
     models: 'Models', modelCards: 'Model Cards', knowledgeBase: 'Knowledge Base',
     organization: 'Organization', teamMembers: 'Team Members', settings: 'Settings',
-    helpCenter: 'Help Center', changeLog: 'Change Log', myProfile: 'My Profile',
-    fanvueManagement: 'Fanvue Management', aiChat: 'AI Chat',
+    myProfile: 'My Profile', rolesAccess: 'Roles & Access', tgPosting: 'TG Group Posting',
+    fanvueManagement: 'Fanvue Management', aiChat: 'AI Chat', logout: 'Logout',
   },
   ru: {
     analytics: 'Аналитика', dashboard: 'Дашборд', accountsOverview: 'Обзор аккаунтов',
     accountInsights: 'Инсайты', trafficMetrics: 'Метрики трафика',
-    trackingLinks: 'Трекинг ссылки', trialLinks: 'Пробные ссылки',
     teamPerformance: 'Команда', chattingMetrics: 'Метрики чата',
     chattingShifts: 'Смены чаттеров', messageTracker: 'Трекер сообщений',
     messageGuard: 'Защита сообщений', messageTemplates: 'Шаблоны',
@@ -29,8 +27,8 @@ const TRANSLATIONS = {
     fanRetention: 'Удержание фанов', mediaHub: 'Медиа-хаб',
     models: 'Модели', modelCards: 'Карточки моделей', knowledgeBase: 'База знаний',
     organization: 'Организация', teamMembers: 'Участники команды', settings: 'Настройки',
-    helpCenter: 'Помощь', changeLog: 'Изменения', myProfile: 'Мой профиль',
-    fanvueManagement: 'Управление Fanvue', aiChat: 'AI Чат',
+    myProfile: 'Мой профиль', rolesAccess: 'Роли и доступ', tgPosting: 'Постинг в группы Telegram',
+    fanvueManagement: 'Управление Fanvue', aiChat: 'AI Чат', logout: 'Выйти',
   }
 };
 
@@ -42,8 +40,6 @@ const NAV = [
       { key: 'accountsOverview', href: 'accounts.html', icon: 'clock', badge: 'Beta' },
       { key: 'accountInsights', href: 'insights.html', icon: 'trend' },
       { key: 'trafficMetrics', href: 'traffic.html', icon: 'traffic', badge: 'Beta' },
-      { key: 'trackingLinks', href: 'tracking.html', icon: 'link' },
-      { key: 'trialLinks', href: 'trial.html', icon: 'file' },
     ]
   },
   {
@@ -64,6 +60,7 @@ const NAV = [
       { key: 'massMessages', href: 'mass-messages.html', icon: 'mass' },
       { key: 'dynamicLists', href: 'dynamic-lists.html', icon: 'lock' },
       { key: 'fanRetention', href: 'fan-retention.html', icon: 'star' },
+      { key: 'tgPosting', href: 'tg-posting.html', icon: 'tg' },
       { key: 'mediaHub', href: 'media-hub.html', icon: 'grid' },
     ]
   },
@@ -78,14 +75,13 @@ const NAV = [
     section: 'organization',
     items: [
       { key: 'teamMembers', href: 'team.html', icon: 'team' },
+      { key: 'rolesAccess', href: 'roles.html', icon: 'shield' },
       { key: 'settings', href: 'settings.html', icon: 'settings' },
     ]
   },
 ];
 
 const BOTTOM_NAV = [
-  { key: 'helpCenter', href: 'help.html', icon: 'info' },
-  { key: 'changeLog', href: 'changelog.html', icon: 'changelog' },
   { key: 'myProfile', href: 'profile.html', icon: 'profile' },
 ];
 
@@ -113,6 +109,7 @@ const ICONS = {
   'info': `<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v4M8 5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
   'changelog': `<svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10v8a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM1 4h14" stroke="currentColor" stroke-width="1.3"/><path d="M6 2h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
   'profile': `<svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+  'tg': `<svg viewBox="0 0 16 16" fill="none"><path d="M14 2L1 7l5 2 2 5 2-3 4 3L14 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`,
   'ai': `<svg viewBox="0 0 16 16" fill="none"><path d="M8 2a2 2 0 012 2v1h1a2 2 0 010 4h-1v1a2 2 0 01-4 0v-1H5a2 2 0 010-4h1V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>`,
   'chevron': `<svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
   'bell': `<svg viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 015 5v2l1.5 2.5h-13L3 9V7a5 5 0 015-5zM6 13.5a2 2 0 004 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`,
@@ -148,7 +145,7 @@ function renderNavItem(item) {
   const current = getCurrentPage();
   const isActive = current === item.href;
   return `
-    <a class="nav-item${isActive ? ' active' : ''}" href="${item.href}">
+    <a class="nav-item${isActive ? ' active' : ''}" href="${item.href}" data-label="${t(item.key)}">
       ${ICONS[item.icon] || ''}
       <span>${t(item.key)}</span>
       ${renderBadge(item.badge)}
@@ -178,18 +175,25 @@ function toggleSection(label) {
 }
 
 function renderSidebar() {
-  const lang = getLang();
+  const collapsed = localStorage.getItem('ofmcrm_sidebar') === 'collapsed';
   return `
-    <div class="logo">
+    <div class="logo" onclick="toggleSidebar()" title="Toggle sidebar">
       <div class="logo-icon">OFM</div>
-      <div>
+      <div class="logo-text">
         <div class="logo-name">OFM CRM</div>
         <div class="logo-sub">${t('fanvueManagement')}</div>
+      </div>
+      <div class="logo-toggle">
+        <svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
     </div>
     ${NAV.map(renderSection).join('')}
     <div class="sidebar-bottom">
       ${BOTTOM_NAV.map(renderNavItem).join('')}
+      <button class="sidebar-logout" onclick="crmLogout ? crmLogout() : null" data-label="${t('logout')}">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>${t('logout')}</span>
+      </button>
     </div>
   `;
 }
@@ -217,10 +221,25 @@ function renderTopbar(title, rightContent = '') {
   `;
 }
 
+// Toggle sidebar collapsed state
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const isCollapsed = sidebar.classList.toggle('collapsed');
+  localStorage.setItem('ofmcrm_sidebar', isCollapsed ? 'collapsed' : 'expanded');
+  // Dispatch event so pages can react
+  window.dispatchEvent(new CustomEvent('sidebar-toggle', { detail: { collapsed: isCollapsed } }));
+}
+
 // Init sidebar
 document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
   const topbar = document.getElementById('topbar');
-  if (sidebar) sidebar.innerHTML = renderSidebar();
+  if (sidebar) {
+    sidebar.innerHTML = renderSidebar();
+    // Restore collapsed state
+    if (localStorage.getItem('ofmcrm_sidebar') === 'collapsed') {
+      sidebar.classList.add('collapsed');
+    }
+  }
   if (topbar) topbar.innerHTML = renderTopbar(window.PAGE_TITLE || 'OFM CRM', window.TOPBAR_RIGHT || '');
 });

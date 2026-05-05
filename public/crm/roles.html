@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Roles & Access</title>
+<script src="auth.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+.roles-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
+
+/* Role list */
+.role-list{display:flex;flex-direction:column;gap:6px}
+.role-item{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .15s}
+.role-item:hover{border-color:var(--border2);background:var(--bg3)}
+.role-item.active{border-color:var(--accent);background:var(--accent-bg)}
+.role-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.role-icon svg{width:15px;height:15px}
+.role-item-info{flex:1;min-width:0}
+.role-item-name{font-size:13px;font-weight:600}
+.role-item-count{font-size:11px;color:var(--text2);margin-top:1px}
+.role-item-badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0}
+
+/* Detail panel */
+.role-detail{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.role-detail-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.role-detail-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.role-detail-icon svg{width:20px;height:20px}
+.role-detail-title{font-size:16px;font-weight:700}
+.role-detail-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.role-detail-actions{margin-left:auto;display:flex;gap:7px}
+
+/* Permissions table */
+.perm-section{padding:18px 20px;border-bottom:1px solid var(--border)}
+.perm-section:last-child{border-bottom:none}
+.perm-section-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.perm-section-title svg{width:11px;height:11px}
+.perm-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:12px}
+.perm-row:last-child{border-bottom:none;padding-bottom:0}
+.perm-name{flex:1;font-size:12.5px;font-weight:500}
+.perm-desc{font-size:11px;color:var(--text2);margin-top:2px}
+.perm-checks{display:flex;gap:0;flex-shrink:0}
+.perm-check-col{width:72px;text-align:center}
+.perm-check-col-hdr{font-size:9.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.perm-check{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.perm-check.yes{background:var(--green-bg);color:var(--green)}
+.perm-check.no{background:var(--bg4);color:var(--text3)}
+.perm-check.partial{background:var(--amber-bg);color:var(--amber)}
+.perm-check svg{width:10px;height:10px}
+.perm-toggle{position:relative;width:32px;height:18px;background:var(--bg4);border-radius:9px;cursor:pointer;transition:background .15s;border:none;flex-shrink:0}
+.perm-toggle.on{background:var(--accent)}
+.perm-toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.perm-toggle.on::after{transform:translateX(14px)}
+
+/* Members in role */
+.role-members{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.role-member-chip{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 6px;font-size:12px}
+.role-member-ava{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
+
+/* Add role button */
+.add-role-btn{border:1.5px dashed var(--border);border-radius:10px;padding:11px 13px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;color:var(--text3);cursor:pointer;transition:all .15s;background:none;width:100%;font-family:var(--font)}
+.add-role-btn:hover{border-color:var(--accent);color:var(--accent2);background:var(--accent-bg)}
+.add-role-btn svg{width:13px;height:13px}
+
+/* Comparison table */
+.compare-table{width:100%;border-collapse:collapse}
+.compare-table th{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;padding:8px 12px;text-align:center;border-bottom:1px solid var(--border)}
+.compare-table th:first-child{text-align:left}
+.compare-table td{padding:9px 12px;font-size:12.5px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+.compare-table td:first-child{text-align:left;font-weight:500}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table tr:hover td{background:var(--bg3)}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+
+    <div class="page-header">
+      <div class="page-title" id="page-title">Roles & Access</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="switchView()" id="btn-view">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h10M2 10h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span id="lbl-compare">Compare Roles</span>
+        </button>
+        <button class="btn btn-primary" onclick="openNewRoleModal()" id="btn-new-role">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="lbl-new-role">New Role</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ROLES VIEW -->
+    <div id="view-roles" class="roles-layout">
+
+      <!-- Left: role list -->
+      <div>
+        <div class="role-list" id="role-list">
+
+          <div class="role-item active" onclick="selectRole(this,'admin')" data-role="admin">
+            <div class="role-icon" style="background:rgba(108,99,255,.15)">
+              <svg viewBox="0 0 16 16" fill="none" style="color:#8b84ff"><path d="M8 1L2 4v4c0 3.5 2.8 6 6 7 3.2-1 6-3.5 6-7V4L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="role-item-info">
+              <div class="role-item-name" id="role-admin-name">Admin</div>
+              <div class="role-item-count" id="role-admin-count">2 members</div>
+            </div>
+            <span class="role-item-badge" style="background:rgba(108,99,255,.15);color:#8b84ff" id="badge-admin">Full access</span>
+          </div>
+
+          <div class="role-item" onclick="selectRole(this,'manager')" data-role="manager">
+            <div class="role-icon" style="background:rgba(245,158,11,.15)">
+              <svg viewBox="0 0 16 16" fill="none" style="color:#f59e0b"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14s0-4 6-4 6 4 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M12 3v4M10 5h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="role-item-info">
+              <div class="role-item-name" id="role-manager-name">Manager</div>
+              <div class="role-item-count" id="role-manager-count">3 members</div>
+            </div>
+            <span class="role-item-badge" style="background:rgba(245,158,11,.12);color:#f59e0b" id="badge-manager">Team lead</span>
+          </div>
+
+          <div class="role-item" onclick="selectRole(this,'chatter')" data-role="chatter">
+            <div class="role-icon" style="background:rgba(34,197,94,.12)">
+              <svg viewBox="0 0 16 16" fill="none" style="color:#22c55e"><path d="M2 4a2 2 0 012-2h8a2 2 0 012 2v5a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V4z" stroke="currentColor" stroke-width="1.3"/></svg>
+            </div>
+            <div class="role-item-info">
+              <div class="role-item-name" id="role-chatter-name">Chatter</div>
+              <div class="role-item-count" id="role-chatter-count">8 members</div>
+            </div>
+            <span class="role-item-badge" style="background:rgba(34,197,94,.1);color:#22c55e" id="badge-chatter">Chat only</span>
+          </div>
+
+          <div class="role-item" onclick="selectRole(this,'analyst')" data-role="analyst">
+            <div class="role-icon" style="background:rgba(56,189,248,.12)">
+              <svg viewBox="0 0 16 16" fill="none" style="color:#38bdf8"><rect x="1" y="9" width="3" height="6" rx="1" fill="currentColor"/><rect x="6" y="5" width="3" height="10" rx="1" fill="currentColor"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor"/></svg>
+            </div>
+            <div class="role-item-info">
+              <div class="role-item-name" id="role-analyst-name">Analyst</div>
+              <div class="role-item-count" id="role-analyst-count">1 member</div>
+            </div>
+            <span class="role-item-badge" style="background:rgba(56,189,248,.1);color:#38bdf8" id="badge-analyst">Read only</span>
+          </div>
+
+        </div>
+        <button class="add-role-btn" style="margin-top:8px" onclick="openNewRoleModal()">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="lbl-add-role">Add custom role</span>
+        </button>
+      </div>
+
+      <!-- Right: role detail -->
+      <div class="role-detail" id="role-detail">
+        <!-- Header changes per role -->
+        <div class="role-detail-header" id="role-detail-hdr">
+          <div class="role-detail-icon" style="background:rgba(108,99,255,.15)" id="detail-icon">
+            <svg viewBox="0 0 16 16" fill="none" style="color:#8b84ff"><path d="M8 1L2 4v4c0 3.5 2.8 6 6 7 3.2-1 6-3.5 6-7V4L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div class="role-detail-title" id="detail-title">Admin</div>
+            <div class="role-detail-desc" id="detail-desc">Full access to all CRM features and settings</div>
+          </div>
+          <div class="role-detail-actions">
+            <button class="btn btn-ghost" onclick="editRole()" id="btn-edit-role">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3-7 7H2v-3L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              <span id="lbl-edit-role">Edit</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Members -->
+        <div class="perm-section">
+          <div class="perm-section-title">
+            <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 12s0-3.5 5-3.5 5 3.5 5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span id="lbl-members-in-role">Members with this role</span>
+          </div>
+          <div class="role-members" id="role-members-chips">
+            <div class="role-member-chip"><div class="role-member-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">PA</div>Pride Agency</div>
+            <div class="role-member-chip"><div class="role-member-ava" style="background:rgba(34,197,94,.15);color:#22c55e">AK</div>Anna Kim</div>
+          </div>
+        </div>
+
+        <!-- Permissions: Analytics -->
+        <div class="perm-section">
+          <div class="perm-section-title">
+            <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="7" width="3" height="6" rx="1" fill="currentColor"/><rect x="5.5" y="4" width="3" height="9" rx="1" fill="currentColor"/><rect x="10" y="1" width="3" height="12" rx="1" fill="currentColor"/></svg>
+            <span id="psec-analytics">Analytics & Reports</span>
+          </div>
+          <div id="perm-rows-analytics">
+            <div class="perm-row"><div><div class="perm-name" id="pn-dashboard">Dashboard</div><div class="perm-desc" id="pd-dashboard">View main KPIs and charts</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-accounts">Account Overview</div><div class="perm-desc" id="pd-accounts">View all Fanvue accounts</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-insights">Account Insights</div><div class="perm-desc" id="pd-insights">Detailed analytics per account</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-traffic">Traffic Metrics</div><div class="perm-desc" id="pd-traffic">Link clicks and conversions</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+          </div>
+        </div>
+
+        <!-- Permissions: Chatting -->
+        <div class="perm-section">
+          <div class="perm-section-title">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 4a2 2 0 012-2h6a2 2 0 012 2v4a2 2 0 01-2 2H7l-3 3v-3H4a2 2 0 01-2-2V4z" stroke="currentColor" stroke-width="1.3"/></svg>
+            <span id="psec-chatting">Chatting & Messages</span>
+          </div>
+          <div id="perm-rows-chatting">
+            <div class="perm-row"><div><div class="perm-name" id="pn-aichat">AI Chat</div><div class="perm-desc" id="pd-aichat">Send messages and manage conversations</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-massmsg">Mass Messages</div><div class="perm-desc" id="pd-massmsg">Send bulk messages to fans</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-templates">Message Templates</div><div class="perm-desc" id="pd-templates">Create and edit message templates</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-automations">Automations</div><div class="perm-desc" id="pd-automations">Configure auto-reply rules</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+          </div>
+        </div>
+
+        <!-- Permissions: Models -->
+        <div class="perm-section">
+          <div class="perm-section-title">
+            <svg viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="6" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 11s.5-2 3-2 3 2 3 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span id="psec-models">Model Cards</span>
+          </div>
+          <div id="perm-rows-models">
+            <div class="perm-row"><div><div class="perm-name" id="pn-view-cards">View Model Cards</div><div class="perm-desc" id="pd-view-cards">See model profiles and stats</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-edit-cards">Edit Model Cards</div><div class="perm-desc" id="pd-edit-cards">Modify model info and links</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-knowledgebase">Knowledge Base</div><div class="perm-desc" id="pd-knowledgebase">Access training articles</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+          </div>
+        </div>
+
+        <!-- Permissions: Organization -->
+        <div class="perm-section">
+          <div class="perm-section-title">
+            <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 7h4M7 5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span id="psec-org">Organization & Settings</span>
+          </div>
+          <div id="perm-rows-org">
+            <div class="perm-row"><div><div class="perm-name" id="pn-team">Team Management</div><div class="perm-desc" id="pd-team">Invite, edit, remove members</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-roles">Roles & Access</div><div class="perm-desc" id="pd-roles">Manage roles and permissions</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+            <div class="perm-row"><div><div class="perm-name" id="pn-settings">Settings</div><div class="perm-desc" id="pd-settings">Org settings, billing, API keys</div></div><div class="perm-checks"><div class="perm-check-col"><button class="perm-toggle on" onclick="this.classList.toggle('on')"></button></div></div></div>
+          </div>
+        </div>
+
+      </div><!-- /role-detail -->
+    </div><!-- /view-roles -->
+
+    <!-- COMPARE VIEW -->
+    <div id="view-compare" style="display:none">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th id="th-feature">Feature</th>
+              <th><span style="color:#8b84ff" id="th-admin">Admin</span></th>
+              <th><span style="color:#f59e0b" id="th-manager">Manager</span></th>
+              <th><span style="color:#22c55e" id="th-chatter">Chatter</span></th>
+              <th><span style="color:#38bdf8" id="th-analyst">Analyst</span></th>
+            </tr>
+          </thead>
+          <tbody id="compare-tbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- NEW ROLE MODAL -->
+<div class="overlay" id="modal-role" onclick="if(event.target===this)closeModal('modal-role')">
+  <div class="modal" style="width:460px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="modal-role-title">New Role</div><div class="modal-sub" id="modal-role-sub">Create a custom role with specific permissions</div></div>
+      <div class="modal-close" onclick="closeModal('modal-role')"><svg viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label" id="modal-lbl-name">Role Name</label><input class="form-input" type="text" id="new-role-name" placeholder="e.g. Senior Chatter"></div>
+      <div class="form-group"><label class="form-label" id="modal-lbl-desc">Description</label><input class="form-input" type="text" id="new-role-desc" placeholder="What can this role do?"></div>
+      <div class="form-group">
+        <label class="form-label" id="modal-lbl-base">Based on</label>
+        <select class="form-select" id="new-role-base">
+          <option value="chatter" id="base-chatter">Chatter</option>
+          <option value="manager" id="base-manager">Manager</option>
+          <option value="analyst" id="base-analyst">Analyst</option>
+          <option value="empty" id="base-empty">Empty (start from scratch)</option>
+        </select>
+        <div class="form-hint" id="modal-hint-base">The new role will inherit permissions from the selected base role</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-role')" id="modal-cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="createRole()" id="modal-create">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Create Role
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'Roles & Access';
+if (typeof getLang === 'undefined') window.getLang = () => localStorage.getItem('ofmcrm_lang') || 'en';
+
+// Role definitions
+const ROLES = {
+  admin: {
+    color: '#8b84ff', bg: 'rgba(108,99,255,.15)',
+    members: [
+      {initials:'PA',color:'rgba(108,99,255,.2)',text:'#8b84ff',name:'Pride Agency'},
+      {initials:'AK',color:'rgba(34,197,94,.15)',text:'#22c55e',name:'Anna Kim'}
+    ],
+    perms: {dashboard:1,accounts:1,insights:1,traffic:1,aichat:1,massmsg:1,templates:1,automations:1,viewCards:1,editCards:1,knowledgebase:1,team:1,roles:1,settings:1}
+  },
+  manager: {
+    color: '#f59e0b', bg: 'rgba(245,158,11,.15)',
+    members: [
+      {initials:'MC',color:'rgba(108,99,255,.2)',text:'#8b84ff',name:'Mike Chen'},
+      {initials:'JD',color:'rgba(245,158,11,.15)',text:'#f59e0b',name:'John Davis'},
+      {initials:'LS',color:'rgba(34,197,94,.15)',text:'#22c55e',name:'Lisa Smith'}
+    ],
+    perms: {dashboard:1,accounts:1,insights:1,traffic:1,aichat:1,massmsg:1,templates:1,automations:1,viewCards:1,editCards:0,knowledgebase:1,team:1,roles:0,settings:0}
+  },
+  chatter: {
+    color: '#22c55e', bg: 'rgba(34,197,94,.12)',
+    members: [
+      {initials:'T1',color:'rgba(108,99,255,.15)',text:'#8b84ff',name:'Chatter 1'},
+      {initials:'T2',color:'rgba(245,158,11,.12)',text:'#f59e0b',name:'Chatter 2'},
+      {initials:'T3',color:'rgba(34,197,94,.12)',text:'#22c55e',name:'Chatter 3'},
+      {initials:'T4',color:'rgba(56,189,248,.1)',text:'#38bdf8',name:'Chatter 4'},
+      {initials:'T5',color:'rgba(108,99,255,.15)',text:'#8b84ff',name:'Chatter 5'},
+      {initials:'+3',color:'var(--bg4)',text:'var(--text3)',name:''}
+    ],
+    perms: {dashboard:0,accounts:0,insights:0,traffic:0,aichat:1,massmsg:0,templates:1,automations:0,viewCards:1,editCards:0,knowledgebase:1,team:0,roles:0,settings:0}
+  },
+  analyst: {
+    color: '#38bdf8', bg: 'rgba(56,189,248,.12)',
+    members: [
+      {initials:'RK',color:'rgba(56,189,248,.15)',text:'#38bdf8',name:'Roman K.'}
+    ],
+    perms: {dashboard:1,accounts:1,insights:1,traffic:1,aichat:0,massmsg:0,templates:0,automations:0,viewCards:1,editCards:0,knowledgebase:1,team:0,roles:0,settings:0}
+  }
+};
+
+const TR = {
+  en:{
+    pageTitle:'Roles & Access', compare:'Compare Roles', newRole:'New Role', addRole:'Add custom role',
+    membersInRole:'Members with this role', editRole:'Edit',
+    psecAnalytics:'Analytics & Reports', psecChatting:'Chatting & Messages',
+    psecModels:'Model Cards', psecOrg:'Organization & Settings',
+    fullAccess:'Full access', teamLead:'Team lead', chatOnly:'Chat only', readOnly:'Read only',
+    admin:'Admin', manager:'Manager', chatter:'Chatter', analyst:'Analyst',
+    adminDesc:'Full access to all CRM features and settings',
+    managerDesc:'Manage team, accounts and analytics. No billing or role settings.',
+    chatterDesc:'Chat with fans only. No access to analytics or settings.',
+    analystDesc:'Read-only access to all analytics. No messaging or editing.',
+    adminCount:'2 members', managerCount:'3 members', chatterCount:'8 members', analystCount:'1 member',
+    modalTitle:'New Role', modalSub:'Create a custom role with specific permissions',
+    modalName:'Role Name', modalDesc:'Description', modalBase:'Based on',
+    modalHintBase:'The new role will inherit permissions from the selected base role',
+    modalCancel:'Cancel', modalCreate:'Create Role',
+    thFeature:'Feature', thAdmin:'Admin', thManager:'Manager', thChatter:'Chatter', thAnalyst:'Analyst',
+    pnDashboard:'Dashboard', pdDashboard:'View main KPIs and charts',
+    pnAccounts:'Account Overview', pdAccounts:'View all Fanvue accounts',
+    pnInsights:'Account Insights', pdInsights:'Detailed analytics per account',
+    pnTraffic:'Traffic Metrics', pdTraffic:'Link clicks and conversions',
+    pnAichat:'AI Chat', pdAichat:'Send messages and manage conversations',
+    pnMassmsg:'Mass Messages', pdMassmsg:'Send bulk messages to fans',
+    pnTemplates:'Message Templates', pdTemplates:'Create and edit message templates',
+    pnAutomations:'Automations', pdAutomations:'Configure auto-reply rules',
+    pnViewCards:'View Model Cards', pdViewCards:'See model profiles and stats',
+    pnEditCards:'Edit Model Cards', pdEditCards:'Modify model info and links',
+    pnKnowledgebase:'Knowledge Base', pdKnowledgebase:'Access training articles',
+    pnTeam:'Team Management', pdTeam:'Invite, edit, remove members',
+    pnRoles:'Roles & Access', pdRoles:'Manage roles and permissions',
+    pnSettings:'Settings', pdSettings:'Org settings, billing, API keys',
+    baseChatter:'Chatter', baseManager:'Manager', baseAnalyst:'Analyst', baseEmpty:'Empty (start from scratch)',
+    backToRoles:'← Back to Roles', viewRoles:'View Roles',
+  },
+  ru:{
+    pageTitle:'Роли и доступ', compare:'Сравнить роли', newRole:'Новая роль', addRole:'Добавить роль',
+    membersInRole:'Участники с этой ролью', editRole:'Редактировать',
+    psecAnalytics:'Аналитика и отчёты', psecChatting:'Чат и сообщения',
+    psecModels:'Карточки моделей', psecOrg:'Организация и настройки',
+    fullAccess:'Полный доступ', teamLead:'Тимлид', chatOnly:'Только чат', readOnly:'Только чтение',
+    admin:'Администратор', manager:'Менеджер', chatter:'Чаттер', analyst:'Аналитик',
+    adminDesc:'Полный доступ ко всем функциям и настройкам CRM',
+    managerDesc:'Управление командой, аккаунтами и аналитикой. Без биллинга и ролей.',
+    chatterDesc:'Только общение с фанами. Без аналитики и настроек.',
+    analystDesc:'Только чтение всей аналитики. Без сообщений и редактирования.',
+    adminCount:'2 участника', managerCount:'3 участника', chatterCount:'8 участников', analystCount:'1 участник',
+    modalTitle:'Новая роль', modalSub:'Создайте роль с конкретными правами доступа',
+    modalName:'Название роли', modalDesc:'Описание', modalBase:'На основе',
+    modalHintBase:'Новая роль унаследует права выбранной базовой роли',
+    modalCancel:'Отмена', modalCreate:'Создать роль',
+    thFeature:'Функция', thAdmin:'Администратор', thManager:'Менеджер', thChatter:'Чаттер', thAnalyst:'Аналитик',
+    pnDashboard:'Дашборд', pdDashboard:'Просмотр KPI и графиков',
+    pnAccounts:'Обзор аккаунтов', pdAccounts:'Просмотр всех аккаунтов Fanvue',
+    pnInsights:'Инсайты аккаунта', pdInsights:'Детальная аналитика по аккаунту',
+    pnTraffic:'Метрики трафика', pdTraffic:'Клики по ссылкам и конверсии',
+    pnAichat:'AI Чат', pdAichat:'Отправка сообщений и управление диалогами',
+    pnMassmsg:'Массовая рассылка', pdMassmsg:'Отправка сообщений всем фанам',
+    pnTemplates:'Шаблоны сообщений', pdTemplates:'Создание и редактирование шаблонов',
+    pnAutomations:'Автоматизация', pdAutomations:'Настройка автоответов',
+    pnViewCards:'Просмотр карточек', pdViewCards:'Просмотр профилей и статистики',
+    pnEditCards:'Редактирование карточек', pdEditCards:'Изменение информации и ссылок',
+    pnKnowledgebase:'База знаний', pdKnowledgebase:'Доступ к обучающим статьям',
+    pnTeam:'Управление командой', pdTeam:'Приглашение, редактирование, удаление',
+    pnRoles:'Роли и доступ', pdRoles:'Управление ролями и правами',
+    pnSettings:'Настройки', pdSettings:'Настройки орг., биллинг, API',
+    baseChatter:'Чаттер', baseManager:'Менеджер', baseAnalyst:'Аналитик', baseEmpty:'С нуля',
+    backToRoles:'← К ролям', viewRoles:'К ролям',
+  }
+};
+
+const COMPARE_ROWS = [
+  {key:'dashboard',sec:'analytics'},{key:'accounts',sec:'analytics'},{key:'insights',sec:'analytics'},{key:'traffic',sec:'analytics'},
+  {key:'aichat',sec:'chatting'},{key:'massmsg',sec:'chatting'},{key:'templates',sec:'chatting'},{key:'automations',sec:'chatting'},
+  {key:'viewCards',sec:'models'},{key:'editCards',sec:'models'},{key:'knowledgebase',sec:'models'},
+  {key:'team',sec:'org'},{key:'roles',sec:'org'},{key:'settings',sec:'org'},
+];
+
+function t(key){ return (TR[getLang()]||TR.en)[key] || key; }
+
+function applyTranslations(){
+  const l = getLang(), tr = TR[l];
+  const s = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  s('page-title',tr.pageTitle); s('lbl-compare',tr.compare); s('lbl-new-role',tr.newRole);
+  s('lbl-add-role',tr.addRole); s('lbl-members-in-role',tr.membersInRole);
+  s('lbl-edit-role',tr.editRole); s('btn-edit-role',tr.editRole);
+  s('psec-analytics',tr.psecAnalytics); s('psec-chatting',tr.psecChatting);
+  s('psec-models',tr.psecModels); s('psec-org',tr.psecOrg);
+  s('badge-admin',tr.fullAccess); s('badge-manager',tr.teamLead);
+  s('badge-chatter',tr.chatOnly); s('badge-analyst',tr.readOnly);
+  s('role-admin-name',tr.admin); s('role-manager-name',tr.manager);
+  s('role-chatter-name',tr.chatter); s('role-analyst-name',tr.analyst);
+  s('role-admin-count',tr.adminCount); s('role-manager-count',tr.managerCount);
+  s('role-chatter-count',tr.chatterCount); s('role-analyst-count',tr.analystCount);
+  s('modal-role-title',tr.modalTitle); s('modal-role-sub',tr.modalSub);
+  s('modal-lbl-name',tr.modalName); s('modal-lbl-desc',tr.modalDesc);
+  s('modal-lbl-base',tr.modalBase); s('modal-hint-base',tr.modalHintBase);
+  s('modal-cancel',tr.modalCancel); s('modal-create',tr.modalCreate);
+  s('th-feature',tr.thFeature); s('th-admin',tr.thAdmin); s('th-manager',tr.thManager);
+  s('th-chatter',tr.thChatter); s('th-analyst',tr.thAnalyst);
+  s('pn-dashboard',tr.pnDashboard); s('pd-dashboard',tr.pdDashboard);
+  s('pn-accounts',tr.pnAccounts); s('pd-accounts',tr.pdAccounts);
+  s('pn-insights',tr.pnInsights); s('pd-insights',tr.pdInsights);
+  s('pn-traffic',tr.pnTraffic); s('pd-traffic',tr.pdTraffic);
+  s('pn-aichat',tr.pnAichat); s('pd-aichat',tr.pdAichat);
+  s('pn-massmsg',tr.pnMassmsg); s('pd-massmsg',tr.pdMassmsg);
+  s('pn-templates',tr.pnTemplates); s('pd-templates',tr.pdTemplates);
+  s('pn-automations',tr.pnAutomations); s('pd-automations',tr.pdAutomations);
+  s('pn-view-cards',tr.pnViewCards); s('pd-view-cards',tr.pdViewCards);
+  s('pn-edit-cards',tr.pnEditCards); s('pd-edit-cards',tr.pdEditCards);
+  s('pn-knowledgebase',tr.pnKnowledgebase); s('pd-knowledgebase',tr.pdKnowledgebase);
+  s('pn-team',tr.pnTeam); s('pd-team',tr.pdTeam);
+  s('pn-roles',tr.pnRoles); s('pd-roles',tr.pdRoles);
+  s('pn-settings',tr.pnSettings); s('pd-settings',tr.pdSettings);
+  s('base-chatter',tr.baseChatter); s('base-manager',tr.baseManager);
+  s('base-analyst',tr.baseAnalyst); s('base-empty',tr.baseEmpty);
+  buildCompareTable();
+  window.PAGE_TITLE = tr.pageTitle;
+}
+
+let currentRole = 'admin';
+let compareMode = false;
+
+function selectRole(el, roleKey) {
+  document.querySelectorAll('.role-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  currentRole = roleKey;
+  updateDetailPanel(roleKey);
+}
+
+function updateDetailPanel(roleKey) {
+  const role = ROLES[roleKey];
+  const tr = TR[getLang()];
+  const names = {admin:tr.admin,manager:tr.manager,chatter:tr.chatter,analyst:tr.analyst};
+  const descs = {admin:tr.adminDesc,manager:tr.managerDesc,chatter:tr.chatterDesc,analyst:tr.analystDesc};
+
+  document.getElementById('detail-title').textContent = names[roleKey] || roleKey;
+  document.getElementById('detail-desc').textContent = descs[roleKey] || '';
+  document.getElementById('detail-icon').style.background = role.bg;
+  document.getElementById('detail-icon').querySelector('svg').style.color = role.color;
+
+  // Members
+  const chips = document.getElementById('role-members-chips');
+  chips.innerHTML = role.members.map(m => `
+    <div class="role-member-chip">
+      <div class="role-member-ava" style="background:${m.color};color:${m.text}">${m.initials}</div>
+      ${m.name}
+    </div>`).join('');
+
+  // Toggles
+  const permMap = {
+    dashboard:'dashboard', accounts:'accounts', insights:'insights', traffic:'traffic',
+    aichat:'aichat', massmsg:'massmsg', templates:'templates', automations:'automations',
+    viewCards:'view-cards', editCards:'edit-cards', knowledgebase:'knowledgebase',
+    team:'team', roles:'roles', settings:'settings'
+  };
+  Object.entries(role.perms).forEach(([pKey, val]) => {
+    const id = permMap[pKey];
+    if (!id) return;
+    // Find toggle in the perm-row that contains pn-{id}
+    const nameEl = document.getElementById('pn-'+id);
+    if (!nameEl) return;
+    const toggle = nameEl.closest('.perm-row').querySelector('.perm-toggle');
+    if (!toggle) return;
+    toggle.classList.toggle('on', val === 1);
+  });
+}
+
+function buildCompareTable() {
+  const tr = TR[getLang()];
+  const permNames = {
+    dashboard:tr.pnDashboard, accounts:tr.pnAccounts, insights:tr.pnInsights, traffic:tr.pnTraffic,
+    aichat:tr.pnAichat, massmsg:tr.pnMassmsg, templates:tr.pnTemplates, automations:tr.pnAutomations,
+    viewCards:tr.pnViewCards, editCards:tr.pnEditCards, knowledgebase:tr.pnKnowledgebase,
+    team:tr.pnTeam, roles:tr.pnRoles, settings:tr.pnSettings
+  };
+  const secNames = {
+    analytics:tr.psecAnalytics, chatting:tr.psecChatting, models:tr.psecModels, org:tr.psecOrg
+  };
+  const check = (v) => v
+    ? `<div class="perm-check yes"><svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 3L8.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+    : `<div class="perm-check no"><svg viewBox="0 0 10 10" fill="none"><path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>`;
+
+  let html = '';
+  let lastSec = '';
+  COMPARE_ROWS.forEach(({key,sec}) => {
+    if (sec !== lastSec) {
+      html += `<tr><td colspan="5" style="background:var(--bg3);font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:7px 12px">${secNames[sec]||sec}</td></tr>`;
+      lastSec = sec;
+    }
+    html += `<tr>
+      <td>${permNames[key]||key}</td>
+      <td>${check(ROLES.admin.perms[key])}</td>
+      <td>${check(ROLES.manager.perms[key])}</td>
+      <td>${check(ROLES.chatter.perms[key])}</td>
+      <td>${check(ROLES.analyst.perms[key])}</td>
+    </tr>`;
+  });
+  document.getElementById('compare-tbody').innerHTML = html;
+}
+
+function switchView() {
+  compareMode = !compareMode;
+  document.getElementById('view-roles').style.display = compareMode ? 'none' : '';
+  document.getElementById('view-compare').style.display = compareMode ? '' : 'none';
+  document.getElementById('lbl-compare').textContent = compareMode ? t('viewRoles') : t('compare');
+  if (compareMode) buildCompareTable();
+}
+
+function openNewRoleModal() { document.getElementById('modal-role').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function editRole() { openNewRoleModal(); }
+function createRole() {
+  const name = document.getElementById('new-role-name').value.trim();
+  if (!name) return;
+  closeModal('modal-role');
+  document.getElementById('new-role-name').value = '';
+  document.getElementById('new-role-desc').value = '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations();
+  updateDetailPanel('admin');
+});
+window.addEventListener('storage', e => { if (e.key === 'ofmcrm_lang') { applyTranslations(); updateDetailPanel(currentRole); } });
+</script>
+</body>
+</html>

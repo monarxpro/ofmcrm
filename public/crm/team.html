@@ -4,35 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OFM CRM — Team Members</title>
+<script src="auth.js"></script>
 <link rel="stylesheet" href="styles.css">
-<style>
-.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:20px}
-.member-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .15s;cursor:pointer}
-.member-card:hover{border-color:var(--border2)}
-.member-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
-.member-ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
-.member-info{flex:1}
-.member-name{font-size:14px;font-weight:600;margin-bottom:2px}
-.member-role{font-size:11.5px;color:var(--text2)}
-.member-handle{font-size:11px;color:var(--text3);margin-top:2px}
-.member-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
-.mstat{text-align:center;background:var(--bg3);border-radius:7px;padding:7px 6px}
-.mstat-val{font-size:14px;font-weight:600;font-family:var(--mono)}
-.mstat-label{font-size:9.5px;color:var(--text2);margin-top:2px}
-.member-footer{display:flex;align-items:center;justify-content:space-between}
-.member-accounts{display:flex;gap:-6px}
-.member-account-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--bg2);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;margin-left:-6px}
-.member-account-dot:first-child{margin-left:0}
-.shift-badge{display:flex;align-items:center;gap:4px;font-size:10.5px;padding:3px 8px;border-radius:5px}
-.shift-on{background:var(--green-bg);color:var(--green)}
-.shift-off{background:var(--bg4);color:var(--text2)}
-.invite-card{background:var(--bg2);border:2px dashed var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .15s;min-height:180px}
-.invite-card:hover{border-color:var(--accent);background:var(--accent-bg)}
-.invite-icon{width:44px;height:44px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center}
-.invite-icon svg{width:20px;height:20px;color:var(--text3)}
-.invite-text{font-size:13px;font-weight:500;color:var(--text2)}
-.invite-hint{font-size:11px;color:var(--text3)}
-</style>
 </head>
 <body>
 <aside id="sidebar"></aside>

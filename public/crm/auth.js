@@ -1,12 +1,8 @@
-// OFM CRM — Auth Guard
-// Подключить ПЕРВЫМ скриптом на каждой защищённой странице:
-// <script src="auth.js"><\/script>
-
+// OFM CRM — Auth Guard v2 (JWT)
 (function () {
   const COOKIE_NAME = 'ofmcrm_auth';
-  const LOGIN_PAGE  = 'login.html';
+  const LOGIN_PAGE  = '/crm/login.html';
 
-  // ── Helpers ─────────────────────────────────────────────────────────────
   function getCookie(name) {
     const v = document.cookie.split('; ').find(r => r.startsWith(name + '='));
     return v ? decodeURIComponent(v.split('=')[1]) : null;
@@ -17,58 +13,64 @@
   }
 
   function redirectToLogin() {
-    // Скрываем страницу до редиректа чтобы не было flash
     document.documentElement.style.visibility = 'hidden';
     window.location.replace(LOGIN_PAGE);
   }
 
-  // ── Validate token ───────────────────────────────────────────────────────
   function checkAuth() {
     const token = getCookie(COOKIE_NAME);
+    if (!token) { redirectToLogin(); return null; }
 
-    if (!token) {
-      redirectToLogin();
-      return null;
-    }
-
+    // JWT: проверяем что токен есть и не пустой
+    // Полная проверка идёт на сервере при API запросах
     try {
-      const data = JSON.parse(atob(token));
-      if (!data || !data.login || !data.ts) {
-        deleteCookie(COOKIE_NAME);
-        redirectToLogin();
-        return null;
+      // Декодируем payload (средняя часть JWT)
+      const parts = token.split('.');
+      if (parts.length !== 3) { deleteCookie(COOKIE_NAME); redirectToLogin(); return null; }
+      const payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if (!payload.id || !payload.email) { deleteCookie(COOKIE_NAME); redirectToLogin(); return null; }
+      // Проверяем exp
+      if (payload.exp && Date.now() / 1000 > payload.exp) {
+        deleteCookie(COOKIE_NAME); redirectToLogin(); return null;
       }
-      return data;
-    } catch (e) {
-      deleteCookie(COOKIE_NAME);
-      redirectToLogin();
-      return null;
+      return payload;
+    } catch(e) {
+      deleteCookie(COOKIE_NAME); redirectToLogin(); return null;
     }
   }
 
-  // ── Run check immediately (before DOM renders) ───────────────────────────
   const user = checkAuth();
 
   if (user) {
-    // Expose current user globally for sidebar / pages
     window.CRM_USER = user;
-
-    // Make page visible
     document.documentElement.style.visibility = '';
   }
 
-  // ── Logout function (available globally) ─────────────────────────────────
+  // Глобальный fetch с JWT токеном
+  window.apiRequest = async function(url, options = {}) {
+    const token = getCookie(COOKIE_NAME);
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...(options.headers || {})
+      }
+    });
+    if (res.status === 401) { deleteCookie(COOKIE_NAME); redirectToLogin(); }
+    return res;
+  };
+
   window.crmLogout = function () {
     deleteCookie(COOKIE_NAME);
+    localStorage.removeItem('ofmcrm_user');
     window.location.replace(LOGIN_PAGE);
   };
 
-  // ── Session expiry check (every 5 min) ──────────────────────────────────
+  // Проверка каждые 5 минут
   setInterval(function () {
     const t = getCookie(COOKIE_NAME);
-    if (!t) {
-      redirectToLogin();
-    }
+    if (!t) redirectToLogin();
   }, 5 * 60 * 1000);
 
 })();

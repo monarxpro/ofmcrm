@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — My Profile</title>
+<script src="auth.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+.profile-layout{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start}
+.profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.profile-card-header{padding:16px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.profile-card-body{padding:20px}
+.profile-field{margin-bottom:18px}
+.profile-field:last-child{margin-bottom:0}
+.profile-field-label{font-size:11.5px;font-weight:500;color:var(--text2);margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.profile-field-label .optional{font-size:10.5px;font-weight:400;color:var(--text3)}
+.profile-field-hint{font-size:11px;color:var(--text3);margin-top:5px;line-height:1.5}
+.profile-sep{height:1px;background:var(--border);margin:18px 0}
+.profile-id-field{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--text);font-family:var(--mono);cursor:default;display:flex;align-items:center;justify-content:space-between}
+.profile-id-field .copy-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:2px 5px;border-radius:4px;transition:all .15s;display:flex;align-items:center;gap:4px;font-size:11px;font-family:var(--font)}
+.profile-id-field .copy-btn:hover{background:var(--bg4);color:var(--text2)}
+.profile-id-field .copy-btn svg{width:12px;height:12px}
+.profile-ava-section{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.profile-ava{width:60px;height:60px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0}
+.profile-ava-info{flex:1}
+.profile-ava-name{font-size:15px;font-weight:600}
+.profile-ava-role{font-size:12px;color:var(--text2);margin-top:2px}
+.profile-ava-btn{font-size:11.5px;color:var(--accent2);cursor:pointer;margin-top:5px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-family:var(--font);padding:0;transition:color .15s}
+.profile-ava-btn:hover{color:var(--accent)}
+.profile-ava-btn svg{width:11px;height:11px}
+
+.pwd-card-body{padding:20px}
+.pwd-info{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--bg3);border-radius:8px;margin-bottom:16px}
+.pwd-info svg{width:14px;height:14px;color:var(--accent2);flex-shrink:0;margin-top:1px}
+.pwd-info-text{font-size:12px;color:var(--text2);line-height:1.5}
+
+.danger-zone{background:var(--red-bg);border:1px solid rgba(239,68,68,.2);border-radius:12px;overflow:hidden}
+.danger-zone-header{padding:14px 20px;border-bottom:1px solid rgba(239,68,68,.15);font-size:13px;font-weight:600;color:var(--red)}
+.danger-zone-body{padding:16px 20px}
+.danger-row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.danger-info{flex:1}
+.danger-title{font-size:13px;font-weight:500;color:var(--text)}
+.danger-desc{font-size:11.5px;color:var(--text2);margin-top:3px}
+
+.session-list{display:flex;flex-direction:column;gap:6px}
+.session-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:8px}
+.session-icon{width:30px;height:30px;border-radius:7px;background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.session-icon svg{width:14px;height:14px;color:var(--text2)}
+.session-info{flex:1}
+.session-device{font-size:12.5px;font-weight:500}
+.session-meta{font-size:11px;color:var(--text2);margin-top:1px}
+.session-current{font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 7px;border-radius:4px;flex-shrink:0}
+
+/* ── 2FA styles ── */
+.twofa-status{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg3);border-radius:8px;margin-bottom:14px}
+.twofa-status-left{display:flex;align-items:center;gap:10px}
+.twofa-status-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.twofa-status-icon svg{width:16px;height:16px}
+.twofa-status-label{font-size:12.5px;font-weight:600}
+.twofa-status-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.twofa-enabled{background:var(--green-bg)}
+.twofa-enabled svg{color:var(--green)}
+.twofa-disabled{background:var(--bg4)}
+.twofa-disabled svg{color:var(--text3)}
+.twofa-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.twofa-step{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg3);border-radius:8px}
+.twofa-step-num{width:20px;height:20px;border-radius:50%;background:var(--accent-bg);color:var(--accent2);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.twofa-step-text{font-size:12px;color:var(--text2);line-height:1.5;flex:1}
+.twofa-step-text strong{color:var(--text);font-weight:600}
+.twofa-qr{width:140px;height:140px;border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;margin:0 auto 14px;flex-shrink:0}
+.twofa-qr canvas{border-radius:6px}
+.twofa-secret{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--mono);font-size:12px;letter-spacing:2px;text-align:center;color:var(--text2);margin-bottom:14px;cursor:pointer;transition:border-color .15s}
+.twofa-secret:hover{border-color:var(--border2)}
+.twofa-code-inputs{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.twofa-digit{width:42px;height:50px;background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-size:20px;font-weight:700;text-align:center;font-family:var(--mono);outline:none;transition:border-color .15s;caret-color:var(--accent)}
+.twofa-digit:focus{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+
+    <div class="page-header">
+      <div class="page-title" id="page-title">My Profile</div>
+      <button class="btn btn-primary" id="btn-save" onclick="saveProfile()">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="btn-save-text">Save Changes</span>
+      </button>
+    </div>
+
+    <div class="profile-layout">
+
+      <!-- LEFT: Personal Info -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <!-- Avatar + name -->
+        <div class="profile-card">
+          <div class="profile-card-header" id="card-personal">Personal Information</div>
+          <div class="profile-card-body">
+
+            <div class="profile-ava-section">
+              <div class="profile-ava" id="profile-ava-initials">PA</div>
+              <div class="profile-ava-info">
+                <div class="profile-ava-name" id="profile-ava-name">Pride Agency</div>
+                <div class="profile-ava-role" id="profile-ava-role">Administrator</div>
+                <button class="profile-ava-btn" onclick="changeAvatar()">
+                  <svg viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3-7 7H2v-3L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                  <span id="lbl-change-photo">Change photo</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="profile-sep"></div>
+
+            <!-- ID (readonly) -->
+            <div class="profile-field">
+              <div class="profile-field-label" id="lbl-id">ID</div>
+              <div class="profile-id-field">
+                <span id="val-id">177361</span>
+                <button class="copy-btn" onclick="copyVal('177361')" id="btn-copy-id">
+                  <svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <!-- Org ID (readonly) -->
+            <div class="profile-field">
+              <div class="profile-field-label" id="lbl-orgid">Organization ID</div>
+              <div class="profile-id-field">
+                <span id="val-orgid">26430</span>
+                <button class="copy-btn" onclick="copyVal('26430')" id="btn-copy-orgid">
+                  <svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <!-- Name -->
+            <div class="profile-field">
+              <div class="profile-field-label" id="lbl-name">Name</div>
+              <input class="form-input" type="text" id="input-name" value="Pride Agency">
+            </div>
+
+            <!-- Email -->
+            <div class="profile-field">
+              <div class="profile-field-label" id="lbl-email">Email</div>
+              <input class="form-input" type="email" id="input-email" value="s.milovzorov@yandex.ru">
+            </div>
+
+            <!-- Telegram -->
+            <div class="profile-field">
+              <div class="profile-field-label">
+                <span id="lbl-telegram">Your Telegram</span>
+                <span class="optional" id="lbl-optional">(optional)</span>
+              </div>
+              <input class="form-input" type="text" id="input-telegram" placeholder="@username">
+              <div class="profile-field-hint" id="hint-telegram">This contact will only be used by our support team for communication and service improvement purposes.</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Active sessions -->
+        <div class="profile-card">
+          <div class="profile-card-header" id="card-sessions">Active Sessions</div>
+          <div class="profile-card-body">
+            <div class="session-list">
+              <div class="session-item">
+                <div class="session-icon">
+                  <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 13h6M7 11v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                </div>
+                <div class="session-info">
+                  <div class="session-device" id="sess-device1">Chrome — macOS</div>
+                  <div class="session-meta" id="sess-meta1">Moscow · Active now</div>
+                </div>
+                <span class="session-current" id="lbl-current">Current</span>
+              </div>
+              <div class="session-item">
+                <div class="session-icon">
+                  <svg viewBox="0 0 14 14" fill="none"><rect x="3" y="1" width="8" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="10.5" r="0.7" fill="currentColor"/></svg>
+                </div>
+                <div class="session-info">
+                  <div class="session-device" id="sess-device2">Safari — iPhone</div>
+                  <div class="session-meta" id="sess-meta2">Moscow · 2 hours ago</div>
+                </div>
+                <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="terminateSession(this)" id="btn-terminate">Terminate</button>
+              </div>
+            </div>
+            <button class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:12px;justify-content:center" onclick="terminateAll()" id="btn-terminate-all">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Terminate All Other Sessions
+            </button>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="danger-zone">
+          <div class="danger-zone-header" id="card-danger">Danger Zone</div>
+          <div class="danger-zone-body">
+            <div class="danger-row">
+              <div class="danger-info">
+                <div class="danger-title" id="danger-title">Delete Account</div>
+                <div class="danger-desc" id="danger-desc">Permanently delete your account and all associated data. This action cannot be undone.</div>
+              </div>
+              <button class="btn" style="background:var(--red);color:#fff;border:none;flex-shrink:0" onclick="deleteAccount()" id="btn-delete">Delete</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Password + info -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <!-- Update password -->
+        <div class="profile-card">
+          <div class="profile-card-header" id="card-password">Update Password</div>
+          <div class="pwd-card-body">
+            <div class="pwd-info">
+              <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v3.5M7 9.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <div class="pwd-info-text" id="pwd-info-text">You can update your password using the Account Center</div>
+            </div>
+            <div class="profile-field">
+              <div class="profile-field-label" id="lbl-current-pwd">Current Password</div>
+              <input class="form-input" type="password" id="input-current-pwd" placeholder="••••••••">
+            </div>
+            <div class="profile-field">
+              <div class="profile-field-label" id="lbl-new-pwd">New Password</div>
+              <input class="form-input" type="password" id="input-new-pwd" placeholder="••••••••">
+            </div>
+            <div class="profile-field" style="margin-bottom:0">
+              <div class="profile-field-label" id="lbl-confirm-pwd">Confirm Password</div>
+              <input class="form-input" type="password" id="input-confirm-pwd" placeholder="••••••••">
+            </div>
+            <button class="btn btn-primary" style="width:100%;margin-top:16px;justify-content:center" onclick="updatePassword()" id="btn-update-pwd">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span id="lbl-update-pwd">Update Password</span>
+            </button>
+          </div>
+        </div>
+
+
+        <!-- 2FA -->
+        <div class="profile-card" id="card-2fa-wrap">
+          <div class="profile-card-header" style="display:flex;align-items:center;justify-content:space-between">
+            <span id="card-2fa">Two-Factor Authentication</span>
+            <span class="badge badge-gray" id="twofa-badge">Disabled</span>
+          </div>
+          <div class="profile-card-body">
+            <!-- Status -->
+            <div class="twofa-status" id="twofa-status-row">
+              <div class="twofa-status-left">
+                <div class="twofa-status-icon twofa-disabled" id="twofa-icon">
+                  <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L2 5v4c0 3 2.5 5.5 6 6.5C14 14.5 14 9 14 9V5L8 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                </div>
+                <div>
+                  <div class="twofa-status-label" id="twofa-status-label">2FA is disabled</div>
+                  <div class="twofa-status-sub" id="twofa-status-sub">Your account is not protected by 2FA</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Setup flow (hidden when enabled) -->
+            <div id="twofa-setup">
+              <div class="twofa-steps">
+                <div class="twofa-step">
+                  <div class="twofa-step-num">1</div>
+                  <div class="twofa-step-text" id="twofa-step1">Install <strong>Google Authenticator</strong> or <strong>Authy</strong> on your phone</div>
+                </div>
+                <div class="twofa-step">
+                  <div class="twofa-step-num">2</div>
+                  <div class="twofa-step-text" id="twofa-step2">Scan the QR code below or enter the secret key manually</div>
+                </div>
+                <div class="twofa-step">
+                  <div class="twofa-step-num">3</div>
+                  <div class="twofa-step-text" id="twofa-step3">Enter the 6-digit code from the app to confirm</div>
+                </div>
+              </div>
+
+              <!-- QR code placeholder (real: generate server-side with speakeasy) -->
+              <div class="twofa-qr" id="twofa-qr-wrap">
+                <svg width="110" height="110" viewBox="0 0 110 110" fill="none">
+                  <!-- QR mock pattern -->
+                  <rect width="110" height="110" fill="white"/>
+                  <rect x="5" y="5" width="35" height="35" rx="4" fill="#111"/>
+                  <rect x="10" y="10" width="25" height="25" rx="2" fill="white"/>
+                  <rect x="14" y="14" width="17" height="17" fill="#111"/>
+                  <rect x="70" y="5" width="35" height="35" rx="4" fill="#111"/>
+                  <rect x="75" y="10" width="25" height="25" rx="2" fill="white"/>
+                  <rect x="79" y="14" width="17" height="17" fill="#111"/>
+                  <rect x="5" y="70" width="35" height="35" rx="4" fill="#111"/>
+                  <rect x="10" y="75" width="25" height="25" rx="2" fill="white"/>
+                  <rect x="14" y="79" width="17" height="17" fill="#111"/>
+                  <!-- dots -->
+                  <rect x="50" y="5" width="6" height="6" fill="#111"/><rect x="58" y="5" width="6" height="6" fill="#111"/>
+                  <rect x="50" y="13" width="6" height="6" fill="#111"/><rect x="66" y="13" width="6" height="6" fill="#111"/>
+                  <rect x="50" y="21" width="6" height="6" fill="#111"/><rect x="58" y="21" width="6" height="6" fill="#111"/>
+                  <rect x="50" y="29" width="6" height="6" fill="#111"/><rect x="66" y="29" width="6" height="6" fill="#111"/>
+                  <rect x="5" y="50" width="6" height="6" fill="#111"/><rect x="13" y="50" width="6" height="6" fill="#111"/>
+                  <rect x="21" y="50" width="6" height="6" fill="#111"/><rect x="29" y="58" width="6" height="6" fill="#111"/>
+                  <rect x="50" y="50" width="6" height="6" fill="#111"/><rect x="58" y="58" width="6" height="6" fill="#111"/>
+                  <rect x="66" y="50" width="6" height="6" fill="#111"/><rect x="74" y="58" width="6" height="6" fill="#111"/>
+                  <rect x="82" y="50" width="6" height="6" fill="#111"/><rect x="90" y="50" width="6" height="6" fill="#111"/>
+                  <rect x="98" y="58" width="6" height="6" fill="#111"/><rect x="66" y="66" width="6" height="6" fill="#111"/>
+                  <rect x="50" y="74" width="6" height="6" fill="#111"/><rect x="58" y="82" width="6" height="6" fill="#111"/>
+                  <rect x="66" y="74" width="6" height="6" fill="#111"/><rect x="74" y="82" width="6" height="6" fill="#111"/>
+                  <rect x="82" y="74" width="6" height="6" fill="#111"/><rect x="90" y="82" width="6" height="6" fill="#111"/>
+                  <rect x="98" y="74" width="6" height="6" fill="#111"/><rect x="82" y="90" width="6" height="6" fill="#111"/>
+                  <rect x="50" y="98" width="6" height="6" fill="#111"/><rect x="58" y="98" width="6" height="6" fill="#111"/>
+                </svg>
+              </div>
+
+              <!-- Secret key -->
+              <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:6px" id="twofa-key-label">Secret key (tap to copy)</div>
+              <div class="twofa-secret" onclick="copySecret()" id="twofa-secret">JBSW Y3DP EHPK 3PXP</div>
+
+              <!-- Code input -->
+              <div style="font-size:11.5px;color:var(--text2);text-align:center;margin-bottom:8px" id="twofa-enter-code">Enter 6-digit code from authenticator app</div>
+              <div class="twofa-code-inputs" id="twofa-digits">
+                <input class="twofa-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="twofa-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="twofa-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="twofa-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="twofa-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input class="twofa-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+              </div>
+
+              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="enable2FA()" id="btn-enable-2fa">
+                <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L2 3.5v3c0 3 2.5 5.5 5 6 2.5-.5 5-3 5-6v-3L7 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                <span id="lbl-enable-2fa">Enable 2FA</span>
+              </button>
+            </div>
+
+            <!-- Enabled state (hidden by default) -->
+            <div id="twofa-enabled-view" style="display:none">
+              <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5" id="twofa-enabled-desc">
+                Two-factor authentication is active. Each login requires a code from your authenticator app.
+              </div>
+              <button class="btn btn-ghost" style="width:100%;justify-content:center;color:var(--red)" onclick="disable2FA()" id="btn-disable-2fa">
+                <svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span id="lbl-disable-2fa">Disable 2FA</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role & permissions -->
+        <div class="profile-card">
+          <div class="profile-card-header" id="card-role">Role & Permissions</div>
+          <div class="profile-card-body">
+            <div class="profile-field">
+              <div class="profile-field-label" id="lbl-role">Your Role</div>
+              <div class="profile-id-field" style="font-family:var(--font)">
+                <span style="display:flex;align-items:center;gap:7px">
+                  <span class="badge badge-purple">Admin</span>
+                  <span id="role-desc">Full access to all features</span>
+                </span>
+              </div>
+            </div>
+            <div class="profile-field" style="margin-bottom:0">
+              <div class="profile-field-label" id="lbl-org">Organization</div>
+              <div class="profile-id-field" style="font-family:var(--font)">
+                <span style="display:flex;align-items:center;gap:7px">
+                  <span style="font-size:13px">🏢</span>
+                  <span id="org-name">Pride Agency</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Language & appearance -->
+        <div class="profile-card">
+          <div class="profile-card-header" id="card-appearance">Language & Appearance</div>
+          <div class="profile-card-body">
+            <div class="profile-field">
+              <div class="profile-field-label" id="lbl-lang">Interface Language</div>
+              <select class="form-select" id="sel-lang" onchange="changeLang(this.value)">
+                <option value="en">🇬🇧 English</option>
+                <option value="ru">🇷🇺 Русский</option>
+              </select>
+            </div>
+            <div class="profile-field" style="margin-bottom:0">
+              <div class="profile-field-label" id="lbl-timezone">Timezone</div>
+              <select class="form-select" id="sel-timezone">
+                <option>UTC+3 (Moscow)</option>
+                <option>UTC+0 (London)</option>
+                <option>UTC-5 (New York)</option>
+                <option>UTC-8 (Los Angeles)</option>
+                <option>UTC+1 (Paris)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'My Profile';
+if (typeof getLang === 'undefined') window.getLang = () => localStorage.getItem('ofmcrm_lang') || 'en';
+
+const TR = {
+  en:{
+    pageTitle:'My Profile', btnSave:'Save Changes',
+    cardPersonal:'Personal Information', cardSessions:'Active Sessions',
+    cardDanger:'Danger Zone', cardPassword:'Update Password',
+    cardRole:'Role & Permissions', cardAppearance:'Language & Appearance',
+    lblId:'ID', lblOrgId:'Organization ID', lblName:'Name',
+    lblEmail:'Email', lblTelegram:'Your Telegram', lblOptional:'(optional)',
+    hintTelegram:'This contact will only be used by our support team for communication and service improvement purposes.',
+    lblChangePhoto:'Change photo',
+    lblCurrent:'Current', btnTerminate:'Terminate', btnTerminateAll:'Terminate All Other Sessions',
+    dangerTitle:'Delete Account', dangerDesc:'Permanently delete your account and all associated data. This action cannot be undone.',
+    btnDelete:'Delete',
+    pwdInfo:'You can update your password using the Account Center',
+    lblCurrentPwd:'Current Password', lblNewPwd:'New Password', lblConfirmPwd:'Confirm Password',
+    btnUpdatePwd:'Update Password',
+    lblRole:'Your Role', roleDesc:'Full access to all features', lblOrg:'Organization',
+    lblLang:'Interface Language', lblTimezone:'Timezone',
+    toastSaved:'Profile saved', toastCopied:'Copied!', toastPwdUpdated:'Password updated',
+    toastPwdMismatch:'Passwords do not match',
+    card2fa:'Two-Factor Authentication',twofa_on:'Enabled',twofa_off:'Disabled',twofaStatusOn:'2FA is enabled',twofaStatusOff:'2FA is disabled',twofaSubOn:'Your account is protected by 2FA',twofaSubOff:'Your account is not protected by 2FA',twofa_step1:'Install <strong>Google Authenticator</strong> or <strong>Authy</strong> on your phone',twofa_step2:'Scan the QR code or enter the secret key manually',twofa_step3:'Enter the 6-digit code from the app to confirm',twofaKeyLabel:'Secret key (tap to copy)',twofaEnterCode:'Enter 6-digit code from authenticator app',btnEnable2fa:'Enable 2FA',btnDisable2fa:'Disable 2FA',twofaEnabledDesc:'Two-factor authentication is active. Each login requires a code from your authenticator app.',toast2faEnabled:'2FA enabled successfully',toast2faDisabled:'2FA disabled',toast2faCode:'Enter 6-digit code',confirm2faDisable:'Disable 2FA? Your account will be less secure.',
+    sessDevice1:'Chrome — macOS', sessMeta1:'Moscow · Active now',
+    sessDevice2:'Safari — iPhone', sessMeta2:'Moscow · 2 hours ago',
+    profileRole:'Administrator',
+  },
+  ru:{
+    pageTitle:'Мой профиль', btnSave:'Сохранить',
+    cardPersonal:'Личная информация', cardSessions:'Активные сессии',
+    cardDanger:'Опасная зона', cardPassword:'Смена пароля',
+    cardRole:'Роль и доступ', cardAppearance:'Язык и внешний вид',
+    lblId:'ID', lblOrgId:'ID организации', lblName:'Имя',
+    lblEmail:'Email', lblTelegram:'Ваш Telegram', lblOptional:'(опционально)',
+    hintTelegram:'Этот контакт используется только командой поддержки для связи и улучшения сервиса.',
+    lblChangePhoto:'Изменить фото',
+    lblCurrent:'Текущая', btnTerminate:'Завершить', btnTerminateAll:'Завершить все другие сессии',
+    dangerTitle:'Удалить аккаунт', dangerDesc:'Безвозвратно удалить аккаунт и все данные. Это действие нельзя отменить.',
+    btnDelete:'Удалить',
+    pwdInfo:'Вы можете обновить пароль через Центр аккаунта',
+    lblCurrentPwd:'Текущий пароль', lblNewPwd:'Новый пароль', lblConfirmPwd:'Подтвердите пароль',
+    btnUpdatePwd:'Обновить пароль',
+    lblRole:'Ваша роль', roleDesc:'Полный доступ ко всем функциям', lblOrg:'Организация',
+    lblLang:'Язык интерфейса', lblTimezone:'Часовой пояс',
+    toastSaved:'Профиль сохранён', toastCopied:'Скопировано!', toastPwdUpdated:'Пароль обновлён',
+    toastPwdMismatch:'Пароли не совпадают',
+    card2fa:'Двухфакторная аутентификация',twofa_on:'Включена',twofa_off:'Отключена',twofaStatusOn:'2FA включена',twofaStatusOff:'2FA отключена',twofaSubOn:'Ваш аккаунт защищён 2FA',twofaSubOff:'Ваш аккаунт не защищён 2FA',twofa_step1:'Установите <strong>Google Authenticator</strong> или <strong>Authy</strong> на телефон',twofa_step2:'Отсканируйте QR-код или введите секретный ключ вручную',twofa_step3:'Введите 6-значный код из приложения для подтверждения',twofaKeyLabel:'Секретный ключ (нажмите чтобы скопировать)',twofaEnterCode:'Введите 6-значный код из приложения',btnEnable2fa:'Включить 2FA',btnDisable2fa:'Отключить 2FA',twofaEnabledDesc:'Двухфакторная аутентификация активна. При каждом входе требуется код из приложения.',toast2faEnabled:'2FA успешно включена',toast2faDisabled:'2FA отключена',toast2faCode:'Введите 6-значный код',confirm2faDisable:'Отключить 2FA? Аккаунт станет менее защищённым.',
+    sessDevice1:'Chrome — macOS', sessMeta1:'Москва · Активен сейчас',
+    sessDevice2:'Safari — iPhone', sessMeta2:'Москва · 2 часа назад',
+    profileRole:'Администратор',
+  }
+};
+
+function applyTranslations() {
+  const l = getLang(), t = TR[l];
+  const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const p = (id, v) => { const el = document.getElementById(id); if (el) el.placeholder = v; };
+
+  s('page-title', t.pageTitle);
+  s('btn-save-text', t.btnSave);
+  s('card-personal', t.cardPersonal);
+  s('card-sessions', t.cardSessions);
+  s('card-danger', t.cardDanger);
+  s('card-password', t.cardPassword);
+  s('card-role', t.cardRole);
+  s('card-appearance', t.cardAppearance);
+  s('lbl-id', t.lblId);
+  s('lbl-orgid', t.lblOrgId);
+  s('lbl-name', t.lblName);
+  s('lbl-email', t.lblEmail);
+  s('lbl-telegram', t.lblTelegram);
+  s('lbl-optional', t.lblOptional);
+  s('hint-telegram', t.hintTelegram);
+  s('lbl-change-photo', t.lblChangePhoto);
+  s('lbl-current', t.lblCurrent);
+  s('btn-terminate', t.btnTerminate);
+  s('btn-terminate-all', t.btnTerminateAll);
+  s('danger-title', t.dangerTitle);
+  s('danger-desc', t.dangerDesc);
+  s('btn-delete', t.btnDelete);
+  s('pwd-info-text', t.pwdInfo);
+  s('lbl-current-pwd', t.lblCurrentPwd);
+  s('lbl-new-pwd', t.lblNewPwd);
+  s('lbl-confirm-pwd', t.lblConfirmPwd);
+  s('lbl-update-pwd', t.btnUpdatePwd);
+  s('lbl-role', t.lblRole);
+  s('role-desc', t.roleDesc);
+  s('lbl-org', t.lblOrg);
+  s('lbl-lang', t.lblLang);
+  s('lbl-timezone', t.lblTimezone);
+  s('card-2fa', t.card2fa);
+  s('twofa-key-label', t.twofaKeyLabel);
+  s('twofa-enter-code', t.twofaEnterCode);
+  s('lbl-enable-2fa', t.btnEnable2fa);
+  s('lbl-disable-2fa', t.btnDisable2fa);
+  s('twofa-enabled-desc', t.twofaEnabledDesc);
+  s('twofa-step2', t.twofa_step2);
+  s('twofa-step3', t.twofa_step3);
+  update2FAUI();
+  s('sess-device1', t.sessDevice1);
+  s('sess-meta1', t.sessMeta1);
+  s('sess-device2', t.sessDevice2);
+  s('sess-meta2', t.sessMeta2);
+  s('profile-ava-role', t.profileRole);
+
+  // Set lang select
+  document.getElementById('sel-lang').value = l;
+
+  window.PAGE_TITLE = t.pageTitle;
+}
+
+function showToast(msg, type) {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;bottom:24px;right:24px;background:${type==='error'?'var(--red-bg)':'var(--bg2)'};border:1px solid ${type==='error'?'rgba(239,68,68,.3)':'var(--border2)'};color:${type==='error'?'var(--red)':'var(--text)'};padding:10px 16px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:opacity .3s`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2000);
+}
+
+function saveProfile() {
+  const t = TR[getLang()];
+  const name = document.getElementById('input-name').value;
+  document.getElementById('profile-ava-name').textContent = name;
+  document.getElementById('profile-ava-initials').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  showToast(t.toastSaved);
+}
+
+function copyVal(val) {
+  const t = TR[getLang()];
+  navigator.clipboard.writeText(val).catch(()=>{});
+  showToast(t.toastCopied);
+}
+
+function changeAvatar() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.click();
+}
+
+function updatePassword() {
+  const t = TR[getLang()];
+  const np = document.getElementById('input-new-pwd').value;
+  const cp = document.getElementById('input-confirm-pwd').value;
+  if (!np || np !== cp) { showToast(t.toastPwdMismatch, 'error'); return; }
+  document.getElementById('input-current-pwd').value = '';
+  document.getElementById('input-new-pwd').value = '';
+  document.getElementById('input-confirm-pwd').value = '';
+  showToast(t.toastPwdUpdated);
+}
+
+function terminateSession(btn) {
+  btn.closest('.session-item').remove();
+}
+
+function terminateAll() {
+  document.querySelectorAll('.session-item').forEach((el, i) => {
+    if (i > 0) el.remove();
+  });
+}
+
+function deleteAccount() {
+  if (confirm('Are you sure? This cannot be undone.')) {
+    if (typeof crmLogout === 'function') crmLogout();
+  }
+}
+
+function changeLang(val) {
+  localStorage.setItem('ofmcrm_lang', val);
+  window.location.reload();
+}
+
+
+// ── 2FA ──────────────────────────────────────────────────────────────────
+let twofa_enabled = false;
+
+function init2FA() {
+  // Auto-focus next digit
+  document.querySelectorAll('.twofa-digit').forEach((inp, i, all) => {
+    inp.addEventListener('input', e => {
+      const v = e.target.value.replace(/\D/g,'');
+      e.target.value = v;
+      if (v && i < all.length - 1) all[i+1].focus();
+      // Auto-submit when all filled
+      if ([...all].every(d => d.value)) enable2FA();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) {
+        all[i-1].focus();
+      }
+    });
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const paste = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+      [...paste].forEach((ch, j) => { if (all[j]) all[j].value = ch; });
+      if (paste.length >= 6) enable2FA();
+    });
+  });
+}
+
+function enable2FA() {
+  const digits = [...document.querySelectorAll('.twofa-digit')].map(d=>d.value).join('');
+  if (digits.length < 6) { showToast(TR[getLang()].toast2faCode || 'Enter 6-digit code', 'error'); return; }
+  // In production: verify TOTP code server-side
+  twofa_enabled = true;
+  update2FAUI();
+  showToast(TR[getLang()].toast2faEnabled || '2FA enabled successfully');
+}
+
+function disable2FA() {
+  if (!confirm(TR[getLang()].confirm2faDisable || 'Disable 2FA? Your account will be less secure.')) return;
+  twofa_enabled = false;
+  document.querySelectorAll('.twofa-digit').forEach(d => d.value = '');
+  update2FAUI();
+  showToast(TR[getLang()].toast2faDisabled || '2FA disabled');
+}
+
+function update2FAUI() {
+  const t = TR[getLang()];
+  const setup = document.getElementById('twofa-setup');
+  const enabled = document.getElementById('twofa-enabled-view');
+  const badge = document.getElementById('twofa-badge');
+  const icon = document.getElementById('twofa-icon');
+  const lbl = document.getElementById('twofa-status-label');
+  const sub = document.getElementById('twofa-status-sub');
+
+  setup.style.display = twofa_enabled ? 'none' : '';
+  enabled.style.display = twofa_enabled ? '' : 'none';
+  badge.textContent = twofa_enabled ? (t.twofa_on||'Enabled') : (t.twofa_off||'Disabled');
+  badge.className = 'badge ' + (twofa_enabled ? 'badge-green' : 'badge-gray');
+  icon.className = 'twofa-status-icon ' + (twofa_enabled ? 'twofa-enabled' : 'twofa-disabled');
+  lbl.textContent = twofa_enabled ? (t.twofaStatusOn||'2FA is enabled') : (t.twofaStatusOff||'2FA is disabled');
+  sub.textContent = twofa_enabled ? (t.twofaSubOn||'Your account is protected by 2FA') : (t.twofaSubOff||'Your account is not protected by 2FA');
+}
+
+function copySecret() {
+  const secret = document.getElementById('twofa-secret').textContent.replace(/\s/g,'');
+  navigator.clipboard.writeText(secret).catch(()=>{});
+  showToast(TR[getLang()].toastCopied||'Copied!');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  init2FA();
+  setTimeout(applyTranslations, 0);
+});
+
+window.addEventListener('storage', e => { if (e.key === 'ofmcrm_lang') applyTranslations(); });
+</script>
+</body>
+</html>

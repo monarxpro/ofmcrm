@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — New TG Post</title>
+<script src="auth.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+.post-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+.post-form-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.post-form-section{padding:18px 20px;border-bottom:1px solid var(--border)}
+.post-form-section:last-child{border-bottom:none}
+.post-section-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:12px}
+.post-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Emoji picker ── */
+.emoji-toolbar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px 8px 0 0;border-bottom:none}
+.emoji-btn{width:28px;height:28px;border-radius:5px;background:none;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;line-height:1}
+.emoji-btn:hover{background:var(--bg4)}
+.tg-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:0 0 8px 8px;color:var(--text);font-size:13px;font-family:var(--font);padding:11px 13px;outline:none;resize:vertical;min-height:160px;transition:border-color .15s;line-height:1.6}
+.tg-textarea:focus{border-color:var(--accent)}
+.tg-textarea::placeholder{color:var(--text3)}
+.char-count{font-size:10.5px;color:var(--text3);text-align:right;margin-top:4px}
+.char-count.warn{color:var(--amber)}
+.char-count.over{color:var(--red)}
+
+/* ── Photo upload ── */
+.photo-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.photo-slot{aspect-ratio:1;border-radius:8px;border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;background:var(--bg3)}
+.photo-slot:hover{border-color:var(--accent);background:var(--accent-bg)}
+.photo-slot svg{width:18px;height:18px;color:var(--text3)}
+.photo-slot .slot-num{font-size:9.5px;color:var(--text3)}
+.photo-slot.filled{border-style:solid;border-color:var(--border2)}
+.photo-slot.filled:hover .photo-remove{opacity:1}
+.photo-slot img{width:100%;height:100%;object-fit:cover;border-radius:6px}
+.photo-remove{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;font-size:11px}
+
+/* ── Stars input ── */
+.stars-row{display:flex;align-items:center;gap:10px}
+.stars-input-wrap{position:relative;flex:1}
+.stars-input-wrap::before{content:'⭐';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px}
+.stars-input-wrap .form-input{padding-left:32px}
+.stars-free{font-size:11.5px;color:var(--green);font-weight:500}
+
+/* ── Status select ── */
+.status-select-wrap{position:relative}
+.status-dot-pre{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;pointer-events:none}
+
+/* ── Right: preview panel ── */
+.preview-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:sticky;top:20px}
+.preview-card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.tg-preview-phone{background:#17212b;min-height:300px}
+.tg-prev-bar{background:#232e3c;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.tg-prev-ava{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.tg-prev-name{font-size:12.5px;font-weight:600;color:#fff}
+.tg-prev-id{font-size:10px;color:#8a9db5}
+.tg-prev-chat{padding:10px 12px}
+.tg-prev-bubble{background:#1e2c3a;border-radius:10px 10px 10px 2px;padding:10px 12px}
+.tg-prev-imgs{display:grid;gap:3px;margin-bottom:8px;border-radius:7px;overflow:hidden}
+.tg-prev-imgs.g1{grid-template-columns:1fr}
+.tg-prev-imgs.g2{grid-template-columns:1fr 1fr}
+.tg-prev-imgs.g3 .gi:first-child{grid-column:1/-1}
+.tg-prev-imgs.g3{grid-template-columns:1fr 1fr}
+.tg-prev-imgs.g4{grid-template-columns:1fr 1fr}
+.tg-prev-imgs.g5 .gi:first-child,.tg-prev-imgs.g5 .gi:nth-child(2){grid-row:1}
+.tg-prev-imgs.g5{grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto}
+.gi{background:#2b3d4f;min-height:70px;border-radius:3px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.gi img{width:100%;height:100%;object-fit:cover;display:block}
+.tg-prev-text{font-size:12px;color:#e0e7f0;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.tg-prev-meta{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:5px}
+.tg-prev-time{font-size:10px;color:#8a9db5}
+.tg-prev-stars{font-size:10px;color:#f59e0b}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+
+    <div class="page-header">
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">
+          <a href="tg-posting.html" style="color:var(--accent2);text-decoration:none" id="bc-posting">TG Group Posting</a>
+          <span style="margin:0 6px;color:var(--text3)">/</span>
+          <span id="bc-new">New Post</span>
+        </div>
+        <div class="page-title" id="page-title">New Post</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="window.location.href='tg-posting.html'" id="btn-cancel">Cancel</button>
+        <button class="btn btn-ghost" onclick="saveDraft()" id="btn-draft">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 10V4a1 1 0 011-1h7l2 2v5a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="currentColor" stroke-width="1.3"/><path d="M9 3v3H5V3" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span id="lbl-draft">Save Draft</span>
+        </button>
+        <button class="btn btn-primary" onclick="publishPost()" id="btn-publish">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M14 2L1 7l5 2 2 5 2-3 4 3L14 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span id="lbl-publish">Schedule Post</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="post-layout">
+
+      <!-- ── LEFT: Form ── -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <!-- Channel -->
+        <div class="post-form-card">
+          <div class="post-form-section">
+            <div class="post-section-title" id="sec-channel">Channel</div>
+            <div class="post-grid">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" id="lbl-channel-name">Channel Name</label>
+                <select class="form-select" id="sel-channel" onchange="onChannelChange()">
+                  <option value="" id="opt-select">— Select channel —</option>
+                  <option value="noravale_main" data-id="@noravale_main" data-color="#6c63ff" data-initials="NV">Nora Vale Main</option>
+                  <option value="aurora_official" data-id="@aurora_official" data-color="#ec4899" data-initials="AU">Aurora Official</option>
+                  <option value="stella_tg" data-id="@stella_tg" data-color="#22c55e" data-initials="SM">Stella Moon TG</option>
+                  <option value="luna_channel" data-id="@luna_channel" data-color="#f59e0b" data-initials="LR">Luna Ray Channel</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" id="lbl-channel-id">Channel ID / Username</label>
+                <input class="form-input" type="text" id="inp-channel-id" placeholder="@username or -100123456789" oninput="updatePreview()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date & Stars & Status -->
+        <div class="post-form-card">
+          <div class="post-form-section">
+            <div class="post-section-title" id="sec-schedule">Schedule & Settings</div>
+            <div class="post-grid">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" id="lbl-date">Publication Date</label>
+                <input class="form-input" type="date" id="inp-date" oninput="updatePreview()">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" id="lbl-time">Time</label>
+                <input class="form-input" type="time" id="inp-time" value="12:00" oninput="updatePreview()">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" id="lbl-stars">Stars Cost</label>
+                <div class="stars-row">
+                  <div class="stars-input-wrap" style="flex:1">
+                    <input class="form-input" type="number" id="inp-stars" min="0" value="0" oninput="onStarsChange(this.value)">
+                  </div>
+                  <div class="stars-free" id="stars-free-label">Free</div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" id="lbl-status">Status</label>
+                <div class="status-select-wrap">
+                  <div class="status-dot-pre" id="status-dot" style="background:var(--amber)"></div>
+                  <select class="form-select" id="sel-status" style="padding-left:28px" onchange="onStatusChange()">
+                    <option value="pending" id="opt-pending">Pending</option>
+                    <option value="posted" id="opt-posted">Posted</option>
+                    <option value="error" id="opt-error">Error</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Photos -->
+        <div class="post-form-card">
+          <div class="post-form-section">
+            <div class="post-section-title" id="sec-photos">Photos (up to 5)</div>
+            <div class="photo-grid" id="photo-grid">
+              <!-- Rendered by JS -->
+            </div>
+            <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="onFilesSelected(this)">
+          </div>
+        </div>
+
+        <!-- Text -->
+        <div class="post-form-card">
+          <div class="post-form-section">
+            <div class="post-section-title" id="sec-text">Post Text</div>
+            <!-- Emoji toolbar -->
+            <div class="emoji-toolbar" id="emoji-toolbar">
+              <!-- common TG emojis -->
+            </div>
+            <textarea class="tg-textarea" id="inp-text" placeholder="Type your post text here..." oninput="onTextInput(this)"></textarea>
+            <div class="char-count" id="char-count">0 / 4096</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── RIGHT: Preview ── -->
+      <div class="preview-card">
+        <div class="preview-card-header">
+          <span id="lbl-preview">Preview</span>
+          <span style="font-size:11px;color:var(--text3)" id="lbl-preview-sub">Telegram appearance</span>
+        </div>
+        <div class="tg-preview-phone">
+          <div class="tg-prev-bar">
+            <div class="tg-prev-ava" id="prev-ava" style="background:#6c63ff;color:#fff">TG</div>
+            <div>
+              <div class="tg-prev-name" id="prev-name">Channel Name</div>
+              <div class="tg-prev-id" id="prev-id">@channel</div>
+            </div>
+          </div>
+          <div class="tg-prev-chat">
+            <div class="tg-prev-bubble">
+              <div class="tg-prev-imgs" id="prev-imgs" style="display:none"></div>
+              <div class="tg-prev-text" id="prev-text" style="color:#8a9db5;font-style:italic">Your post text will appear here...</div>
+              <div class="tg-prev-meta">
+                <div class="tg-prev-stars" id="prev-stars"></div>
+                <div class="tg-prev-time" id="prev-time">12:00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'New TG Post';
+if (typeof getLang === 'undefined') window.getLang = () => localStorage.getItem('ofmcrm_lang') || 'en';
+
+// ── State ─────────────────────────────────────────────────────────────────
+const photos = [null,null,null,null,null];
+let activeSlot = -1;
+
+// ── Init date from URL param ───────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+if (params.get('date')) {
+  document.getElementById('inp-date').value = params.get('date');
+}
+
+// ── Emoji toolbar ─────────────────────────────────────────────────────────
+const TG_EMOJIS = ['❤️','🔥','👍','😍','🥰','😘','💕','💋','✨','🌟','⭐','🎯','💎','🏆',
+  '☕️','🍷','🥂','🌹','🌸','🌙','⚡','💫','🎉','🎊','👑','💅','🤍','🖤','💜','💙',
+  '📸','🎬','💌','📱','🔗','👀','🙈','😈','🥵','💦','🌊','🔞','🎁','💰','💵'];
+
+document.getElementById('emoji-toolbar').innerHTML = TG_EMOJIS.map(e =>
+  `<button class="emoji-btn" onclick="insertEmoji('${e}')" title="${e}">${e}</button>`
+).join('');
+
+function insertEmoji(emoji) {
+  const ta = document.getElementById('inp-text');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const val = ta.value;
+  ta.value = val.slice(0, start) + emoji + val.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + emoji.length;
+  ta.focus();
+  onTextInput(ta);
+}
+
+// ── Text ──────────────────────────────────────────────────────────────────
+function onTextInput(ta) {
+  const len = ta.value.length;
+  const cc = document.getElementById('char-count');
+  cc.textContent = `${len} / 4096`;
+  cc.className = 'char-count' + (len > 4096 ? ' over' : len > 3500 ? ' warn' : '');
+  updatePreview();
+}
+
+// ── Photos ────────────────────────────────────────────────────────────────
+function renderPhotoGrid() {
+  document.getElementById('photo-grid').innerHTML = photos.map((p, i) => {
+    if (p) {
+      return `<div class="photo-slot filled" onclick="openSlot(${i})">
+        <img src="${p}" alt="photo ${i+1}">
+        <button class="photo-remove" onclick="removePhoto(${i},event)">✕</button>
+      </div>`;
+    }
+    return `<div class="photo-slot" onclick="openSlot(${i})">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 3h10a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><circle cx="6" cy="7" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 11l3-3 2 2 3-3 4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="slot-num">${i+1}</div>
+    </div>`;
+  }).join('');
+  updatePreview();
+}
+
+function openSlot(i) {
+  activeSlot = i;
+  document.getElementById('file-input').click();
+}
+
+function onFilesSelected(inp) {
+  const files = [...inp.files];
+  files.forEach((f, fi) => {
+    const slot = activeSlot + fi;
+    if (slot >= 5) return;
+    const reader = new FileReader();
+    reader.onload = e => { photos[slot] = e.target.result; renderPhotoGrid(); };
+    reader.readAsDataURL(f);
+  });
+  inp.value = '';
+}
+
+function removePhoto(i, e) {
+  e.stopPropagation();
+  photos[i] = null;
+  // Compact: shift remaining photos
+  const filled = photos.filter(Boolean);
+  for (let j = 0; j < 5; j++) photos[j] = filled[j] || null;
+  renderPhotoGrid();
+}
+
+// ── Channel ───────────────────────────────────────────────────────────────
+function onChannelChange() {
+  const sel = document.getElementById('sel-channel');
+  const opt = sel.options[sel.selectedIndex];
+  const id = opt.dataset.id || '';
+  document.getElementById('inp-channel-id').value = id;
+  updatePreview();
+}
+
+// ── Stars ─────────────────────────────────────────────────────────────────
+function onStarsChange(val) {
+  const lbl = document.getElementById('stars-free-label');
+  lbl.textContent = parseInt(val) > 0 ? `⭐ ${val}` : (getLang()==='ru'?'Бесплатно':'Free');
+  lbl.style.color = parseInt(val) > 0 ? 'var(--amber)' : 'var(--green)';
+  updatePreview();
+}
+
+// ── Status ────────────────────────────────────────────────────────────────
+const STATUS_COLORS = {pending:'var(--amber)',posted:'var(--green)',error:'var(--red)'};
+function onStatusChange() {
+  const v = document.getElementById('sel-status').value;
+  document.getElementById('status-dot').style.background = STATUS_COLORS[v];
+}
+
+// ── Preview ───────────────────────────────────────────────────────────────
+function updatePreview() {
+  const sel = document.getElementById('sel-channel');
+  const opt = sel.options[sel.selectedIndex];
+  const color = opt.dataset.color || '#6c63ff';
+  const initials = opt.dataset.initials || 'TG';
+  const name = opt.value ? opt.textContent : (getLang()==='ru'?'Название канала':'Channel Name');
+  const channelId = document.getElementById('inp-channel-id').value || '@channel';
+  const text = document.getElementById('inp-text').value;
+  const time = document.getElementById('inp-time').value || '12:00';
+  const stars = parseInt(document.getElementById('inp-stars').value) || 0;
+
+  document.getElementById('prev-ava').textContent = initials;
+  document.getElementById('prev-ava').style.background = color;
+  document.getElementById('prev-name').textContent = name;
+  document.getElementById('prev-id').textContent = channelId;
+  document.getElementById('prev-text').textContent = text || (getLang()==='ru'?'Текст поста появится здесь...':'Your post text will appear here...');
+  document.getElementById('prev-text').style.fontStyle = text ? 'normal' : 'italic';
+  document.getElementById('prev-text').style.color = text ? '#e0e7f0' : '#8a9db5';
+  document.getElementById('prev-time').textContent = time;
+  document.getElementById('prev-stars').textContent = stars > 0 ? `⭐ ${stars}` : '';
+
+  // Photos
+  const filled = photos.filter(Boolean);
+  const imgs = document.getElementById('prev-imgs');
+  if (filled.length > 0) {
+    imgs.style.display = '';
+    imgs.className = `tg-prev-imgs g${filled.length}`;
+    imgs.innerHTML = filled.map(src => `<div class="gi"><img src="${src}" alt="photo"></div>`).join('');
+  } else {
+    imgs.style.display = 'none';
+    imgs.innerHTML = '';
+  }
+}
+
+// ── Save / Publish ────────────────────────────────────────────────────────
+function validateForm() {
+  const channel = document.getElementById('sel-channel').value;
+  const date = document.getElementById('inp-date').value;
+  const text = document.getElementById('inp-text').value.trim();
+  if (!channel) { alert(getLang()==='ru'?'Выберите канал':'Please select a channel'); return false; }
+  if (!date)    { alert(getLang()==='ru'?'Укажите дату':'Please select a date'); return false; }
+  if (!text)    { alert(getLang()==='ru'?'Введите текст поста':'Please enter post text'); return false; }
+  return true;
+}
+
+function saveDraft() {
+  window.location.href = 'tg-posting.html';
+}
+
+function publishPost() {
+  if (!validateForm()) return;
+  // In production: POST to /api/tg-posts
+  window.location.href = 'tg-posting.html';
+}
+
+// ── Translations ──────────────────────────────────────────────────────────
+const TR = {
+  en:{pageTitle:'New Post',bcPosting:'TG Group Posting',bcNew:'New Post',
+    cancel:'Cancel',draft:'Save Draft',publish:'Schedule Post',
+    secChannel:'Channel',secSchedule:'Schedule & Settings',secPhotos:'Photos (up to 5)',secText:'Post Text',
+    lblChannelName:'Channel Name',lblChannelId:'Channel ID / Username',
+    lblDate:'Publication Date',lblTime:'Time',lblStars:'Stars Cost',lblStatus:'Status',
+    optSelect:'— Select channel —',optPending:'Pending',optPosted:'Posted',optError:'Error',
+    preview:'Preview',previewSub:'Telegram appearance',free:'Free'},
+  ru:{pageTitle:'Новый пост',bcPosting:'Постинг в группы Telegram',bcNew:'Новый пост',
+    cancel:'Отмена',draft:'Сохранить черновик',publish:'Запланировать пост',
+    secChannel:'Канал',secSchedule:'Расписание и настройки',secPhotos:'Фото (до 5 штук)',secText:'Текст публикации',
+    lblChannelName:'Название канала',lblChannelId:'ID канала / Username',
+    lblDate:'Дата публикации',lblTime:'Время',lblStars:'Стоимость в звёздах',lblStatus:'Статус',
+    optSelect:'— Выберите канал —',optPending:'Ожидает',optPosted:'Опубликован',optError:'Ошибка',
+    preview:'Предпросмотр',previewSub:'Как будет выглядеть в Telegram',free:'Бесплатно'}
+};
+
+function applyTranslations() {
+  const l = getLang(), t = TR[l];
+  const s = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  s('page-title',t.pageTitle); s('bc-posting',t.bcPosting); s('bc-new',t.bcNew);
+  s('btn-cancel',t.cancel); s('lbl-draft',t.draft); s('lbl-publish',t.publish);
+  s('sec-channel',t.secChannel); s('sec-schedule',t.secSchedule);
+  s('sec-photos',t.secPhotos); s('sec-text',t.secText);
+  s('lbl-channel-name',t.lblChannelName); s('lbl-channel-id',t.lblChannelId);
+  s('lbl-date',t.lblDate); s('lbl-time',t.lblTime);
+  s('lbl-stars',t.lblStars); s('lbl-status',t.lblStatus);
+  s('opt-select',t.optSelect); s('opt-pending',t.optPending);
+  s('opt-posted',t.optPosted); s('opt-error',t.optError);
+  s('lbl-preview',t.preview); s('lbl-preview-sub',t.previewSub);
+  const freeEl = document.getElementById('stars-free-label');
+  if (freeEl && parseInt(document.getElementById('inp-stars').value)===0) freeEl.textContent = t.free;
+  window.PAGE_TITLE = t.pageTitle;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations();
+  renderPhotoGrid();
+  updatePreview();
+});
+window.addEventListener('storage', e => { if (e.key==='ofmcrm_lang') applyTranslations(); });
+</script>
+</body>
+</html>

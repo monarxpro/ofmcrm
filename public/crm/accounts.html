@@ -4,42 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OFM CRM — Accounts</title>
+<script src="auth.js"></script>
 <link rel="stylesheet" href="styles.css">
-<style>
-.filters-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.filter-tags{display:flex;gap:6px;margin-left:auto}
-.filter-tag{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;background:var(--bg4);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s}
-.filter-tag:hover{border-color:var(--border2);color:var(--text)}
-.filter-tag.active{background:var(--accent-bg);border-color:rgba(108,99,255,.3);color:var(--accent2)}
-.steps{display:flex;align-items:center;gap:6px;margin-bottom:22px}
-.step{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
-.step-num{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
-.step.active .step-num{background:var(--accent);border-color:var(--accent);color:#fff}
-.step.active{color:var(--text);font-weight:500}
-.step.done .step-num{background:var(--green);border-color:var(--green);color:#fff}
-.step-sep{flex:1;height:1px;background:var(--border)}
-.platform-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.platform-card{background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
-.platform-card:hover{border-color:var(--border2)}
-.platform-card.selected{border-color:var(--accent);background:var(--accent-bg)}
-.platform-card.disabled{opacity:.4;cursor:not-allowed}
-.platform-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.platform-name{font-size:13px;font-weight:500}
-.platform-desc{font-size:11px;color:var(--text2);margin-top:2px}
-.platform-check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border2);margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.platform-card.selected .platform-check{background:var(--accent);border-color:var(--accent)}
-.platform-check svg{width:10px;height:10px;color:#fff;display:none}
-.platform-card.selected .platform-check svg{display:block}
-.oauth-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;border-radius:10px;border:1.5px solid var(--accent);background:var(--accent-bg);color:var(--accent2);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .15s;margin-bottom:16px}
-.oauth-btn:hover{background:var(--accent);color:#fff}
-.oauth-divider{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.oauth-divider-line{flex:1;height:1px;background:var(--border)}
-.oauth-divider-text{font-size:11px;color:var(--text3);white-space:nowrap}
-.info-box{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;gap:10px}
-.info-box svg{width:14px;height:14px;color:var(--accent2);flex-shrink:0;margin-top:1px}
-.info-box-text{font-size:12px;color:var(--text2);line-height:1.6}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-</style>
 </head>
 <body>
 <aside id="sidebar"></aside>

@@ -6,7 +6,10 @@
 <title>OFM CRM — Sign In</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
 <style>
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --bg: #0a0a0b; --bg2: #111113; --bg3: #18181b; --bg4: #1f1f23;
@@ -290,6 +293,7 @@ body::before {
   color: var(--text3);
   line-height: 1.6;
 }
+
 </style>
 </head>
 <body>
@@ -363,21 +367,20 @@ body::before {
   <div class="login-footer" id="lbl-footer">
     Access restricted. Contact your administrator<br>to get credentials.
   </div>
+  <div class="login-footer" style="margin-top:12px;font-size:12px;color:var(--text2)">
+    Don't have an account? <a href="register.html" style="color:var(--accent2);text-decoration:none">Sign up</a>
+  </div>
 </div>
 
 <script>
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 // Зашитые учётные данные (до подключения БД)
 // Замени на свои перед деплоем
-const CREDENTIALS = [
-  { login: 'admin',   password: 'ofmcrm2026!', role: 'admin'   },
-  { login: 'manager', password: 'manager123',  role: 'manager' },
-];
-
 const COOKIE_NAME   = 'ofmcrm_auth';
-const COOKIE_DAYS   = 7;    // сколько дней живёт кука при "Remember me"
-const COOKIE_HOURS  = 8;    // часов при выключенном "Remember me"
-const REDIRECT_TO   = 'dashboard.html';
+const COOKIE_DAYS   = 7;
+const COOKIE_HOURS  = 8;
+const REDIRECT_TO   = '/crm/dashboard.html';
+const API_URL       = '/api/auth/login';
 // ───────────────────────────────────────────────────────────────────────────
 
 const TR = {
@@ -429,14 +432,8 @@ function deleteCookie(name) {
 (function checkAuth() {
   const token = getCookie(COOKIE_NAME);
   if (token) {
-    try {
-      const data = JSON.parse(atob(token));
-      if (data && data.login && data.ts) {
-        window.location.replace(REDIRECT_TO);
-      }
-    } catch(e) {
-      deleteCookie(COOKIE_NAME);
-    }
+    // JWT token - просто редиректим если есть
+    window.location.replace(REDIRECT_TO);
   }
 })();
 
@@ -475,7 +472,7 @@ style.textContent = `@keyframes shake {
 document.head.appendChild(style);
 
 // Login logic
-function doLogin() {
+async function doLogin() {
   hideError();
 
   const login    = document.getElementById('input-login').value.trim();
@@ -490,19 +487,21 @@ function doLogin() {
   const btn = document.getElementById('btn-login');
   btn.classList.add('loading');
 
-  // Small delay for UX realism
-  setTimeout(() => {
-    const match = CREDENTIALS.find(c => c.login === login && c.password === password);
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: login, password })
+    });
 
-    if (match) {
-      const payload = {
-        login: match.login,
-        role:  match.role,
-        ts:    Date.now()
-      };
-      const token = btoa(JSON.stringify(payload));
-      const days  = remember ? COOKIE_DAYS : (COOKIE_HOURS / 24);
-      setCookie(COOKIE_NAME, token, days);
+    const data = await res.json();
+
+    if (res.ok && data.token) {
+      // Сохраняем JWT токен в cookie
+      const days = remember ? COOKIE_DAYS : (COOKIE_HOURS / 24);
+      setCookie(COOKIE_NAME, data.token, days);
+      // Сохраняем данные пользователя
+      localStorage.setItem('ofmcrm_user', JSON.stringify(data.user));
       window.location.replace(REDIRECT_TO);
     } else {
       btn.classList.remove('loading');
@@ -510,7 +509,10 @@ function doLogin() {
       document.getElementById('input-password').value = '';
       document.getElementById('input-password').focus();
     }
-  }, 600);
+  } catch (e) {
+    btn.classList.remove('loading');
+    showError(TR[getLang()].error);
+  }
 }
 
 // Enter key support

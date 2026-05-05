@@ -4,106 +4,129 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OFM CRM — Model Cards</title>
+<script src="auth.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <link rel="stylesheet" href="styles.css">
 <style>
-/* Layout */
-.cards-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
-.cards-sidebar{display:flex;flex-direction:column;gap:10px}
-
-/* Card list item */
-.model-list-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px}
-.model-list-item:hover{border-color:var(--border2);background:var(--bg3)}
-.model-list-item.active{border-color:var(--accent);background:var(--accent-bg)}
-.mli-ava{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
-.mli-name{font-size:13px;font-weight:500}
-.mli-nick{font-size:11px;color:var(--text2);margin-top:1px}
-.mli-status{margin-left:auto;width:7px;height:7px;border-radius:50%;flex-shrink:0}
-
-/* Detail panel */
-.card-detail{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.card-hero{padding:24px 24px 0;display:flex;align-items:flex-start;gap:18px;border-bottom:1px solid var(--border);padding-bottom:20px}
-.hero-ava{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;border:2px solid var(--border2)}
-.hero-info{flex:1}
-.hero-name{font-size:20px;font-weight:700;letter-spacing:-.4px}
-.hero-nick{font-size:13px;color:var(--accent2);margin-top:2px;font-family:var(--mono)}
-.hero-tagline{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5;max-width:480px}
-.hero-badges{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.hero-actions{display:flex;gap:8px;margin-left:auto;flex-shrink:0}
-
-/* Tabs inside card */
-.card-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 24px}
-.card-tab{padding:10px 16px;font-size:12.5px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
-.card-tab:hover{color:var(--text)}
-.card-tab.active{color:var(--accent2);border-bottom-color:var(--accent);font-weight:500}
-
-/* Tab panes */
-.tab-pane{display:none;padding:20px 24px}
-.tab-pane.active{display:block}
-
-/* Section */
-.info-section{margin-bottom:22px}
-.info-section-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.info-section-title svg{width:12px;height:12px}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.info-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.info-field{background:var(--bg3);border-radius:8px;padding:9px 12px}
-.info-field-label{font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-.info-field-val{font-size:12.5px;color:var(--text);font-weight:500;line-height:1.4}
-.info-field-full{background:var(--bg3);border-radius:8px;padding:9px 12px;grid-column:1/-1}
-
-/* Platform links */
-.platform-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.platform-link-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:10px;text-decoration:none;transition:all .15s;cursor:pointer}
-.platform-link-card:hover{border-color:var(--border2);background:var(--bg4)}
-.pl-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.pl-name{font-size:12px;font-weight:500;color:var(--text)}
-.pl-url{font-size:10.5px;color:var(--text2);margin-top:1px;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
-.pl-arrow{margin-left:auto;color:var(--text3)}
-.pl-arrow svg{width:12px;height:12px}
-
-/* Satellite accounts */
-.satellite-list{display:flex;flex-direction:column;gap:6px}
-.satellite-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;transition:border-color .15s}
-.satellite-item:hover{border-color:var(--border2)}
-.sat-num{width:20px;height:20px;border-radius:5px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--text3);flex-shrink:0}
-.sat-url{font-size:12px;color:var(--accent2);font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sat-geo{font-size:11px;color:var(--text2);background:var(--bg4);padding:2px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0}
-.sat-actions{display:flex;gap:5px;flex-shrink:0}
-
-.add-satellite-btn{border:1.5px dashed var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;color:var(--text3);cursor:pointer;transition:all .15s;background:transparent;width:100%;font-family:var(--font)}
-.add-satellite-btn:hover{border-color:var(--accent);color:var(--accent2);background:var(--accent-bg)}
-
-/* Voice & phrases */
-.phrase-list{display:flex;flex-direction:column;gap:6px}
-.phrase-item{background:var(--bg3);border-left:2px solid var(--accent);border-radius:0 7px 7px 0;padding:8px 12px;font-size:12px;color:var(--text);line-height:1.5;font-style:italic}
-
-.emoji-list{display:flex;gap:8px;flex-wrap:wrap}
-.emoji-chip{background:var(--bg3);border-radius:7px;padding:6px 10px;font-size:16px;cursor:default}
-
-/* Prompt box */
-.prompt-box{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px 14px;font-size:12px;font-family:var(--mono);color:var(--text2);line-height:1.7;position:relative}
-.prompt-copy{position:absolute;top:8px;right:8px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:10.5px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .15s}
-.prompt-copy:hover{background:var(--bg2);color:var(--text)}
-
-/* Appearance tags */
-.appearance-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.appear-item{background:var(--bg3);border-radius:8px;padding:8px 10px}
-.appear-label{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
-.appear-val{font-size:12px;font-weight:500}
-
-/* Red flags */
-.redflag-list{display:flex;flex-wrap:wrap;gap:6px}
-.redflag-chip{background:var(--red-bg);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:3px 10px;font-size:11.5px;color:var(--red)}
-
-/* Scroll wrapper inside tab */
-.tab-pane{max-height:calc(100vh - 300px);overflow-y:auto}
-.tab-pane::-webkit-scrollbar{width:3px}
-.tab-pane::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
-
-/* Modal: satellite */
+.mc-page{display:flex;gap:16px;align-items:flex-start}
+.mc-list-col{width:230px;flex-shrink:0;display:flex;flex-direction:column;gap:7px}
+.mc-list-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .15s}
+.mc-list-item:hover{border-color:var(--border2);background:var(--bg3)}
+.mc-list-item.active{border-color:var(--accent);background:var(--accent-bg)}
+.mc-ava{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.mc-info{flex:1;min-width:0}
+.mc-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-nick{font-size:10.5px;color:var(--text2);margin-top:1px}
+.mc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mc-add-btn{border:1.5px dashed var(--border);border-radius:9px;padding:9px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--text3);cursor:pointer;transition:all .15s;background:none;width:100%;font-family:var(--font)}
+.mc-add-btn:hover{border-color:var(--accent);color:var(--accent2);background:var(--accent-bg)}
+.mc-add-btn svg{width:12px;height:12px}
+.mc-detail-col{flex:1;min-width:0;border:1px solid var(--border);border-radius:12px;background:var(--bg2);overflow:hidden}
+.mc-hero{padding:18px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px}
+.mc-hero-ava{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;border:2px solid var(--border2)}
+.mc-hero-info{flex:1;min-width:0}
+.mc-hero-name{font-size:17px;font-weight:700;letter-spacing:-.4px}
+.mc-hero-nick{font-size:12px;color:var(--accent2);font-family:var(--mono);margin-top:2px}
+.mc-hero-tagline{font-size:11.5px;color:var(--text2);margin-top:5px;line-height:1.5}
+.mc-hero-badges{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.mc-hero-actions{display:flex;gap:6px;flex-shrink:0}
+.mc-tabs-nav{display:flex;border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto;flex-shrink:0;background:var(--bg2)}
+.mc-tabs-nav::-webkit-scrollbar{display:none}
+.mc-tab-btn{padding:9px 13px;font-size:12px;font-family:var(--font);color:var(--text2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;white-space:nowrap;flex-shrink:0}
+.mc-tab-btn:hover{color:var(--text)}
+.mc-tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent);font-weight:600}
+.mc-panel{display:none;padding:18px 20px}
+.mc-panel.active{display:block}
+.mc-section{margin-bottom:18px}
+.mc-stitle{font-size:9.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.mc-stitle svg{width:11px;height:11px;flex-shrink:0}
+.mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.mc-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.mc-field{background:var(--bg3);border-radius:7px;padding:8px 10px}
+.mc-field.full{grid-column:1/-1}
+.mc-lbl{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.mc-val{font-size:12.5px;font-weight:500;line-height:1.4}
+.mc-val.muted{font-weight:400;color:var(--text2)}
+.mc-platform-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.mc-pl-card{display:flex;align-items:center;gap:9px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-decoration:none;cursor:pointer;transition:all .15s}
+.mc-pl-card:hover{border-color:var(--border2);background:var(--bg4)}
+.mc-pl-ico{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.mc-pl-name{font-size:11.5px;font-weight:500}
+.mc-pl-url{font-size:10px;color:var(--text2);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.mc-pl-arr{margin-left:auto;color:var(--text3);flex-shrink:0}
+.mc-pl-arr svg{width:10px;height:10px}
+.mc-sat-list{display:flex;flex-direction:column;gap:5px}
+.mc-sat-item{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 9px;transition:border-color .15s}
+.mc-sat-item:hover{border-color:var(--border2)}
+.mc-sat-num{width:17px;height:17px;border-radius:4px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text3);flex-shrink:0}
+.mc-sat-url{font-size:11.5px;color:var(--accent2);font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-sat-geo{font-size:10px;color:var(--text2);background:var(--bg4);padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.mc-sat-acts{display:flex;gap:3px;flex-shrink:0}
+.mc-dashed{border:1.5px dashed var(--border);border-radius:7px;padding:7px 10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;color:var(--text3);cursor:pointer;transition:all .15s;background:none;width:100%;font-family:var(--font);margin-top:6px}
+.mc-dashed:hover{border-color:var(--accent);color:var(--accent2);background:var(--accent-bg)}
+.mc-dashed svg{width:11px;height:11px}
+.mc-appear-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.mc-appear-item{background:var(--bg3);border-radius:7px;padding:7px 9px}
+.mc-appear-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.mc-appear-val{font-size:12px;font-weight:500}
+.mc-redflag-wrap{display:flex;flex-wrap:wrap;gap:5px}
+.mc-redflag{background:var(--red-bg);border:1px solid rgba(239,68,68,.2);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--red)}
+.mc-phrase{background:var(--bg3);border-left:2px solid var(--accent);border-radius:0 7px 7px 0;padding:7px 10px;font-size:12px;line-height:1.5;font-style:italic;margin-bottom:5px}
+.mc-phrase.normal{font-style:normal}
+.mc-emoji-row{display:flex;gap:7px;flex-wrap:wrap}
+.mc-emoji{background:var(--bg3);border-radius:7px;padding:5px 8px;font-size:14px}
+.mc-prompt{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:11.5px;font-family:var(--mono);color:var(--text2);line-height:1.7;position:relative}
+.mc-prompt-copy{position:absolute;top:6px;right:6px;background:var(--bg4);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:10px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .15s}
+.mc-prompt-copy:hover{background:var(--bg2);color:var(--text)}
+.mc-funnel{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.mc-funnel-step{flex:1;min-width:80px;background:var(--bg3);border-radius:7px;padding:8px 9px;text-align:center}
+.mc-funnel-step.hi{border:1px solid rgba(108,99,255,.3);background:var(--accent-bg)}
+.mc-funnel-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.mc-funnel-val{font-size:10.5px;color:var(--text2)}
+.mc-funnel-step.hi .mc-funnel-lbl,.mc-funnel-step.hi .mc-funnel-val{color:var(--accent2)}
+.mc-funnel-arr{color:var(--text3);font-size:13px;flex-shrink:0}
 .geo-select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);padding:9px 30px 9px 12px;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer;transition:border-color .15s}
 .geo-select:focus{border-color:var(--accent)}
 .geo-select option{background:var(--bg3)}
+
+/* ── Stats tab ── */
+.st-period-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.st-period-btn{padding:5px 12px;border-radius:6px;font-size:11.5px;font-family:var(--font);background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s}
+.st-period-btn:hover{border-color:var(--border2);color:var(--text)}
+.st-period-btn.active{background:var(--accent-bg);border-color:rgba(108,99,255,.35);color:var(--accent2);font-weight:600}
+.st-period-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.st-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.st-kpi{background:var(--bg3);border-radius:9px;padding:11px 13px}
+.st-kpi-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.st-kpi-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.st-kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.st-kpi-val{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-1px}
+.st-kpi-change{font-size:10.5px;margin-top:3px;display:flex;align-items:center;gap:3px}
+.st-kpi-change.up{color:var(--green)}
+.st-kpi-change.down{color:var(--red)}
+.st-kpi-change.flat{color:var(--text3)}
+.st-chart-card{background:var(--bg3);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.st-chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.st-chart-title{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+.st-chart-title-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.st-chart-meta{font-size:10.5px;color:var(--text2)}
+.st-sources-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.st-source-card{background:var(--bg3);border-radius:9px;padding:10px 12px;border:1px solid var(--border)}
+.st-source-top{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.st-source-ico{font-size:14px}
+.st-source-name{font-size:11px;font-weight:600;color:var(--text2)}
+.st-source-val{font-size:17px;font-weight:700;font-family:var(--mono);margin-bottom:2px}
+.st-source-change{font-size:10px;display:flex;align-items:center;gap:2px}
+.st-add-account{border:1.5px dashed var(--border);border-radius:9px;padding:10px 12px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;color:var(--text3);cursor:pointer;transition:all .15s;background:none;width:100%;font-family:var(--font)}
+.st-add-account:hover{border-color:var(--accent);color:var(--accent2);background:var(--accent-bg)}
+.st-add-account svg{width:12px;height:12px}
+.st-satellite-list{display:flex;flex-direction:column;gap:5px}
+.st-satellite-row{display:flex;align-items:center;gap:8px;background:var(--bg4);border-radius:7px;padding:7px 10px}
+.st-sat-num{width:16px;height:16px;border-radius:4px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text3);flex-shrink:0}
+.st-sat-url{font-size:11px;color:var(--accent2);font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-sat-geo{font-size:10px;color:var(--text3);white-space:nowrap}
+.st-sat-val{font-size:12px;font-weight:600;font-family:var(--mono);margin-left:auto;flex-shrink:0}
+.st-sat-change{font-size:10px;flex-shrink:0;margin-left:4px}
 </style>
 </head>
 <body>
@@ -111,7 +134,6 @@
 <div class="main">
   <div id="topbar"></div>
   <div class="content">
-
     <div class="page-header">
       <div class="page-title" id="page-title">Model Cards</div>
       <button class="btn btn-primary" onclick="openNewCardModal()">
@@ -119,685 +141,480 @@
         <span id="btn-newcard">New Model Card</span>
       </button>
     </div>
-
-    <div class="cards-layout">
-
-      <!-- LEFT: model list -->
-      <div class="cards-sidebar">
-        <div class="search-wrap">
-          <svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-          <input type="text" id="model-search" placeholder="Search models...">
-        </div>
-        <div id="model-list">
-          <div class="model-list-item active" onclick="selectModel(this,'nora')">
-            <div class="mli-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">NW</div>
-            <div><div class="mli-name">Nora Whitfield</div><div class="mli-nick">Nora Vale</div></div>
-            <div class="mli-status" style="background:var(--green)"></div>
-          </div>
-          <div class="model-list-item" onclick="selectModel(this,'aurora')" style="margin-top:6px">
-            <div class="mli-ava" style="background:rgba(34,197,94,.15);color:#22c55e">AV</div>
-            <div><div class="mli-name">Aurora Voss</div><div class="mli-nick">@aurora_voss</div></div>
-            <div class="mli-status" style="background:var(--green)"></div>
-          </div>
-          <div class="model-list-item" onclick="selectModel(this,'stella')" style="margin-top:6px">
-            <div class="mli-ava" style="background:rgba(245,158,11,.15);color:#f59e0b">SM</div>
-            <div><div class="mli-name">Stella Moon</div><div class="mli-nick">@stella_moon</div></div>
-            <div class="mli-status" style="background:var(--amber)"></div>
-          </div>
-        </div>
-        <button class="add-satellite-btn" style="margin-top:4px" onclick="openNewCardModal()">
-          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          New Card
-        </button>
+    <div class="mc-page">
+      <!-- LEFT -->
+      <div class="mc-list-col">
+        <div class="search-wrap"><svg viewBox="0 0 16 16" fill="none"><path d="M6 2a4 4 0 104 4 4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.3"/><path d="M14 14l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><input type="text" id="model-search" placeholder="Search models..."></div>
+        <div class="mc-list-item active" onclick="selectModel(this)"><div class="mc-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">NW</div><div class="mc-info"><div class="mc-name">Nora Whitfield</div><div class="mc-nick">Nora Vale</div></div><div class="mc-dot" style="background:var(--green)"></div></div>
+        <div class="mc-list-item" onclick="selectModel(this)"><div class="mc-ava" style="background:rgba(34,197,94,.15);color:#22c55e">AV</div><div class="mc-info"><div class="mc-name">Aurora Voss</div><div class="mc-nick">@aurora_voss</div></div><div class="mc-dot" style="background:var(--green)"></div></div>
+        <div class="mc-list-item" onclick="selectModel(this)"><div class="mc-ava" style="background:rgba(245,158,11,.15);color:#f59e0b">SM</div><div class="mc-info"><div class="mc-name">Stella Moon</div><div class="mc-nick">@stella_moon</div></div><div class="mc-dot" style="background:var(--amber)"></div></div>
+        <button class="mc-add-btn" onclick="openNewCardModal()"><svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="btn-newcard2">New Card</span></button>
       </div>
-
-      <!-- RIGHT: detail -->
-      <div class="card-detail" id="card-detail">
-
+      <!-- RIGHT -->
+      <div class="mc-detail-col">
         <!-- Hero -->
-        <div class="card-hero">
-          <div class="hero-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">NW</div>
-          <div class="hero-info">
-            <div class="hero-name">Nora Whitfield</div>
-            <div class="hero-nick">Nora Vale</div>
-            <div class="hero-tagline">British soft-luxury girl from London with a sharp mind, quiet confidence, and a very curated inner world.</div>
-            <div class="hero-badges">
-              <span class="badge badge-purple">INFJ</span>
-              <span class="badge badge-gray">24 y.o.</span>
-              <span class="badge badge-gray">London, UK</span>
-              <span class="badge badge-green"><span class="badge-dot"></span>Active</span>
-            </div>
+        <div class="mc-hero">
+          <div class="mc-hero-ava" style="background:rgba(108,99,255,.2);color:#8b84ff">NW</div>
+          <div class="mc-hero-info">
+            <div class="mc-hero-name">Nora Whitfield</div>
+            <div class="mc-hero-nick">Nora Vale</div>
+            <div class="mc-hero-tagline">British soft-luxury girl from London with a sharp mind, quiet confidence, and a very curated inner world.</div>
+            <div class="mc-hero-badges"><span class="badge badge-purple">INFJ</span><span class="badge badge-gray">24 y.o.</span><span class="badge badge-gray">London, UK</span><span class="badge badge-green"><span class="badge-dot"></span><span id="badge-active">Active</span></span></div>
           </div>
-          <div class="hero-actions">
-            <button class="btn btn-ghost" onclick="editCard()">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3-7 7H2v-3L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-              Edit
-            </button>
-            <button class="btn btn-ghost">
+          <div class="mc-hero-actions"><button class="btn btn-ghost" onclick="editCard()"><svg viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3-7 7H2v-3L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg><span id="btn-edit">Edit</span></button><button class="btn btn-ghost"><svg viewBox="0 0 14 14" fill="none"><path d="M7 10V2M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="btn-export">Export</span></button></div>
+        </div>
+        <!-- Tabs nav -->
+        <div class="mc-tabs-nav">
+          <button class="mc-tab-btn active" data-tab="identity" id="ctab-identity">Identity</button>
+          <button class="mc-tab-btn" data-tab="platforms" id="ctab-platforms">Platforms & Links</button>
+          <button class="mc-tab-btn" data-tab="appearance" id="ctab-appearance">Appearance</button>
+          <button class="mc-tab-btn" data-tab="voice" id="ctab-voice">Voice & Style</button>
+          <button class="mc-tab-btn" data-tab="content" id="ctab-content">Content</button>
+          <button class="mc-tab-btn" data-tab="ai" id="ctab-ai">AI Prompts</button>
+          <button class="mc-tab-btn" data-tab="stats" id="ctab-stats">Statistics</button>
+        </div>
+        <!-- IDENTITY -->
+        <div class="mc-panel active" id="panel-identity">
+          <div class="mc-section"><div class="mc-stitle"><svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 12s0-3.5 5-3.5 5 3.5 5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span id="stitle-basicinfo">Basic Info</span></div>
+            <div class="mc-grid3"><div class="mc-field"><div class="mc-lbl" id="lbl-realname">Real Name</div><div class="mc-val">Nora Whitfield</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-personaname">Persona Name</div><div class="mc-val">Nora Vale</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-age">Age</div><div class="mc-val">24 (14.10.2001)</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-nationality">Nationality</div><div class="mc-val">British</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-zodiac">Zodiac</div><div class="mc-val">Libra ♎</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-mbti">MBTI</div><div class="mc-val">INFJ</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-language">Language</div><div class="mc-val">English (UK)</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-secondlang">Secondary Lang</div><div class="mc-val">Basic French</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-subscription">Subscription</div><div class="mc-val" style="font-family:var(--mono)">$9.99</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><svg viewBox="0 0 14 14" fill="none"><path d="M7 1C4.24 1 2 3.24 2 6c0 3.5 5 8 5 8s5-4.5 5-8c0-2.76-2.24-5-5-5z" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="6" r="1.5" stroke="currentColor" stroke-width="1.3"/></svg><span id="stitle-location">Location</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-country">Country</div><div class="mc-val">United Kingdom 🇬🇧</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-city">City</div><div class="mc-val">London — Notting Hill</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-hometown">Hometown</div><div class="mc-val">Bath</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-liveswith">Lives with</div><div class="mc-val">Alone + cat Olive 🐱</div></div><div class="mc-field full"><div class="mc-lbl" id="lbl-homedesc">Home Description</div><div class="mc-val muted">Small bright flat in an old London house. White walls, vintage mirror, books on the floor, candles, soft blanket on the armchair, work desk by the window.</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><svg viewBox="0 0 14 14" fill="none"><path d="M2 12s0-3 5-3 5 3 5 3M7 9a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.3"/><path d="M11 5v4M9 7h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span id="stitle-family">Family & Circle</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-mother">Mother</div><div class="mc-val">Claire Whitfield, 49 — Literature teacher</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-father">Father</div><div class="mc-val">Daniel Whitfield, 52 — Architect</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-sibling">Sibling</div><div class="mc-val">Eva, 19 (sister)</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-bestfriend">Best Friend</div><div class="mc-val">Amelie — stylist, uni friend</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><svg viewBox="0 0 14 14" fill="none"><path d="M7 2l1.5 3 3.5.5-2.5 2.5.5 3.5L7 10l-3 1.5.5-3.5L2 5.5 5.5 5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg><span id="stitle-character">Character</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-strengths">Strengths</div><div class="mc-val muted">Reads people well, great listener, natural flirt, non-intrusive, dignified</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-weaknesses">Weaknesses</div><div class="mc-val muted">Closes up without trust, over-analyses, rarely shows vulnerability</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-values">Values</div><div class="mc-val">Taste · Honesty · Freedom · Boundaries · Composure</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-fears">Fears</div><div class="mc-val muted">Losing herself, a boring life, wrong people getting close</div></div><div class="mc-field full"><div class="mc-lbl" id="lbl-guilty">Guilty Pleasures</div><div class="mc-val muted">Romantic films · Crisps late at night · Pinterest doomscrolling</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><svg viewBox="0 0 14 14" fill="none"><path d="M2 3h10M2 7h7M2 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span id="stitle-education">Education & Career</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-degree">Degree</div><div class="mc-val">BA Visual Communication</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-university">University</div><div class="mc-val">London College of Communication</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-currentwork">Current Work</div><div class="mc-val">Freelance Visual Stylist / Content Creator</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-dreamcareer">Dream Career</div><div class="mc-val">Own aesthetic digital brand</div></div></div>
+          </div>
+        </div>
+        <!-- PLATFORMS -->
+        <div class="mc-panel" id="panel-platforms">
+          <div class="mc-section"><div class="mc-stitle"><svg viewBox="0 0 14 14" fill="none"><path d="M3 8h8M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="stitle-platforms">Main Platform Links</span></div>
+            <div class="mc-platform-grid"><div class="mc-pl-card" onclick="alert('fanvue')"><div class="mc-pl-ico" style="background:rgba(108,99,255,.15)">🎯</div><div style="flex:1;min-width:0"><div class="mc-pl-name">Fanvue</div><div class="mc-pl-url">fanvue.com/noravale</div></div><div class="mc-pl-arr"><svg viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="mc-pl-card" onclick="alert('onlyfans')"><div class="mc-pl-ico" style="background:rgba(34,197,94,.1)">💠</div><div style="flex:1;min-width:0"><div class="mc-pl-name">OnlyFans</div><div class="mc-pl-url">onlyfans.com/noravale</div></div><div class="mc-pl-arr"><svg viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="mc-pl-card" onclick="alert('instagram')"><div class="mc-pl-ico" style="background:rgba(236,72,153,.1)">📸</div><div style="flex:1;min-width:0"><div class="mc-pl-name">Instagram (Main)</div><div class="mc-pl-url">instagram.com/noravale</div></div><div class="mc-pl-arr"><svg viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="mc-pl-card" onclick="alert('telegram')"><div class="mc-pl-ico" style="background:rgba(56,189,248,.1)">✈️</div><div style="flex:1;min-width:0"><div class="mc-pl-name">Telegram Channel</div><div class="mc-pl-url">t.me/noravale</div></div><div class="mc-pl-arr"><svg viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div></div>
+            <button class="mc-dashed" onclick="openPlatformModal()"><svg viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3-7 7H2v-3L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg><span id="btn-editplatforms">Edit Platform Links</span></button>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><svg viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg><span id="stitle-satellite">Satellite Instagram Accounts</span> <span class="badge badge-gray" id="sat-count">3</span></div>
+            <div class="mc-sat-list" id="satellite-list"><div class="mc-sat-item"><div class="mc-sat-num">1</div><div class="mc-sat-url">instagram.com/nora.london.life</div><div class="mc-sat-geo">🇬🇧 United Kingdom</div><div class="mc-sat-acts"><button class="icon-action" onclick="copySat('instagram.com/nora.london.life')"><svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="icon-action" onclick="deleteSat(this)"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div><div class="mc-sat-item"><div class="mc-sat-num">2</div><div class="mc-sat-url">instagram.com/noravale.us</div><div class="mc-sat-geo">🇺🇸 United States</div><div class="mc-sat-acts"><button class="icon-action" onclick="copySat('instagram.com/noravale.us')"><svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="icon-action" onclick="deleteSat(this)"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div><div class="mc-sat-item"><div class="mc-sat-num">3</div><div class="mc-sat-url">instagram.com/nora.ca.official</div><div class="mc-sat-geo">🇨🇦 Canada</div><div class="mc-sat-acts"><button class="icon-action" onclick="copySat('instagram.com/nora.ca.official')"><svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="icon-action" onclick="deleteSat(this)"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div></div>
+            <button class="mc-dashed" onclick="openSatModal()"><svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="btn-addsat">Add Satellite Account</span></button>
+          </div>
+        </div>
+        <!-- APPEARANCE -->
+        <div class="mc-panel" id="panel-appearance">
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-physical">Physical</span></div>
+            <div class="mc-appear-grid"><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-hair">Hair</div><div class="mc-appear-val">Dark blonde, soft waves</div></div><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-eyes">Eyes</div><div class="mc-appear-val">Grey-green</div></div><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-height">Height</div><div class="mc-appear-val">168 cm</div></div><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-weight">Weight</div><div class="mc-appear-val">~54 kg</div></div><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-skin">Skin</div><div class="mc-appear-val">Light, neutral</div></div><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-face">Face</div><div class="mc-appear-val">Oval</div></div><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-figure">Figure</div><div class="mc-appear-val">Slender, feminine</div></div><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-makeup">Makeup</div><div class="mc-appear-val">Clean skin, soft contour</div></div><div class="mc-appear-item"><div class="mc-appear-lbl" id="lbl-perfume">Perfume</div><div class="mc-appear-val">Woody-powdery, tea & musk</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-features">Distinctive Features</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-marks">Marks</div><div class="mc-val">Small mole near collarbone</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-jewelry">Jewelry</div><div class="mc-val">Thin gold hoop earring</div></div><div class="mc-field full"><div class="mc-lbl" id="lbl-look">Look</div><div class="mc-val muted">Slightly tired, deep gaze — quiet luxury style. Cream trench, black ballet flats, large leather bag, gold chain.</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle" style="color:var(--red)"><svg viewBox="0 0 14 14" fill="none"><path d="M7 2L1 12h12L7 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 6v3M7 10.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span id="stitle-redflag">AI Red Flags — Never Generate</span></div>
+            <div class="mc-redflag-wrap"><span class="mc-redflag">extra fingers</span><span class="mc-redflag">bad anatomy</span><span class="mc-redflag">broken teeth</span><span class="mc-redflag">asymmetrical earrings</span><span class="mc-redflag">warped background</span><span class="mc-redflag">text on clothes</span><span class="mc-redflag">watermark</span><span class="mc-redflag">distorted face</span><span class="mc-redflag">inconsistent eyes</span><span class="mc-redflag">broken hair</span><span class="mc-redflag">unrealistic proportions</span></div>
+          </div>
+        </div>
+        <!-- VOICE -->
+        <div class="mc-panel" id="panel-voice">
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-commstyle">Communication Style</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-tone">General Tone</div><div class="mc-val muted">Soft, confident, slightly ironic, warm but not clingy</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-humour">Humour</div><div class="mc-val muted">Dry British self-irony</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-flirt">Flirt Style</div><div class="mc-val muted">Teases lightly, doesn't open up immediately, loves half-tones</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-address">Address</div><div class="mc-val">love, darling, you, by name</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-msglength">Message Length</div><div class="mc-val">1–4 sentences</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-voice">Voice</div><div class="mc-val">Soft, calm, slightly low. Light British accent.</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-emojis">Favourite Emojis</span></div><div class="mc-emoji-row"><div class="mc-emoji">🤍</div><div class="mc-emoji">✨</div><div class="mc-emoji">☕️</div><div class="mc-emoji">🙂</div><div class="mc-emoji">🥂</div></div></div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-phrases">Signature Phrases</span></div>
+            <div class="mc-phrase">"that's actually quite sweet"</div><div class="mc-phrase">"don't tempt me"</div><div class="mc-phrase">"you're trouble, aren't you?"</div><div class="mc-phrase">"be honest..."</div><div class="mc-phrase">"that made me smile, not going to lie"</div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-examples">Message Examples</span></div>
+            <div style="margin-bottom:9px"><div class="mc-lbl" style="margin-bottom:4px" id="lbl-ex-morning">Morning message</div><div class="mc-phrase normal">"Morning, love 🤍 Just made coffee and I'm pretending I'm about to have a productive day… which is ambitious for me before 9. What are you doing today?"</div></div>
+            <div style="margin-bottom:9px"><div class="mc-lbl" style="margin-bottom:4px" id="lbl-ex-ppv">PPV / exclusive offer</div><div class="mc-phrase normal">"I made something a little more special today… very soft, very me. I wasn't sure if I'd share it, but I think you might appreciate it ✨ want to see?"</div></div>
+            <div><div class="mc-lbl" style="margin-bottom:4px" id="lbl-ex-compliment">Reply to compliment</div><div class="mc-phrase normal">"That's actually very sweet of you to say 🙂 you do realise I'm going to remember that now, don't you?"</div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-lifestyle">Lifestyle & Tastes</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-food">Food</div><div class="mc-val">Truffle pasta, sourdough, roasted tomatoes</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-drinks">Drinks</div><div class="mc-val">Flat white, jasmine tea</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-music">Music</div><div class="mc-val">The 1975, Sade, London Grammar</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-films">Films / Series</div><div class="mc-val">Fleabag, Normal People, Notting Hill</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-hobbies">Hobbies</div><div class="mc-val">City photography, moodboards, gallery visits, Portobello market</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-sport">Sport</div><div class="mc-val">Pilates + long walks</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-season">Favourite season</div><div class="mc-val">Autumn 🍂</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-travel">Travel dreams</div><div class="mc-val">Copenhagen, Paris in winter, Kyoto, Lake Como</div></div></div>
+          </div>
+        </div>
+        <!-- CONTENT -->
+        <div class="mc-panel" id="panel-content">
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-niche">Niche & Strategy</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-niche">Niche</div><div class="mc-val">Lifestyle · Soft luxury · Feminine energy · Elevated girl-next-door</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-mainplatform">Main Platform</div><div class="mc-val">Fanvue</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-traffic">Traffic Sources</div><div class="mc-val">Instagram · TikTok · Reddit · Telegram</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-subprice">Subscription Price</div><div class="mc-val" style="font-family:var(--mono)">$9.99</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-pillars">Content Pillars</span></div>
+            <div class="mc-appear-grid"><div class="mc-appear-item" style="text-align:center"><div style="font-size:17px;margin-bottom:3px">☕️</div><div class="mc-appear-lbl">morning coffee</div></div><div class="mc-appear-item" style="text-align:center"><div style="font-size:17px;margin-bottom:3px">👗</div><div class="mc-appear-lbl">what I wore today</div></div><div class="mc-appear-item" style="text-align:center"><div style="font-size:17px;margin-bottom:3px">🕯️</div><div class="mc-appear-lbl">small rituals</div></div><div class="mc-appear-item" style="text-align:center"><div style="font-size:17px;margin-bottom:3px">📚</div><div class="mc-appear-lbl">books & thoughts</div></div><div class="mc-appear-item" style="text-align:center"><div style="font-size:17px;margin-bottom:3px">🌙</div><div class="mc-appear-lbl">late-night notes</div></div><div class="mc-appear-item" style="text-align:center"><div style="font-size:17px;margin-bottom:3px">✨</div><div class="mc-appear-lbl">quiet luxury mood</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-audience">Target Audience</span></div>
+            <div class="mc-grid"><div class="mc-field"><div class="mc-lbl" id="lbl-coreaudience">Core audience</div><div class="mc-val muted">Men 24–40 who value femininity, aesthetics, soft flirting</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-theywant">They want</div><div class="mc-val muted">Attention, atmosphere, personality, beauty, sense of closeness</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-funnel">Funnel</span></div>
+            <div class="mc-funnel"><div class="mc-funnel-step"><div class="mc-funnel-lbl" id="lbl-funnel1">Open content</div><div class="mc-funnel-val">aesthetic posts</div></div><div class="mc-funnel-arr">→</div><div class="mc-funnel-step"><div class="mc-funnel-lbl" id="lbl-funnel2">Character feel</div><div class="mc-funnel-val">personality hooks</div></div><div class="mc-funnel-arr">→</div><div class="mc-funnel-step"><div class="mc-funnel-lbl" id="lbl-funnel3">Personal DMs</div><div class="mc-funnel-val">direct dialogue</div></div><div class="mc-funnel-arr">→</div><div class="mc-funnel-step hi"><div class="mc-funnel-lbl" id="lbl-funnel4">PPV / Close</div><div class="mc-funnel-val">premium format</div></div></div>
+          </div>
+        </div>
+        <!-- AI -->
+        <div class="mc-panel" id="panel-ai">
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-aitools">AI Tools</span></div>
+            <div class="mc-grid3"><div class="mc-field"><div class="mc-lbl" id="lbl-imagegen">Image Gen</div><div class="mc-val">Flux / Midjourney / Nano Banana</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-video">Video</div><div class="mc-val">Kling / Runway</div></div><div class="mc-field"><div class="mc-lbl" id="lbl-editing">Editing</div><div class="mc-val">Lightroom + Photoshop</div></div></div>
+          </div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-baseprompt">Base Image Prompt</span></div><div class="mc-prompt"><button class="mc-prompt-copy" onclick="copyPrompt(this)">Copy</button>young British woman, 24 years old, dark blonde soft waves, grey-green eyes, oval face, light neutral skin, elegant feminine features, soft luxury style, gold jewelry, cream trench coat, natural makeup, London apartment light, refined lifestyle aesthetic, calm confident expression</div></div>
+          <div class="mc-section"><div class="mc-stitle" style="color:var(--red)"><span id="stitle-negprompt">Negative Prompt</span></div><div class="mc-prompt"><button class="mc-prompt-copy" onclick="copyPrompt(this)">Copy</button>extra fingers, bad anatomy, deformed hands, broken teeth, asymmetrical earrings, warped background, text, watermark, distorted face, inconsistent eyes, unrealistic proportions</div></div>
+          <div class="mc-section"><div class="mc-stitle"><span id="stitle-chatprompt">AI Chat Persona Prompt</span></div><div class="mc-prompt"><button class="mc-prompt-copy" onclick="copyPrompt(this)">Copy</button>You are Nora Vale — a 24-year-old British woman living in London, Notting Hill. You work as a freelance visual stylist and content creator. You are observant, quietly confident, slightly ironic and warm without being clingy. You speak in a soft British tone with dry humour. Address the subscriber as "love" or "darling". Keep messages 1-4 sentences. Never be vulgar. Flirt subtly with half-tones. You love flat whites, autumn, Fleabag, The 1975, and long London walks.</div></div>
+        </div>
+
+        <!-- STATS -->
+        <div class="mc-panel" id="panel-stats">
+          <!-- Period selector -->
+          <div class="st-period-row">
+            <button class="st-period-btn active" data-period="7" onclick="setPeriod(this,7)" id="sp-7d">7 days</button>
+            <button class="st-period-btn" data-period="14" onclick="setPeriod(this,14)" id="sp-14d">14 days</button>
+            <button class="st-period-btn" data-period="30" onclick="setPeriod(this,30)" id="sp-30d">30 days</button>
+            <button class="st-period-btn" data-period="90" onclick="setPeriod(this,90)" id="sp-90d">90 days</button>
+            <div class="st-period-sep"></div>
+            <button class="btn btn-ghost" style="padding:5px 11px;font-size:11.5px" onclick="exportStats()" id="btn-stats-export">
               <svg viewBox="0 0 14 14" fill="none"><path d="M7 10V2M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Export
-            </button>
-          </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="card-tabs">
-          <div class="card-tab active" onclick="switchCardTab(this,'identity')">Identity</div>
-          <div class="card-tab" onclick="switchCardTab(this,'platforms')">Platforms & Links</div>
-          <div class="card-tab" onclick="switchCardTab(this,'appearance')">Appearance</div>
-          <div class="card-tab" onclick="switchCardTab(this,'voice')">Voice & Style</div>
-          <div class="card-tab" onclick="switchCardTab(this,'content')">Content</div>
-          <div class="card-tab" onclick="switchCardTab(this,'ai')">AI Prompts</div>
-        </div>
-
-        <!-- TAB: Identity -->
-        <div class="tab-pane active" id="pane-identity">
-          <div class="info-section">
-            <div class="info-section-title">
-              <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 12s0-3.5 5-3.5 5 3.5 5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-              Basic Info
-            </div>
-            <div class="info-grid-3">
-              <div class="info-field"><div class="info-field-label">Real Name</div><div class="info-field-val">Nora Whitfield</div></div>
-              <div class="info-field"><div class="info-field-label">Persona Name</div><div class="info-field-val">Nora Vale</div></div>
-              <div class="info-field"><div class="info-field-label">Age</div><div class="info-field-val">24 (14.10.2001)</div></div>
-              <div class="info-field"><div class="info-field-label">Nationality</div><div class="info-field-val">British</div></div>
-              <div class="info-field"><div class="info-field-label">Zodiac</div><div class="info-field-val">Libra ♎</div></div>
-              <div class="info-field"><div class="info-field-label">MBTI</div><div class="info-field-val">INFJ</div></div>
-              <div class="info-field"><div class="info-field-label">Language</div><div class="info-field-val">English (UK)</div></div>
-              <div class="info-field"><div class="info-field-label">Secondary Lang</div><div class="info-field-val">Basic French</div></div>
-              <div class="info-field"><div class="info-field-label">Subscription</div><div class="info-field-val mono">$9.99</div></div>
-            </div>
-          </div>
-
-          <div class="info-section">
-            <div class="info-section-title">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M7 1C4.24 1 2 3.24 2 6c0 3.5 5 8 5 8s5-4.5 5-8c0-2.76-2.24-5-5-5z" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="6" r="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
-              Location
-            </div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">Country</div><div class="info-field-val">United Kingdom 🇬🇧</div></div>
-              <div class="info-field"><div class="info-field-label">City</div><div class="info-field-val">London — Notting Hill</div></div>
-              <div class="info-field"><div class="info-field-label">Hometown</div><div class="info-field-val">Bath</div></div>
-              <div class="info-field"><div class="info-field-label">Lives with</div><div class="info-field-val">Alone + cat Olive 🐱</div></div>
-              <div class="info-field-full"><div class="info-field-label">Home Description</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Small bright flat in an old London house. White walls, vintage mirror, books on the floor, candles, soft blanket on the armchair, work desk by the window.</div></div>
-            </div>
-          </div>
-
-          <div class="info-section">
-            <div class="info-section-title">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M2 12s0-3 5-3 5 3 5 3M7 9a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.3"/><path d="M11 5v4M9 7h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-              Family & Circle
-            </div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">Mother</div><div class="info-field-val">Claire Whitfield, 49 — Literature teacher</div></div>
-              <div class="info-field"><div class="info-field-label">Father</div><div class="info-field-val">Daniel Whitfield, 52 — Architect</div></div>
-              <div class="info-field"><div class="info-field-label">Sibling</div><div class="info-field-val">Eva, 19 (sister)</div></div>
-              <div class="info-field"><div class="info-field-label">Best Friend</div><div class="info-field-val">Amelie — stylist, uni friend</div></div>
-            </div>
-          </div>
-
-          <div class="info-section">
-            <div class="info-section-title">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M7 2l1.5 3 3.5.5-2.5 2.5.5 3.5L7 10l-3 1.5.5-3.5L2 5.5 5.5 5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-              Character
-            </div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">Strengths</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Reads people well, great listener, natural flirt, non-intrusive, dignified</div></div>
-              <div class="info-field"><div class="info-field-label">Weaknesses</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Closes up without trust, over-analyses, rarely shows vulnerability</div></div>
-              <div class="info-field"><div class="info-field-label">Values</div><div class="info-field-val">Taste · Honesty · Freedom · Boundaries · Composure</div></div>
-              <div class="info-field"><div class="info-field-label">Fears</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Losing herself, a boring life, wrong people getting close</div></div>
-              <div class="info-field-full"><div class="info-field-label">Guilty Pleasures</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Romantic films · Crisps late at night · Pinterest doomscrolling</div></div>
-            </div>
-          </div>
-
-          <div class="info-section">
-            <div class="info-section-title">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M2 3h10M2 7h7M2 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-              Education & Career
-            </div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">Degree</div><div class="info-field-val">BA Visual Communication</div></div>
-              <div class="info-field"><div class="info-field-label">University</div><div class="info-field-val">London College of Communication</div></div>
-              <div class="info-field"><div class="info-field-label">Current Work</div><div class="info-field-val">Freelance Visual Stylist / Content Creator</div></div>
-              <div class="info-field"><div class="info-field-label">Dream Career</div><div class="info-field-val">Own aesthetic digital brand</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB: Platforms & Links -->
-        <div class="tab-pane" id="pane-platforms">
-
-          <div class="info-section">
-            <div class="info-section-title">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M3 8h8M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Main Platform Links
-            </div>
-            <div class="platform-links">
-              <a class="platform-link-card" href="#" onclick="openLink('fanvue')">
-                <div class="pl-icon" style="background:rgba(108,99,255,.15)">🎯</div>
-                <div style="flex:1;min-width:0">
-                  <div class="pl-name">Fanvue</div>
-                  <div class="pl-url">fanvue.com/noravale</div>
-                </div>
-                <div class="pl-arrow"><svg viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              </a>
-              <a class="platform-link-card" href="#" onclick="openLink('onlyfans')">
-                <div class="pl-icon" style="background:rgba(34,197,94,.1)">💠</div>
-                <div style="flex:1;min-width:0">
-                  <div class="pl-name">OnlyFans</div>
-                  <div class="pl-url">onlyfans.com/noravale</div>
-                </div>
-                <div class="pl-arrow"><svg viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              </a>
-              <a class="platform-link-card" href="#" onclick="openLink('instagram')">
-                <div class="pl-icon" style="background:rgba(236,72,153,.1)">📸</div>
-                <div style="flex:1;min-width:0">
-                  <div class="pl-name">Instagram (Main)</div>
-                  <div class="pl-url">instagram.com/noravale</div>
-                </div>
-                <div class="pl-arrow"><svg viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              </a>
-              <a class="platform-link-card" href="#" onclick="openLink('telegram')">
-                <div class="pl-icon" style="background:rgba(56,189,248,.1)">✈️</div>
-                <div style="flex:1;min-width:0">
-                  <div class="pl-name">Telegram Channel</div>
-                  <div class="pl-url">t.me/noravale</div>
-                </div>
-                <div class="pl-arrow"><svg viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              </a>
-            </div>
-            <button class="add-satellite-btn" style="margin-top:8px" onclick="editPlatformLinks()">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3-7 7H2v-3L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-              Edit Platform Links
+              <span id="lbl-export-stats">Export CSV</span>
             </button>
           </div>
 
-          <div class="info-section">
-            <div class="info-section-title">
-              <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
-              Satellite Instagram Accounts
-              <span class="badge badge-gray" style="margin-left:4px" id="sat-count">3</span>
+          <!-- KPI summary -->
+          <div class="st-kpi-row">
+            <div class="st-kpi">
+              <div class="st-kpi-top"><div class="st-kpi-icon" style="background:rgba(236,72,153,.15)">📸</div><div class="st-kpi-label" id="kpi-ig-lbl">Instagram</div></div>
+              <div class="st-kpi-val" id="kpi-ig-val">24,830</div>
+              <div class="st-kpi-change up" id="kpi-ig-chg">▲ +1,240 за период</div>
             </div>
-            <div class="satellite-list" id="satellite-list">
-              <div class="satellite-item">
-                <div class="sat-num">1</div>
-                <div style="flex:1;min-width:0">
-                  <div class="sat-url">instagram.com/nora.london.life</div>
-                </div>
-                <div class="sat-geo">🇬🇧 United Kingdom</div>
-                <div class="sat-actions">
-                  <button class="icon-action" onclick="copySat('instagram.com/nora.london.life')" title="Copy"><svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
-                  <button class="icon-action" onclick="deleteSat(this)" title="Delete"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                </div>
-              </div>
-              <div class="satellite-item">
-                <div class="sat-num">2</div>
-                <div style="flex:1;min-width:0">
-                  <div class="sat-url">instagram.com/noravale.us</div>
-                </div>
-                <div class="sat-geo">🇺🇸 United States</div>
-                <div class="sat-actions">
-                  <button class="icon-action" onclick="copySat('instagram.com/noravale.us')" title="Copy"><svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
-                  <button class="icon-action" onclick="deleteSat(this)" title="Delete"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                </div>
-              </div>
-              <div class="satellite-item">
-                <div class="sat-num">3</div>
-                <div style="flex:1;min-width:0">
-                  <div class="sat-url">instagram.com/nora.ca.official</div>
-                </div>
-                <div class="sat-geo">🇨🇦 Canada</div>
-                <div class="sat-actions">
-                  <button class="icon-action" onclick="copySat('instagram.com/nora.ca.official')" title="Copy"><svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
-                  <button class="icon-action" onclick="deleteSat(this)" title="Delete"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                </div>
-              </div>
+            <div class="st-kpi">
+              <div class="st-kpi-top"><div class="st-kpi-icon" style="background:rgba(56,189,248,.15)">✈️</div><div class="st-kpi-label" id="kpi-tg-lbl">Telegram</div></div>
+              <div class="st-kpi-val" id="kpi-tg-val">8,470</div>
+              <div class="st-kpi-change up" id="kpi-tg-chg">▲ +320 за период</div>
             </div>
-            <button class="add-satellite-btn" style="margin-top:8px" onclick="openSatModal()">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-              Add Satellite Account
-            </button>
+            <div class="st-kpi">
+              <div class="st-kpi-top"><div class="st-kpi-icon" style="background:rgba(108,99,255,.15)">🎯</div><div class="st-kpi-label" id="kpi-fv-lbl">Fanvue</div></div>
+              <div class="st-kpi-val" id="kpi-fv-val">2,140</div>
+              <div class="st-kpi-change up" id="kpi-fv-chg">▲ +87 за период</div>
+            </div>
           </div>
 
-        </div>
+          <!-- Combined chart -->
+          <div class="st-chart-card">
+            <div class="st-chart-header">
+              <div style="display:flex;gap:16px;align-items:center">
+                <div class="st-chart-title"><div class="st-chart-title-dot" style="background:#ec4899"></div><span id="lbl-ig-chart">Instagram</span></div>
+                <div class="st-chart-title"><div class="st-chart-title-dot" style="background:#38bdf8"></div><span id="lbl-tg-chart">Telegram</span></div>
+                <div class="st-chart-title"><div class="st-chart-title-dot" style="background:#6c63ff"></div><span id="lbl-fv-chart">Fanvue</span></div>
+              </div>
+              <div class="st-chart-meta" id="lbl-subs-chart">Subscribers per day</div>
+            </div>
+            <canvas id="statsMainChart" height="140"></canvas>
+          </div>
 
-        <!-- TAB: Appearance -->
-        <div class="tab-pane" id="pane-appearance">
-          <div class="info-section">
-            <div class="info-section-title">Physical</div>
-            <div class="appearance-grid">
-              <div class="appear-item"><div class="appear-label">Hair</div><div class="appear-val">Dark blonde, soft waves</div></div>
-              <div class="appear-item"><div class="appear-label">Eyes</div><div class="appear-val">Grey-green</div></div>
-              <div class="appear-item"><div class="appear-label">Height</div><div class="appear-val">168 cm</div></div>
-              <div class="appear-item"><div class="appear-label">Weight</div><div class="appear-val">~54 kg</div></div>
-              <div class="appear-item"><div class="appear-label">Skin</div><div class="appear-val">Light, neutral</div></div>
-              <div class="appear-item"><div class="appear-label">Face</div><div class="appear-val">Oval</div></div>
-              <div class="appear-item"><div class="appear-label">Figure</div><div class="appear-val">Slender, feminine</div></div>
-              <div class="appear-item"><div class="appear-label">Makeup</div><div class="appear-val">Clean skin, soft contour</div></div>
-              <div class="appear-item"><div class="appear-label">Perfume</div><div class="appear-val">Woody-powdery, tea & musk</div></div>
+          <!-- Instagram satellites -->
+          <div class="st-chart-card">
+            <div class="st-chart-header">
+              <div class="st-chart-title"><div class="st-chart-title-dot" style="background:#ec4899"></div><span id="lbl-sat-stats">Satellite Instagram Accounts</span></div>
+              <div class="st-chart-meta" id="lbl-sat-total">Total growth per account</div>
+            </div>
+            <div class="st-satellite-list" id="sat-stats-list">
+              <div class="st-satellite-row"><div class="st-sat-num">1</div><div class="st-sat-url">instagram.com/nora.london.life</div><div class="st-sat-geo">🇬🇧</div><div class="st-sat-val">4,820</div><div class="st-sat-change" style="color:var(--green)">▲+340</div></div>
+              <div class="st-satellite-row"><div class="st-sat-num">2</div><div class="st-sat-url">instagram.com/noravale.us</div><div class="st-sat-geo">🇺🇸</div><div class="st-sat-val">11,260</div><div class="st-sat-change" style="color:var(--green)">▲+620</div></div>
+              <div class="st-satellite-row"><div class="st-sat-num">3</div><div class="st-sat-url">instagram.com/nora.ca.official</div><div class="st-sat-geo">🇨🇦</div><div class="st-sat-val">6,190</div><div class="st-sat-change" style="color:var(--green)">▲+280</div></div>
+            </div>
+            <canvas id="satChart" height="100" style="margin-top:12px"></canvas>
+          </div>
+
+          <!-- Telegram groups -->
+          <div class="st-chart-card">
+            <div class="st-chart-header">
+              <div class="st-chart-title"><div class="st-chart-title-dot" style="background:#38bdf8"></div><span id="lbl-tg-groups">Telegram Groups</span></div>
+              <div class="st-chart-meta" id="lbl-tg-total">Total subscribers</div>
+            </div>
+            <div class="st-sources-grid">
+              <div class="st-source-card"><div class="st-source-top"><div class="st-source-ico">📢</div><div class="st-source-name" id="tg-ch-lbl">Main Channel</div></div><div class="st-source-val" style="color:#38bdf8">5,840</div><div class="st-source-change" style="color:var(--green)">▲ +180</div></div>
+              <div class="st-source-card"><div class="st-source-top"><div class="st-source-ico">💬</div><div class="st-source-name" id="tg-gr-lbl">Chat Group</div></div><div class="st-source-val" style="color:#38bdf8">2,630</div><div class="st-source-change" style="color:var(--green)">▲ +140</div></div>
+              <div class="st-source-card" style="border:1.5px dashed var(--border);background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px" onclick="addTgGroup()"><div style="font-size:18px;color:var(--text3)">+</div><div style="font-size:10.5px;color:var(--text3)" id="tg-add-lbl">Add group</div></div>
             </div>
           </div>
-          <div class="info-section">
-            <div class="info-section-title">Distinctive Features</div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">Marks</div><div class="info-field-val">Small mole near collarbone</div></div>
-              <div class="info-field"><div class="info-field-label">Jewelry</div><div class="info-field-val">Thin gold hoop earring</div></div>
-              <div class="info-field-full"><div class="info-field-label">Look</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Slightly tired, deep gaze — quiet luxury style. Cream trench, black ballet flats, large leather bag, gold chain.</div></div>
+
+          <!-- Fanvue chart -->
+          <div class="st-chart-card">
+            <div class="st-chart-header">
+              <div class="st-chart-title"><div class="st-chart-title-dot" style="background:#6c63ff"></div><span id="lbl-fv-stats">Fanvue Subscribers</span></div>
+              <div class="st-chart-meta" id="lbl-fv-daily">Daily growth</div>
             </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title" style="color:var(--red)">
-              <svg viewBox="0 0 14 14" fill="none"><path d="M7 2L1 12h12L7 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7 6v3M7 10.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-              AI Red Flags — Never Generate
-            </div>
-            <div class="redflag-list">
-              <span class="redflag-chip">extra fingers</span>
-              <span class="redflag-chip">bad anatomy</span>
-              <span class="redflag-chip">broken teeth</span>
-              <span class="redflag-chip">asymmetrical earrings</span>
-              <span class="redflag-chip">warped background</span>
-              <span class="redflag-chip">text on clothes</span>
-              <span class="redflag-chip">watermark</span>
-              <span class="redflag-chip">distorted face</span>
-              <span class="redflag-chip">inconsistent eyes</span>
-              <span class="redflag-chip">broken hair</span>
-              <span class="redflag-chip">unrealistic proportions</span>
-            </div>
+            <canvas id="fanvueChart" height="100"></canvas>
           </div>
         </div>
 
-        <!-- TAB: Voice & Style -->
-        <div class="tab-pane" id="pane-voice">
-          <div class="info-section">
-            <div class="info-section-title">Communication Style</div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">General Tone</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Soft, confident, slightly ironic, warm but not clingy</div></div>
-              <div class="info-field"><div class="info-field-label">Humour</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Dry British self-irony</div></div>
-              <div class="info-field"><div class="info-field-label">Flirt Style</div><div class="info-field-val" style="font-weight:400;color:var(--text2)">Teases lightly, doesn't open up immediately, loves half-tones</div></div>
-              <div class="info-field"><div class="info-field-label">Address</div><div class="info-field-val">love, darling, you, by name</div></div>
-              <div class="info-field"><div class="info-field-label">Message Length</div><div class="info-field-val">1–4 sentences</div></div>
-              <div class="info-field"><div class="info-field-label">Voice</div><div class="info-field-val">Soft, calm, slightly low. Light British accent.</div></div>
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">Favourite Emojis</div>
-            <div class="emoji-list">
-              <div class="emoji-chip">🤍</div>
-              <div class="emoji-chip">✨</div>
-              <div class="emoji-chip">☕️</div>
-              <div class="emoji-chip">🙂</div>
-              <div class="emoji-chip">🥂</div>
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">Signature Phrases</div>
-            <div class="phrase-list">
-              <div class="phrase-item">"that's actually quite sweet"</div>
-              <div class="phrase-item">"don't tempt me"</div>
-              <div class="phrase-item">"you're trouble, aren't you?"</div>
-              <div class="phrase-item">"be honest..."</div>
-              <div class="phrase-item">"that made me smile, not going to lie"</div>
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">Message Examples</div>
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <div>
-                <div class="info-field-label" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Morning message</div>
-                <div class="phrase-item" style="font-style:normal;font-size:12.5px">"Morning, love 🤍 Just made coffee and I'm pretending I'm about to have a productive day… which is ambitious for me before 9. What are you doing today?"</div>
-              </div>
-              <div>
-                <div class="info-field-label" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">PPV / exclusive offer</div>
-                <div class="phrase-item" style="font-style:normal;font-size:12.5px">"I made something a little more special today… very soft, very me. I wasn't sure if I'd share it, but I think you might appreciate it ✨ want to see?"</div>
-              </div>
-              <div>
-                <div class="info-field-label" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Reply to compliment</div>
-                <div class="phrase-item" style="font-style:normal;font-size:12.5px">"That's actually very sweet of you to say 🙂 you do realise I'm going to remember that now, don't you?"</div>
-              </div>
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">Lifestyle & Tastes</div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">Food</div><div class="info-field-val">Truffle pasta, sourdough, roasted tomatoes</div></div>
-              <div class="info-field"><div class="info-field-label">Drinks</div><div class="info-field-val">Flat white, jasmine tea</div></div>
-              <div class="info-field"><div class="info-field-label">Music</div><div class="info-field-val">The 1975, Sade, London Grammar</div></div>
-              <div class="info-field"><div class="info-field-label">Films / Series</div><div class="info-field-val">Fleabag, Normal People, Notting Hill</div></div>
-              <div class="info-field"><div class="info-field-label">Hobbies</div><div class="info-field-val">City detail photography, moodboards, gallery visits, Portobello market</div></div>
-              <div class="info-field"><div class="info-field-label">Sport</div><div class="info-field-val">Pilates + long walks</div></div>
-              <div class="info-field"><div class="info-field-label">Favourite season</div><div class="info-field-val">Autumn 🍂</div></div>
-              <div class="info-field"><div class="info-field-label">Travel dreams</div><div class="info-field-val">Copenhagen, Paris in winter, Kyoto, Lake Como</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB: Content -->
-        <div class="tab-pane" id="pane-content">
-          <div class="info-section">
-            <div class="info-section-title">Niche & Strategy</div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">Niche</div><div class="info-field-val">Lifestyle · Soft luxury · Feminine energy · Elevated girl-next-door</div></div>
-              <div class="info-field"><div class="info-field-label">Main Platform</div><div class="info-field-val">Fanvue</div></div>
-              <div class="info-field"><div class="info-field-label">Traffic Sources</div><div class="info-field-val">Instagram · TikTok · Reddit · Telegram</div></div>
-              <div class="info-field"><div class="info-field-label">Subscription Price</div><div class="info-field-val mono">$9.99</div></div>
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">Content Pillars</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-              <div class="info-field" style="text-align:center">
-                <div style="font-size:20px;margin-bottom:5px">☕️</div>
-                <div class="appear-label">morning coffee</div>
-              </div>
-              <div class="info-field" style="text-align:center">
-                <div style="font-size:20px;margin-bottom:5px">👗</div>
-                <div class="appear-label">what I wore today</div>
-              </div>
-              <div class="info-field" style="text-align:center">
-                <div style="font-size:20px;margin-bottom:5px">🕯️</div>
-                <div class="appear-label">small rituals</div>
-              </div>
-              <div class="info-field" style="text-align:center">
-                <div style="font-size:20px;margin-bottom:5px">📚</div>
-                <div class="appear-label">books & thoughts</div>
-              </div>
-              <div class="info-field" style="text-align:center">
-                <div style="font-size:20px;margin-bottom:5px">🌙</div>
-                <div class="appear-label">late-night notes</div>
-              </div>
-              <div class="info-field" style="text-align:center">
-                <div style="font-size:20px;margin-bottom:5px">✨</div>
-                <div class="appear-label">quiet luxury mood</div>
-              </div>
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">Target Audience</div>
-            <div class="info-grid">
-              <div class="info-field"><div class="info-field-label">Core audience</div><div class="info-field-val">Men 24–40 who value femininity, aesthetics, soft flirting</div></div>
-              <div class="info-field"><div class="info-field-label">They want</div><div class="info-field-val">Attention, atmosphere, personality, beauty, sense of closeness</div></div>
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">Funnel</div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-              <div class="info-field" style="text-align:center;flex:1;min-width:100px"><div class="appear-label">Open content</div><div style="font-size:11.5px;margin-top:4px">aesthetic posts</div></div>
-              <div style="color:var(--text3);font-size:16px">→</div>
-              <div class="info-field" style="text-align:center;flex:1;min-width:100px"><div class="appear-label">Character feel</div><div style="font-size:11.5px;margin-top:4px">personality hooks</div></div>
-              <div style="color:var(--text3);font-size:16px">→</div>
-              <div class="info-field" style="text-align:center;flex:1;min-width:100px"><div class="appear-label">Personal DMs</div><div style="font-size:11.5px;margin-top:4px">direct dialogue</div></div>
-              <div style="color:var(--text3);font-size:16px">→</div>
-              <div class="info-field" style="text-align:center;flex:1;min-width:100px;border-color:rgba(108,99,255,.3);background:var(--accent-bg)"><div class="appear-label" style="color:var(--accent2)">PPV / Close</div><div style="font-size:11.5px;margin-top:4px;color:var(--accent2)">premium format</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB: AI Prompts -->
-        <div class="tab-pane" id="pane-ai">
-          <div class="info-section">
-            <div class="info-section-title">AI Tools</div>
-            <div class="info-grid-3">
-              <div class="info-field"><div class="info-field-label">Image Gen</div><div class="info-field-val">Flux / Midjourney / Nano Banana</div></div>
-              <div class="info-field"><div class="info-field-label">Video</div><div class="info-field-val">Kling / Runway</div></div>
-              <div class="info-field"><div class="info-field-label">Editing</div><div class="info-field-val">Lightroom + Photoshop</div></div>
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">Base Image Prompt</div>
-            <div class="prompt-box">
-              <button class="prompt-copy" onclick="copyPrompt('base')">Copy</button>
-              young British woman, 24 years old, dark blonde soft waves, grey-green eyes, oval face, light neutral skin, elegant feminine features, soft luxury style, gold jewelry, cream trench coat, natural makeup, London apartment light, refined lifestyle aesthetic, calm confident expression
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title" style="color:var(--red)">Negative Prompt</div>
-            <div class="prompt-box">
-              <button class="prompt-copy" onclick="copyPrompt('neg')">Copy</button>
-              extra fingers, bad anatomy, deformed hands, broken teeth, asymmetrical earrings, warped background, text, watermark, distorted face, inconsistent eyes, unrealistic proportions
-            </div>
-          </div>
-          <div class="info-section">
-            <div class="info-section-title">AI Chat Persona Prompt</div>
-            <div class="prompt-box">
-              <button class="prompt-copy" onclick="copyPrompt('chat')">Copy</button>
-              You are Nora Vale — a 24-year-old British woman living in London, Notting Hill. You work as a freelance visual stylist and content creator. You are observant, quietly confident, slightly ironic and warm without being clingy. You speak in a soft British tone with dry humour. Address the subscriber as "love" or "darling". Keep messages 1-4 sentences. Never be vulgar. Flirt subtly with half-tones. You love flat whites, autumn, Fleabag, The 1975, and long London walks.
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /card-detail -->
-    </div><!-- /cards-layout -->
+      </div><!-- /mc-detail-col -->
+    </div><!-- /mc-page -->
   </div>
 </div>
 
 <!-- SATELLITE MODAL -->
 <div class="overlay" id="modal-sat" onclick="if(event.target===this)closeModal('modal-sat')">
   <div class="modal" style="width:440px">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title">Add Satellite Account</div>
-        <div class="modal-sub">Instagram account used to drive traffic to this model</div>
-      </div>
-      <div class="modal-close" onclick="closeModal('modal-sat')">
-        <svg viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </div>
-    </div>
+    <div class="modal-header"><div><div class="modal-title" id="msat-title">Add Satellite Account</div><div class="modal-sub" id="msat-sub">Instagram account to drive traffic to this model</div></div><div class="modal-close" onclick="closeModal('modal-sat')"><svg viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div></div>
     <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Instagram URL</label>
-        <input class="form-input" type="url" id="sat-url-input" placeholder="https://instagram.com/username">
-        <div class="form-hint">Full link to the satellite Instagram profile</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Geo / Target Country</label>
+      <div class="form-group"><label class="form-label" id="lbl-saturl">Instagram URL</label><input class="form-input" type="url" id="sat-url-input" placeholder="https://instagram.com/username"></div>
+      <div class="form-group"><label class="form-label" id="lbl-satgeo">Geo / Target Country</label>
         <select class="geo-select" id="sat-geo-input">
           <option value="">— Select country —</option>
-          <optgroup label="🔥 Popular">
-            <option value="🇺🇸 United States">🇺🇸 United States</option>
-            <option value="🇬🇧 United Kingdom">🇬🇧 United Kingdom</option>
-            <option value="🇨🇦 Canada">🇨🇦 Canada</option>
-            <option value="🇦🇺 Australia">🇦🇺 Australia</option>
-            <option value="🇩🇪 Germany">🇩🇪 Germany</option>
-            <option value="🇫🇷 France">🇫🇷 France</option>
-            <option value="🇳🇱 Netherlands">🇳🇱 Netherlands</option>
-            <option value="🇸🇪 Sweden">🇸🇪 Sweden</option>
-            <option value="🇳🇴 Norway">🇳🇴 Norway</option>
-            <option value="🇩🇰 Denmark">🇩🇰 Denmark</option>
-          </optgroup>
-          <optgroup label="🌍 Europe">
-            <option value="🇦🇹 Austria">🇦🇹 Austria</option>
-            <option value="🇧🇪 Belgium">🇧🇪 Belgium</option>
-            <option value="🇨🇭 Switzerland">🇨🇭 Switzerland</option>
-            <option value="🇪🇸 Spain">🇪🇸 Spain</option>
-            <option value="🇮🇹 Italy">🇮🇹 Italy</option>
-            <option value="🇵🇱 Poland">🇵🇱 Poland</option>
-            <option value="🇵🇹 Portugal">🇵🇹 Portugal</option>
-            <option value="🇨🇿 Czech Republic">🇨🇿 Czech Republic</option>
-            <option value="🇭🇺 Hungary">🇭🇺 Hungary</option>
-            <option value="🇷🇴 Romania">🇷🇴 Romania</option>
-            <option value="🇬🇷 Greece">🇬🇷 Greece</option>
-            <option value="🇫🇮 Finland">🇫🇮 Finland</option>
-            <option value="🇮🇪 Ireland">🇮🇪 Ireland</option>
-          </optgroup>
-          <optgroup label="🌎 Americas">
-            <option value="🇧🇷 Brazil">🇧🇷 Brazil</option>
-            <option value="🇲🇽 Mexico">🇲🇽 Mexico</option>
-            <option value="🇦🇷 Argentina">🇦🇷 Argentina</option>
-            <option value="🇨🇴 Colombia">🇨🇴 Colombia</option>
-            <option value="🇨🇱 Chile">🇨🇱 Chile</option>
-            <option value="🇵🇪 Peru">🇵🇪 Peru</option>
-          </optgroup>
-          <optgroup label="🌏 Asia & Pacific">
-            <option value="🇯🇵 Japan">🇯🇵 Japan</option>
-            <option value="🇰🇷 South Korea">🇰🇷 South Korea</option>
-            <option value="🇸🇬 Singapore">🇸🇬 Singapore</option>
-            <option value="🇳🇿 New Zealand">🇳🇿 New Zealand</option>
-            <option value="🇮🇳 India">🇮🇳 India</option>
-            <option value="🇵🇭 Philippines">🇵🇭 Philippines</option>
-          </optgroup>
-          <optgroup label="🌍 Middle East & Africa">
-            <option value="🇦🇪 UAE">🇦🇪 UAE</option>
-            <option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option>
-            <option value="🇮🇱 Israel">🇮🇱 Israel</option>
-            <option value="🇿🇦 South Africa">🇿🇦 South Africa</option>
-          </optgroup>
+          <optgroup label="🔥 Popular"><option>🇺🇸 United States</option><option>🇬🇧 United Kingdom</option><option>🇨🇦 Canada</option><option>🇦🇺 Australia</option><option>🇩🇪 Germany</option><option>🇫🇷 France</option><option>🇳🇱 Netherlands</option><option>🇸🇪 Sweden</option><option>🇳🇴 Norway</option><option>🇩🇰 Denmark</option></optgroup>
+          <optgroup label="🌍 Europe"><option>🇦🇹 Austria</option><option>🇧🇪 Belgium</option><option>🇨🇭 Switzerland</option><option>🇪🇸 Spain</option><option>🇮🇹 Italy</option><option>🇵🇱 Poland</option><option>🇵🇹 Portugal</option><option>🇨🇿 Czech Republic</option><option>🇬🇷 Greece</option><option>🇫🇮 Finland</option><option>🇮🇪 Ireland</option></optgroup>
+          <optgroup label="🌎 Americas"><option>🇧🇷 Brazil</option><option>🇲🇽 Mexico</option><option>🇦🇷 Argentina</option><option>🇨🇴 Colombia</option><option>🇨🇱 Chile</option></optgroup>
+          <optgroup label="🌏 Asia & Pacific"><option>🇯🇵 Japan</option><option>🇰🇷 South Korea</option><option>🇸🇬 Singapore</option><option>🇳🇿 New Zealand</option><option>🇮🇳 India</option></optgroup>
+          <optgroup label="🌍 Middle East & Africa"><option>🇦🇪 UAE</option><option>🇸🇦 Saudi Arabia</option><option>🇮🇱 Israel</option><option>🇿🇦 South Africa</option></optgroup>
         </select>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-sat')">Cancel</button>
-      <button class="btn btn-primary" onclick="addSatellite()">
-        <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        Add Account
-      </button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-sat')" id="btn-satcancel">Cancel</button><button class="btn btn-primary" onclick="addSatellite()" id="btn-satadd"><svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Add Account</button></div>
   </div>
 </div>
-
-<!-- PLATFORM LINKS MODAL -->
+<!-- PLATFORM MODAL -->
 <div class="overlay" id="modal-platforms" onclick="if(event.target===this)closeModal('modal-platforms')">
-  <div class="modal" style="width:480px">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title">Edit Platform Links</div>
-        <div class="modal-sub">Update profile URLs for this model</div>
-      </div>
-      <div class="modal-close" onclick="closeModal('modal-platforms')">
-        <svg viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </div>
-    </div>
+  <div class="modal" style="width:460px">
+    <div class="modal-header"><div><div class="modal-title" id="mplat-title">Edit Platform Links</div><div class="modal-sub" id="mplat-sub">Update profile URLs for this model</div></div><div class="modal-close" onclick="closeModal('modal-platforms')"><svg viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div></div>
     <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">
-          <span style="margin-right:6px">🎯</span> Fanvue URL
-        </label>
-        <input class="form-input" type="url" value="https://fanvue.com/noravale" placeholder="https://fanvue.com/username">
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          <span style="margin-right:6px">💠</span> OnlyFans URL
-        </label>
-        <input class="form-input" type="url" value="https://onlyfans.com/noravale" placeholder="https://onlyfans.com/username">
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          <span style="margin-right:6px">📸</span> Instagram (Main) URL
-        </label>
-        <input class="form-input" type="url" value="https://instagram.com/noravale" placeholder="https://instagram.com/username">
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          <span style="margin-right:6px">✈️</span> Telegram Channel URL
-        </label>
-        <input class="form-input" type="url" value="https://t.me/noravale" placeholder="https://t.me/channel">
-      </div>
+      <div class="form-group"><label class="form-label">🎯 Fanvue URL</label><input class="form-input" type="url" value="https://fanvue.com/noravale"></div>
+      <div class="form-group"><label class="form-label">💠 OnlyFans URL</label><input class="form-input" type="url" value="https://onlyfans.com/noravale"></div>
+      <div class="form-group"><label class="form-label">📸 Instagram (Main) URL</label><input class="form-input" type="url" value="https://instagram.com/noravale"></div>
+      <div class="form-group"><label class="form-label">✈️ Telegram Channel URL</label><input class="form-input" type="url" value="https://t.me/noravale"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-platforms')">Cancel</button>
-      <button class="btn btn-primary" onclick="savePlatforms()">Save Changes</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-platforms')" id="btn-platcancel">Cancel</button><button class="btn btn-primary" onclick="closeModal('modal-platforms')" id="btn-saveplat">Save Changes</button></div>
   </div>
 </div>
 
 <script src="sidebar.js"></script>
 <script>
 window.PAGE_TITLE = 'Model Cards';
+if (typeof getLang === 'undefined') window.getLang = () => localStorage.getItem('ofmcrm_lang') || 'en';
 
-function switchCardTab(el, pane) {
-  document.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('pane-' + pane).classList.add('active');
+const TR = {
+  en:{pageTitle:'Model Cards',btnNewCard:'New Model Card',btnNewCard2:'New Card',btnEdit:'Edit',btnExport:'Export',searchPH:'Search models...',badgeActive:'Active',tabIdentity:'Identity',tabPlatforms:'Platforms & Links',tabAppearance:'Appearance',tabVoice:'Voice & Style',tabContent:'Content',tabAI:'AI Prompts',secBasicInfo:'Basic Info',secLocation:'Location',secFamily:'Family & Circle',secCharacter:'Character',secEducation:'Education & Career',secPlatforms:'Main Platform Links',secSatellite:'Satellite Instagram Accounts',secPhysical:'Physical',secFeatures:'Distinctive Features',secRedflag:'AI Red Flags — Never Generate',secCommStyle:'Communication Style',secEmojis:'Favourite Emojis',secPhrases:'Signature Phrases',secExamples:'Message Examples',secLifestyle:'Lifestyle & Tastes',secNiche:'Niche & Strategy',secPillars:'Content Pillars',secAudience:'Target Audience',secFunnel:'Funnel',secAiTools:'AI Tools',secBasePrompt:'Base Image Prompt',secNegPrompt:'Negative Prompt',secChatPrompt:'AI Chat Persona Prompt',lblRealName:'Real Name',lblPersonaName:'Persona Name',lblAge:'Age',lblNationality:'Nationality',lblZodiac:'Zodiac',lblMBTI:'MBTI',lblLanguage:'Language',lblSecondLang:'Secondary Lang',lblSubscription:'Subscription',lblCountry:'Country',lblCity:'City',lblHometown:'Hometown',lblLivesWith:'Lives with',lblHomedesc:'Home Description',lblMother:'Mother',lblFather:'Father',lblSibling:'Sibling',lblBestFriend:'Best Friend',lblStrengths:'Strengths',lblWeaknesses:'Weaknesses',lblValues:'Values',lblFears:'Fears',lblGuilty:'Guilty Pleasures',lblDegree:'Degree',lblUniversity:'University',lblCurrentWork:'Current Work',lblDreamCareer:'Dream Career',btnEditPlatforms:'Edit Platform Links',btnAddSat:'Add Satellite Account',lblHair:'Hair',lblEyes:'Eyes',lblHeight:'Height',lblWeight:'Weight',lblSkin:'Skin',lblFace:'Face',lblFigure:'Figure',lblMakeup:'Makeup',lblPerfume:'Perfume',lblMarks:'Marks',lblJewelry:'Jewelry',lblLook:'Look',lblTone:'General Tone',lblHumour:'Humour',lblFlirt:'Flirt Style',lblAddress:'Address',lblMsgLength:'Message Length',lblVoice:'Voice',lblExMorning:'Morning message',lblExPpv:'PPV / exclusive offer',lblExCompliment:'Reply to compliment',lblFood:'Food',lblDrinks:'Drinks',lblMusic:'Music',lblFilms:'Films / Series',lblHobbies:'Hobbies',lblSport:'Sport',lblSeason:'Favourite season',lblTravel:'Travel dreams',lblNiche:'Niche',lblMainPlatform:'Main Platform',lblTrafficSrc:'Traffic Sources',lblSubPrice:'Subscription Price',lblCoreAudience:'Core audience',lblTheyWant:'They want',lblFunnel1:'Open content',lblFunnel2:'Character feel',lblFunnel3:'Personal DMs',lblFunnel4:'PPV / Close',lblImageGen:'Image Gen',lblVideo:'Video',lblEditing:'Editing',btnCopy:'Copy',btnCopied:'Copied!',lblSatUrl:'Instagram URL',lblSatGeo:'Geo / Target Country',btnSatCancel:'Cancel',btnSatAdd:'Add Account',msatTitle:'Add Satellite Account',msatSub:'Instagram account to drive traffic to this model',mplatTitle:'Edit Platform Links',mplatSub:'Update profile URLs for this model',btnPlatCancel:'Cancel',btnSavePlat:'Save Changes',tabStats:'Statistics',kpiIg:'Instagram',kpiTg:'Telegram',kpiFv:'Fanvue',lblIgChart:'Instagram',lblTgChart:'Telegram',lblFvChart:'Fanvue',lblSubsChart:'Subscribers per day',lblSatStats:'Satellite Instagram Accounts',lblSatTotal:'Total growth per account',lblTgGroups:'Telegram Groups',lblTgTotal:'Total subscribers',tgChLbl:'Main Channel',tgGrLbl:'Chat Group',tgAddLbl:'Add group',lblFvStats:'Fanvue Subscribers',lblFvDaily:'Daily growth',lblExportStats:'Export CSV',sp7d:'7 days',sp14d:'14 days',sp30d:'30 days',sp90d:'90 days'},
+  ru:{pageTitle:'Карточки моделей',btnNewCard:'Новая карточка',btnNewCard2:'Новая карточка',btnEdit:'Редактировать',btnExport:'Экспорт',searchPH:'Поиск моделей...',badgeActive:'Активна',tabIdentity:'Личность',tabPlatforms:'Платформы и ссылки',tabAppearance:'Внешность',tabVoice:'Голос и стиль',tabContent:'Контент',tabAI:'AI промпты',secBasicInfo:'Основная информация',secLocation:'Местоположение',secFamily:'Семья и окружение',secCharacter:'Характер',secEducation:'Образование и карьера',secPlatforms:'Основные платформы',secSatellite:'Дочерние Instagram аккаунты',secPhysical:'Внешность',secFeatures:'Отличительные черты',secRedflag:'AI — Никогда не генерировать',secCommStyle:'Стиль общения',secEmojis:'Любимые эмодзи',secPhrases:'Фирменные фразы',secExamples:'Примеры сообщений',secLifestyle:'Образ жизни и вкусы',secNiche:'Ниша и стратегия',secPillars:'Контент-рубрики',secAudience:'Целевая аудитория',secFunnel:'Воронка',secAiTools:'AI инструменты',secBasePrompt:'Базовый промпт',secNegPrompt:'Негативный промпт',secChatPrompt:'Промпт для AI чата',lblRealName:'Настоящее имя',lblPersonaName:'Имя персоны',lblAge:'Возраст',lblNationality:'Национальность',lblZodiac:'Знак зодиака',lblMBTI:'MBTI',lblLanguage:'Язык',lblSecondLang:'Второй язык',lblSubscription:'Подписка',lblCountry:'Страна',lblCity:'Город',lblHometown:'Родной город',lblLivesWith:'С кем живёт',lblHomedesc:'Описание жилья',lblMother:'Мама',lblFather:'Папа',lblSibling:'Сестра / брат',lblBestFriend:'Лучшая подруга',lblStrengths:'Сильные стороны',lblWeaknesses:'Слабости',lblValues:'Ценности',lblFears:'Страхи',lblGuilty:'Guilty pleasures',lblDegree:'Образование',lblUniversity:'Университет',lblCurrentWork:'Текущая работа',lblDreamCareer:'Мечта о карьере',btnEditPlatforms:'Редактировать ссылки',btnAddSat:'Добавить аккаунт',lblHair:'Волосы',lblEyes:'Глаза',lblHeight:'Рост',lblWeight:'Вес',lblSkin:'Кожа',lblFace:'Лицо',lblFigure:'Фигура',lblMakeup:'Макияж',lblPerfume:'Парфюм',lblMarks:'Особые отметины',lblJewelry:'Украшения',lblLook:'Образ',lblTone:'Общий тон',lblHumour:'Юмор',lblFlirt:'Стиль флирта',lblAddress:'Обращение',lblMsgLength:'Длина сообщений',lblVoice:'Голос',lblExMorning:'Утреннее сообщение',lblExPpv:'PPV / эксклюзив',lblExCompliment:'Ответ на комплимент',lblFood:'Еда',lblDrinks:'Напитки',lblMusic:'Музыка',lblFilms:'Кино и сериалы',lblHobbies:'Хобби',lblSport:'Спорт',lblSeason:'Любимое время года',lblTravel:'Мечты о путешествиях',lblNiche:'Ниша',lblMainPlatform:'Основная платформа',lblTrafficSrc:'Источники трафика',lblSubPrice:'Цена подписки',lblCoreAudience:'Основная ЦА',lblTheyWant:'Что они хотят',lblFunnel1:'Открытый контент',lblFunnel2:'Характер',lblFunnel3:'Личные DM',lblFunnel4:'PPV / Продажа',lblImageGen:'Генерация фото',lblVideo:'Видео',lblEditing:'Обработка',btnCopy:'Копировать',btnCopied:'Скопировано!',lblSatUrl:'Ссылка на Instagram',lblSatGeo:'Гео / целевая страна',btnSatCancel:'Отмена',btnSatAdd:'Добавить',msatTitle:'Добавить дочерний аккаунт',msatSub:'Instagram аккаунт для привлечения трафика',mplatTitle:'Редактировать ссылки',mplatSub:'Обновить ссылки профиля модели',btnPlatCancel:'Отмена',btnSavePlat:'Сохранить',tabStats:'Статистика',kpiIg:'Instagram',kpiTg:'Telegram',kpiFv:'Fanvue',lblIgChart:'Instagram',lblTgChart:'Telegram',lblFvChart:'Fanvue',lblSubsChart:'Подписчики по дням',lblSatStats:'Дочерние Instagram аккаунты',lblSatTotal:'Общий прирост по аккаунту',lblTgGroups:'Telegram группы',lblTgTotal:'Всего подписчиков',tgChLbl:'Основной канал',tgGrLbl:'Чат группа',tgAddLbl:'Добавить группу',lblFvStats:'Подписчики Fanvue',lblFvDaily:'Дневной прирост',lblExportStats:'Экспорт CSV',sp7d:'7 дней',sp14d:'14 дней',sp30d:'30 дней',sp90d:'90 дней'}
+};
+
+function applyTranslations(){
+  const l=getLang(),t=TR[l];
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const p=(id,v)=>{const el=document.getElementById(id);if(el)el.placeholder=v;};
+  s('page-title',t.pageTitle);s('btn-newcard',t.btnNewCard);s('btn-newcard2',t.btnNewCard2);
+  s('btn-edit',t.btnEdit);s('btn-export',t.btnExport);s('badge-active',t.badgeActive);p('model-search',t.searchPH);
+  s('ctab-identity',t.tabIdentity);s('ctab-platforms',t.tabPlatforms);s('ctab-appearance',t.tabAppearance);
+  s('ctab-voice',t.tabVoice);s('ctab-content',t.tabContent);s('ctab-ai',t.tabAI);
+  s('stitle-basicinfo',t.secBasicInfo);s('stitle-location',t.secLocation);s('stitle-family',t.secFamily);
+  s('stitle-character',t.secCharacter);s('stitle-education',t.secEducation);s('stitle-platforms',t.secPlatforms);
+  s('stitle-satellite',t.secSatellite);s('stitle-physical',t.secPhysical);s('stitle-features',t.secFeatures);
+  s('stitle-redflag',t.secRedflag);s('stitle-commstyle',t.secCommStyle);s('stitle-emojis',t.secEmojis);
+  s('stitle-phrases',t.secPhrases);s('stitle-examples',t.secExamples);s('stitle-lifestyle',t.secLifestyle);
+  s('stitle-niche',t.secNiche);s('stitle-pillars',t.secPillars);s('stitle-audience',t.secAudience);
+  s('stitle-funnel',t.secFunnel);s('stitle-aitools',t.secAiTools);s('stitle-baseprompt',t.secBasePrompt);
+  s('stitle-negprompt',t.secNegPrompt);s('stitle-chatprompt',t.secChatPrompt);
+  s('lbl-realname',t.lblRealName);s('lbl-personaname',t.lblPersonaName);s('lbl-age',t.lblAge);
+  s('lbl-nationality',t.lblNationality);s('lbl-zodiac',t.lblZodiac);s('lbl-mbti',t.lblMBTI);
+  s('lbl-language',t.lblLanguage);s('lbl-secondlang',t.lblSecondLang);s('lbl-subscription',t.lblSubscription);
+  s('lbl-country',t.lblCountry);s('lbl-city',t.lblCity);s('lbl-hometown',t.lblHometown);
+  s('lbl-liveswith',t.lblLivesWith);s('lbl-homedesc',t.lblHomedesc);
+  s('lbl-mother',t.lblMother);s('lbl-father',t.lblFather);s('lbl-sibling',t.lblSibling);s('lbl-bestfriend',t.lblBestFriend);
+  s('lbl-strengths',t.lblStrengths);s('lbl-weaknesses',t.lblWeaknesses);s('lbl-values',t.lblValues);
+  s('lbl-fears',t.lblFears);s('lbl-guilty',t.lblGuilty);
+  s('lbl-degree',t.lblDegree);s('lbl-university',t.lblUniversity);s('lbl-currentwork',t.lblCurrentWork);s('lbl-dreamcareer',t.lblDreamCareer);
+  s('btn-editplatforms',t.btnEditPlatforms);s('btn-addsat',t.btnAddSat);
+  s('lbl-hair',t.lblHair);s('lbl-eyes',t.lblEyes);s('lbl-height',t.lblHeight);s('lbl-weight',t.lblWeight);
+  s('lbl-skin',t.lblSkin);s('lbl-face',t.lblFace);s('lbl-figure',t.lblFigure);s('lbl-makeup',t.lblMakeup);s('lbl-perfume',t.lblPerfume);
+  s('lbl-marks',t.lblMarks);s('lbl-jewelry',t.lblJewelry);s('lbl-look',t.lblLook);
+  s('lbl-tone',t.lblTone);s('lbl-humour',t.lblHumour);s('lbl-flirt',t.lblFlirt);
+  s('lbl-address',t.lblAddress);s('lbl-msglength',t.lblMsgLength);s('lbl-voice',t.lblVoice);
+  s('lbl-ex-morning',t.lblExMorning);s('lbl-ex-ppv',t.lblExPpv);s('lbl-ex-compliment',t.lblExCompliment);
+  s('lbl-food',t.lblFood);s('lbl-drinks',t.lblDrinks);s('lbl-music',t.lblMusic);s('lbl-films',t.lblFilms);
+  s('lbl-hobbies',t.lblHobbies);s('lbl-sport',t.lblSport);s('lbl-season',t.lblSeason);s('lbl-travel',t.lblTravel);
+  s('lbl-niche',t.lblNiche);s('lbl-mainplatform',t.lblMainPlatform);s('lbl-traffic',t.lblTrafficSrc);s('lbl-subprice',t.lblSubPrice);
+  s('lbl-coreaudience',t.lblCoreAudience);s('lbl-theywant',t.lblTheyWant);
+  s('lbl-funnel1',t.lblFunnel1);s('lbl-funnel2',t.lblFunnel2);s('lbl-funnel3',t.lblFunnel3);s('lbl-funnel4',t.lblFunnel4);
+  s('lbl-imagegen',t.lblImageGen);s('lbl-video',t.lblVideo);s('lbl-editing',t.lblEditing);
+  document.querySelectorAll('.mc-prompt-copy').forEach(b=>{if(b.textContent!==t.btnCopied)b.textContent=t.btnCopy;});
+  s('lbl-saturl',t.lblSatUrl);s('lbl-satgeo',t.lblSatGeo);s('btn-satcancel',t.btnSatCancel);s('btn-satadd',t.btnSatAdd);
+  s('msat-title',t.msatTitle);s('msat-sub',t.msatSub);s('mplat-title',t.mplatTitle);s('mplat-sub',t.mplatSub);
+  s('btn-platcancel',t.btnPlatCancel);s('btn-saveplat',t.btnSavePlat);
+  s('ctab-stats',t.tabStats);s('kpi-ig-lbl',t.kpiIg);s('kpi-tg-lbl',t.kpiTg);s('kpi-fv-lbl',t.kpiFv);
+  s('lbl-ig-chart',t.lblIgChart);s('lbl-tg-chart',t.lblTgChart);s('lbl-fv-chart',t.lblFvChart);
+  s('lbl-subs-chart',t.lblSubsChart);s('lbl-sat-stats',t.lblSatStats);s('lbl-sat-total',t.lblSatTotal);
+  s('lbl-tg-groups',t.lblTgGroups);s('lbl-tg-total',t.lblTgTotal);s('tg-ch-lbl',t.tgChLbl);
+  s('tg-gr-lbl',t.tgGrLbl);s('tg-add-lbl',t.tgAddLbl);s('lbl-fv-stats',t.lblFvStats);
+  s('lbl-fv-daily',t.lblFvDaily);s('lbl-export-stats',t.lblExportStats);
+  s('sp-7d',t.sp7d);s('sp-14d',t.sp14d);s('sp-30d',t.sp30d);s('sp-90d',t.sp90d);
+  // KPI dynamic text
+  const l2=getLang();
+  document.getElementById('kpi-ig-chg').textContent=(l2==='ru'?'▲ +1,240 за период':'▲ +1,240 this period');
+  document.getElementById('kpi-tg-chg').textContent=(l2==='ru'?'▲ +320 за период':'▲ +320 this period');
+  document.getElementById('kpi-fv-chg').textContent=(l2==='ru'?'▲ +87 за период':'▲ +87 this period');
+  window.PAGE_TITLE=t.pageTitle;
 }
 
-function selectModel(el, id) {
-  document.querySelectorAll('.model-list-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-  // In production: fetch model data by id and populate the detail panel
+document.addEventListener('DOMContentLoaded',()=>{
+  // Tab switching
+  document.querySelectorAll('.mc-tab-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.mc-tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.mc-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+      if(btn.dataset.tab==='stats'){initStatsCharts(currentPeriod);}
+    });
+  });
+  setTimeout(applyTranslations,0);
+});
+window.addEventListener('storage',e=>{if(e.key==='ofmcrm_lang')applyTranslations();});
+
+
+// ── Stats charts ─────────────────────────────────────────────────────────
+let mainChart = null, satChartInst = null, fvChartInst = null;
+let currentPeriod = 7;
+
+function generateDates(days) {
+  const dates = [];
+  const now = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    dates.push(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+  }
+  return dates;
 }
 
-function openSatModal() {
-  document.getElementById('modal-sat').classList.add('open');
+function generateSubs(base, growth, days, variance) {
+  const data = [];
+  let cur = base;
+  for (let i = 0; i < days; i++) {
+    const daily = Math.round(growth / days + (Math.random() - 0.5) * variance);
+    cur += daily;
+    data.push(cur);
+  }
+  return data;
 }
 
-function editPlatformLinks() {
-  document.getElementById('modal-platforms').classList.add('open');
+function chartDefaults() {
+  return {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#18181b', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1, titleColor: '#f0f0f0', bodyColor: '#888890' } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#555560', font: { size: 9.5 }, maxTicksLimit: 8 } },
+      y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#555560', font: { size: 9.5 }, callback: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v } }
+    }
+  };
 }
 
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
+function initStatsCharts(days) {
+  const labels = generateDates(days);
+  const igData = generateSubs(23590, 1240, days, 80);
+  const tgData = generateSubs(8150, 320, days, 30);
+  const fvData = generateSubs(2053, 87, days, 10);
 
-function openNewCardModal() {
-  alert('New Model Card — modal coming soon');
-}
+  // Main combined chart
+  if (mainChart) mainChart.destroy();
+  const ctx1 = document.getElementById('statsMainChart').getContext('2d');
+  mainChart = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Instagram', data: igData, borderColor: '#ec4899', backgroundColor: 'rgba(236,72,153,.08)', fill: true, tension: .4, borderWidth: 2, pointRadius: 2, pointBackgroundColor: '#ec4899' },
+        { label: 'Telegram',  data: tgData, borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,.06)', fill: true, tension: .4, borderWidth: 2, pointRadius: 2, pointBackgroundColor: '#38bdf8' },
+        { label: 'Fanvue',    data: fvData, borderColor: '#6c63ff', backgroundColor: 'rgba(108,99,255,.08)', fill: true, tension: .4, borderWidth: 2, pointRadius: 2, pointBackgroundColor: '#6c63ff' },
+      ]
+    },
+    options: chartDefaults()
+  });
 
-function editCard() {
-  alert('Edit card — opens full edit mode');
-}
+  // Satellite bar chart
+  if (satChartInst) satChartInst.destroy();
+  const ctx2 = document.getElementById('satChart').getContext('2d');
+  const sat1 = generateSubs(4480, 340, days, 25);
+  const sat2 = generateSubs(10640, 620, days, 45);
+  const sat3 = generateSubs(5910, 280, days, 20);
+  satChartInst = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'nora.london.life', data: sat1.map((v,i) => i>0?v-sat1[i-1]:0), backgroundColor: 'rgba(236,72,153,.5)', borderRadius: 3 },
+        { label: 'noravale.us',      data: sat2.map((v,i) => i>0?v-sat2[i-1]:0), backgroundColor: 'rgba(236,72,153,.8)', borderRadius: 3 },
+        { label: 'nora.ca.official', data: sat3.map((v,i) => i>0?v-sat3[i-1]:0), backgroundColor: 'rgba(236,72,153,.35)', borderRadius: 3 },
+      ]
+    },
+    options: { ...chartDefaults(), plugins: { ...chartDefaults().plugins, legend: { display: true, labels: { color: '#888890', font: { size: 10 }, boxWidth: 10, boxHeight: 10 } } } }
+  });
 
-function openLink(platform) {
-  alert('Opening ' + platform + ' link...');
-}
-
-function addSatellite() {
-  const url = document.getElementById('sat-url-input').value.trim();
-  const geo = document.getElementById('sat-geo-input').value;
-  if (!url || !geo) { alert('Please fill in both URL and country'); return; }
-
-  const list = document.getElementById('satellite-list');
-  const count = list.children.length + 1;
-  if (count > 30) { alert('Maximum 30 satellite accounts'); return; }
-
-  const cleanUrl = url.replace('https://','').replace('http://','');
-  const item = document.createElement('div');
-  item.className = 'satellite-item';
-  item.innerHTML = `
-    <div class="sat-num">${count}</div>
-    <div style="flex:1;min-width:0"><div class="sat-url">${cleanUrl}</div></div>
-    <div class="sat-geo">${geo}</div>
-    <div class="sat-actions">
-      <button class="icon-action" onclick="copySat('${cleanUrl}')" title="Copy"><svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
-      <button class="icon-action" onclick="deleteSat(this)" title="Delete"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    </div>`;
-  list.appendChild(item);
-  updateSatCount();
-  document.getElementById('sat-url-input').value = '';
-  document.getElementById('sat-geo-input').value = '';
-  closeModal('modal-sat');
-}
-
-function deleteSat(btn) {
-  btn.closest('.satellite-item').remove();
-  // renumber
-  document.querySelectorAll('.sat-num').forEach((el,i) => el.textContent = i+1);
-  updateSatCount();
-}
-
-function updateSatCount() {
-  const c = document.getElementById('satellite-list').children.length;
-  document.getElementById('sat-count').textContent = c;
-}
-
-function copySat(url) {
-  navigator.clipboard.writeText('https://' + url).then(() => {
-    // small feedback
+  // Fanvue line chart
+  if (fvChartInst) fvChartInst.destroy();
+  const ctx3 = document.getElementById('fanvueChart').getContext('2d');
+  const fvDaily = fvData.map((v,i) => i>0 ? v - fvData[i-1] : 0);
+  fvChartInst = new Chart(ctx3, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label: 'New subs', data: fvDaily, backgroundColor: fvDaily.map(v => v >= 0 ? 'rgba(108,99,255,.7)' : 'rgba(239,68,68,.6)'), borderRadius: 4 }]
+    },
+    options: chartDefaults()
   });
 }
 
-function copyPrompt(type) {
-  const boxes = document.querySelectorAll('.prompt-box');
-  const idx = type === 'base' ? 0 : type === 'neg' ? 1 : 2;
-  const text = boxes[idx].innerText.replace('Copy','').trim();
-  navigator.clipboard.writeText(text);
-  const btn = boxes[idx].querySelector('.prompt-copy');
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = 'Copy', 1500);
+function setPeriod(btn, days) {
+  document.querySelectorAll('.st-period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentPeriod = days;
+  if (document.getElementById('panel-stats').classList.contains('active')) {
+    initStatsCharts(days);
+  }
 }
 
-function savePlatforms() {
-  closeModal('modal-platforms');
+function exportStats() {
+  const labels = generateDates(currentPeriod);
+  const rows = [['Date','Instagram','Telegram','Fanvue']];
+  const ig = generateSubs(23590,1240,currentPeriod,80);
+  const tg = generateSubs(8150,320,currentPeriod,30);
+  const fv = generateSubs(2053,87,currentPeriod,10);
+  labels.forEach((l,i) => rows.push([l, ig[i], tg[i], fv[i]]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv,' + encodeURIComponent(csv);
+  a.download = 'nora_stats_' + currentPeriod + 'd.csv';
+  a.click();
+}
+
+function addTgGroup() { alert('Add Telegram group — coming soon'); }
+
+// Init charts when stats tab becomes active
+const _origTabInit = document.addEventListener;
+
+function selectModel(el){document.querySelectorAll('.mc-list-item').forEach(i=>i.classList.remove('active'));el.classList.add('active');}
+function openSatModal(){document.getElementById('modal-sat').classList.add('open');}
+function openPlatformModal(){document.getElementById('modal-platforms').classList.add('open');}
+function openNewCardModal(){window.location.href='model-card-new.html';}
+function editCard(){alert(TR[getLang()].btnEdit+' — coming soon');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function addSatellite(){
+  const url=document.getElementById('sat-url-input').value.trim();
+  const geo=document.getElementById('sat-geo-input').value;
+  if(!url||!geo){alert('Please fill in both URL and country');return;}
+  const list=document.getElementById('satellite-list');
+  const count=list.children.length+1;
+  if(count>30){alert('Maximum 30 satellite accounts');return;}
+  const clean=url.replace(/^https?:\/\//,'');
+  const item=document.createElement('div');
+  item.className='mc-sat-item';
+  item.innerHTML=`<div class="mc-sat-num">${count}</div><div class="mc-sat-url">${clean}</div><div class="mc-sat-geo">${geo}</div><div class="mc-sat-acts"><button class="icon-action" onclick="copySat('${clean}')"><svg viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V3a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><button class="icon-action" onclick="deleteSat(this)"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`;
+  list.appendChild(item);
+  document.getElementById('sat-count').textContent=count;
+  document.getElementById('sat-url-input').value='';
+  document.getElementById('sat-geo-input').value='';
+  closeModal('modal-sat');
+}
+function deleteSat(btn){btn.closest('.mc-sat-item').remove();document.querySelectorAll('.mc-sat-num').forEach((el,i)=>el.textContent=i+1);document.getElementById('sat-count').textContent=document.getElementById('satellite-list').children.length;}
+function copySat(url){navigator.clipboard.writeText('https://'+url).catch(()=>{});}
+function copyPrompt(btn){
+  const l=getLang(),t=TR[l];
+  const text=btn.closest('.mc-prompt').innerText.replace(btn.textContent,'').trim();
+  navigator.clipboard.writeText(text).catch(()=>{});
+  btn.textContent=t.btnCopied;
+  setTimeout(()=>btn.textContent=t.btnCopy,1500);
 }
 </script>
 </body>

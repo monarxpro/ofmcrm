@@ -4,24 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OFM CRM — Dashboard</title>
+<script src="auth.js"></script>
 <link rel="stylesheet" href="styles.css">
-<style>
-  .org-header { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 15px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-  .org-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--bg4); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  .org-info h2 { font-size: 14px; font-weight: 600; }
-  .org-info p { font-size: 11px; color: var(--text2); margin-top: 2px; }
-  .org-stats { margin-left: auto; display: flex; gap: 28px; }
-  .org-stat { text-align: center; }
-  .org-stat-val { font-size: 19px; font-weight: 600; font-family: var(--mono); }
-  .org-stat-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
-  .filters-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter-group { display: flex; flex-direction: column; gap: 4px; }
-  .filter-label { font-size: 9.5px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; font-weight: 600; }
-  .toggle-group { display: flex; align-items: center; gap: 7px; margin-top: 2px; }
-  .select-sm { background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; color: var(--text2); font-size: 11px; font-family: var(--font); padding: 4px 22px 4px 8px; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 6px center; }
-  .btn-sm { display: flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 7px; font-size: 12px; font-family: var(--font); font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
-  .btn-sm svg { width: 12px; height: 12px; }
-</style>
 </head>
 <body>
 

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+body{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;height:auto}
+body::before{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(108,99,255,.12) 0%,transparent 70%);pointer-events:none;z-index:0}
+.reg-wrap{position:relative;z-index:1;width:100%;max-width:440px;padding-bottom:40px}
+.reg-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px}
+.reg-logo-icon{width:40px;height:40px;background:var(--accent);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;letter-spacing:-.5px;box-shadow:0 0 24px rgba(108,99,255,.35)}
+.reg-logo-name{font-size:18px;font-weight:700;letter-spacing:-.5px}
+.reg-logo-sub{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+.reg-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px 28px 24px;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+.reg-title{font-size:17px;font-weight:600;letter-spacing:-.4px;margin-bottom:3px}
+.reg-sub{font-size:12px;color:var(--text2);margin-bottom:22px;line-height:1.5}
+.reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.reg-grid .reg-field.full{grid-column:1/-1}
+.reg-field{margin-bottom:0}
+.reg-label{display:block;font-size:11.5px;font-weight:500;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.input-wrap{position:relative}
+.input-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text3);pointer-events:none;flex-shrink:0}
+.input-wrap .form-input{padding-left:36px}
+.error-box{display:none;background:var(--red-bg);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--red);margin-bottom:14px;align-items:center;gap:8px}
+.error-box svg{width:14px;height:14px;flex-shrink:0}
+.error-box.show{display:flex}
+.reg-sep{height:1px;background:var(--border);margin:18px 0}
+.reg-plan-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:0}
+.reg-plan{border:1.5px solid var(--border);border-radius:9px;padding:12px 10px;cursor:pointer;transition:all .15s;text-align:center;position:relative}
+.reg-plan:hover{border-color:var(--border2)}
+.reg-plan.selected{border-color:var(--accent);background:var(--accent-bg)}
+.reg-plan-name{font-size:12.5px;font-weight:600;margin-bottom:3px}
+.reg-plan-price{font-size:16px;font-weight:700;font-family:var(--mono);color:var(--accent2)}
+.reg-plan-price span{font-size:10px;font-weight:400;color:var(--text2)}
+.reg-plan-features{font-size:10.5px;color:var(--text2);margin-top:5px;line-height:1.5}
+.reg-plan-badge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.btn-reg{width:100%;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:13.5px;font-weight:600;font-family:var(--font);padding:11px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:18px;box-shadow:0 4px 20px rgba(108,99,255,.3);letter-spacing:-.2px}
+.btn-reg:hover{background:#7c74ff;box-shadow:0 6px 24px rgba(108,99,255,.4);transform:translateY(-1px)}
+.btn-reg:active{transform:translateY(0)}
+.btn-reg.loading{opacity:.7;pointer-events:none}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.btn-reg.loading .spinner{display:block}
+.btn-reg.loading .btn-reg-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reg-footer{text-align:center;margin-top:16px;font-size:12px;color:var(--text2)}
+.reg-footer a{color:var(--accent2);text-decoration:none}
+.reg-footer a:hover{text-decoration:underline}
+.reg-agree{display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-size:11.5px;color:var(--text2);line-height:1.5}
+.reg-agree input[type=checkbox]{margin-top:2px;flex-shrink:0;accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
+.invite-notice{background:var(--accent-bg);border:1px solid rgba(108,99,255,.25);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--accent2);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.invite-notice svg{width:14px;height:14px;flex-shrink:0}
+.strength-bar{height:3px;border-radius:2px;background:var(--bg4);margin-top:6px;overflow:hidden}
+.strength-fill{height:100%;border-radius:2px;transition:width .3s,background .3s}
+</style>
+</head>
+<body>
+<div class="reg-wrap">
+  <div class="reg-logo">
+    <div class="reg-logo-icon">OFM</div>
+    <div>
+      <div class="reg-logo-name">OFM CRM</div>
+      <div class="reg-logo-sub">Fanvue Management</div>
+    </div>
+  </div>
+
+  <div class="reg-card">
+    <div class="reg-title" id="reg-title">Create your account</div>
+    <div class="reg-sub" id="reg-sub">Start managing your Fanvue models in minutes</div>
+
+    <!-- Invite code notice (shown when ?invite= param exists) -->
+    <div class="invite-notice" id="invite-notice" style="display:none">
+      <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L1 4v4c0 3 2.5 5 6 5s6-2 6-5V4L7 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      <span id="invite-notice-text">You were invited by <strong>Pride Agency</strong>. Your role is pre-assigned.</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-box" id="error-box">
+      <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v3.5M7 9.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span id="error-text">Please fill in all required fields</span>
+    </div>
+
+    <!-- Fields grid -->
+    <div class="reg-grid" style="margin-bottom:12px">
+      <div class="reg-field">
+        <label class="reg-label" id="lbl-firstname">First Name</label>
+        <input class="form-input" type="text" id="input-firstname" placeholder="Alex" autocomplete="given-name">
+      </div>
+      <div class="reg-field">
+        <label class="reg-label" id="lbl-lastname">Last Name</label>
+        <input class="form-input" type="text" id="input-lastname" placeholder="Smith" autocomplete="family-name">
+      </div>
+      <div class="reg-field full">
+        <label class="reg-label" id="lbl-orgname">Organization Name</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3"/></svg>
+          <input class="form-input" type="text" id="input-org" placeholder="Pride Agency" autocomplete="organization">
+        </div>
+      </div>
+      <div class="reg-field full">
+        <label class="reg-label" id="lbl-email">Email</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6l6 4 6-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input class="form-input" type="email" id="input-email" placeholder="you@example.com" autocomplete="email">
+        </div>
+      </div>
+      <div class="reg-field full">
+        <label class="reg-label" id="lbl-password">Password</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M4 7V5a4 4 0 018 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="2" y="7" width="12" height="7" rx="2" stroke="currentColor" stroke-width="1.3"/></svg>
+          <input class="form-input" type="password" id="input-password" placeholder="••••••••" autocomplete="new-password" oninput="checkStrength(this.value)">
+          <button type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:flex" onclick="togglePwd('input-password',this)">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="eye-show"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="eye-hide" style="display:none"><path d="M2 2l12 12M6.5 6.6A2 2 0 0011 10M4.5 4.6C2.8 5.8 1 8 1 8s2.5 5 7 5c1.5 0 2.8-.4 4-1M7 3.1C7.3 3 7.6 3 8 3c4.5 0 7 5 7 5s-.6 1.3-1.7 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill" style="width:0"></div></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px" id="strength-label"></div>
+      </div>
+      <div class="reg-field full">
+        <label class="reg-label" id="lbl-confirm">Confirm Password</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M4 7V5a4 4 0 018 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="2" y="7" width="12" height="7" rx="2" stroke="currentColor" stroke-width="1.3"/></svg>
+          <input class="form-input" type="password" id="input-confirm" placeholder="••••••••" autocomplete="new-password">
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan selector (only for non-invited) -->
+    <div id="plan-section">
+      <div class="reg-sep"></div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:10px" id="lbl-plan">Choose Plan</div>
+      <div class="reg-plan-grid">
+        <div class="reg-plan" onclick="selectPlan(this,'starter')">
+          <div class="reg-plan-name" id="plan-starter">Starter</div>
+          <div class="reg-plan-price">$29<span>/mo</span></div>
+          <div class="reg-plan-features" id="plan-starter-feat">3 models · 2 chatters · Basic analytics</div>
+        </div>
+        <div class="reg-plan selected" onclick="selectPlan(this,'pro')">
+          <div class="reg-plan-badge" id="plan-badge">Popular</div>
+          <div class="reg-plan-name" id="plan-pro">Pro</div>
+          <div class="reg-plan-price">$79<span>/mo</span></div>
+          <div class="reg-plan-features" id="plan-pro-feat">10 models · 10 chatters · Full analytics · AI</div>
+        </div>
+        <div class="reg-plan" onclick="selectPlan(this,'agency')">
+          <div class="reg-plan-name" id="plan-agency">Agency</div>
+          <div class="reg-plan-price">$199<span>/mo</span></div>
+          <div class="reg-plan-features" id="plan-agency-feat">Unlimited · API access · Priority support</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terms -->
+    <div class="reg-agree">
+      <input type="checkbox" id="chk-terms">
+      <label for="chk-terms" id="lbl-terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+    </div>
+
+    <button class="btn-reg" id="btn-register" onclick="doRegister()">
+      <div class="spinner"></div>
+      <span class="btn-reg-text" id="lbl-register">Create Account</span>
+    </button>
+
+    <div class="reg-footer">
+      <span id="lbl-have-account">Already have an account?</span>
+      <a href="login.html" id="lbl-signin"> Sign in</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const COOKIE_NAME = 'ofmcrm_auth';
+function getCookie(n){const v=document.cookie.split('; ').find(r=>r.startsWith(n+'='));return v?decodeURIComponent(v.split('=')[1]):null;}
+if(getCookie(COOKIE_NAME)){try{const d=JSON.parse(atob(getCookie(COOKIE_NAME)));if(d&&d.login)window.location.replace('dashboard.html');}catch(e){}}
+
+function getLang(){return localStorage.getItem('ofmcrm_lang')||'en';}
+
+const TR = {
+  en:{
+    title:'Create your account', sub:'Start managing your Fanvue models in minutes',
+    firstname:'First Name', lastname:'Last Name', orgname:'Organization Name',
+    email:'Email', password:'Password', confirm:'Confirm Password',
+    plan:'Choose Plan', terms:'I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>',
+    register:'Create Account', haveAccount:'Already have an account?', signin:' Sign in',
+    planStarter:'Starter', planStarterFeat:'3 models · 2 chatters · Basic analytics',
+    planPro:'Pro', planProFeat:'10 models · 10 chatters · Full analytics · AI',
+    planAgency:'Agency', planAgencyFeat:'Unlimited · API access · Priority support',
+    planBadge:'Popular',
+    errFields:'Please fill in all required fields',
+    errEmail:'Please enter a valid email',
+    errPwdShort:'Password must be at least 8 characters',
+    errPwdMatch:'Passwords do not match',
+    errTerms:'Please accept the Terms of Service',
+    strengthWeak:'Weak', strengthFair:'Fair', strengthGood:'Good', strengthStrong:'Strong',
+    inviteText:'You were invited. Your role is pre-assigned.',
+  },
+  ru:{
+    title:'Создать аккаунт', sub:'Начните управлять моделями Fanvue за несколько минут',
+    firstname:'Имя', lastname:'Фамилия', orgname:'Название организации',
+    email:'Email', password:'Пароль', confirm:'Подтвердите пароль',
+    plan:'Выберите план', terms:'Я принимаю <a href="#">Условия использования</a> и <a href="#">Политику конфиденциальности</a>',
+    register:'Создать аккаунт', haveAccount:'Уже есть аккаунт?', signin:' Войти',
+    planStarter:'Стартер', planStarterFeat:'3 модели · 2 чаттера · Базовая аналитика',
+    planPro:'Про', planProFeat:'10 моделей · 10 чаттеров · Полная аналитика · AI',
+    planAgency:'Агентство', planAgencyFeat:'Без ограничений · API · Приоритетная поддержка',
+    planBadge:'Популярный',
+    errFields:'Заполните все обязательные поля',
+    errEmail:'Введите корректный email',
+    errPwdShort:'Пароль должен содержать не менее 8 символов',
+    errPwdMatch:'Пароли не совпадают',
+    errTerms:'Примите условия использования',
+    strengthWeak:'Слабый', strengthFair:'Удовлетворительный', strengthGood:'Хороший', strengthStrong:'Надёжный',
+    inviteText:'Вы были приглашены. Роль уже назначена.',
+  }
+};
+
+function applyTranslations(){
+  const l=getLang(),t=TR[l];
+  const s=(id,v)=>{const el=document.getElementById(id);if(el){if(v.includes('<'))el.innerHTML=v;else el.textContent=v;}};
+  s('reg-title',t.title);s('reg-sub',t.sub);
+  s('lbl-firstname',t.firstname);s('lbl-lastname',t.lastname);
+  s('lbl-orgname',t.orgname);s('lbl-email',t.email);
+  s('lbl-password',t.password);s('lbl-confirm',t.confirm);
+  s('lbl-plan',t.plan);s('lbl-terms',t.terms);
+  s('lbl-register',t.register);s('lbl-have-account',t.haveAccount);
+  s('lbl-signin',t.signin);
+  s('plan-starter',t.planStarter);s('plan-starter-feat',t.planStarterFeat);
+  s('plan-pro',t.planPro);s('plan-pro-feat',t.planProFeat);
+  s('plan-agency',t.planAgency);s('plan-agency-feat',t.planAgencyFeat);
+  s('plan-badge',t.planBadge);
+  // Check invite param
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('invite')){
+    document.getElementById('invite-notice').style.display='flex';
+    document.getElementById('invite-notice-text').textContent=t.inviteText;
+    document.getElementById('plan-section').style.display='none';
+  }
+}
+
+let selectedPlan='pro';
+function selectPlan(el,plan){
+  document.querySelectorAll('.reg-plan').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPlan=plan;
+}
+
+function checkStrength(pwd){
+  const fill=document.getElementById('strength-fill');
+  const lbl=document.getElementById('strength-label');
+  const t=TR[getLang()];
+  let score=0;
+  if(pwd.length>=8)score++;
+  if(/[A-Z]/.test(pwd))score++;
+  if(/[0-9]/.test(pwd))score++;
+  if(/[^A-Za-z0-9]/.test(pwd))score++;
+  const configs=[
+    {w:'25%',c:'var(--red)',l:t.strengthWeak},
+    {w:'50%',c:'var(--amber)',l:t.strengthFair},
+    {w:'75%',c:'#6c63ff',l:t.strengthGood},
+    {w:'100%',c:'var(--green)',l:t.strengthStrong}
+  ];
+  if(!pwd){fill.style.width='0';lbl.textContent='';return;}
+  const cfg=configs[Math.min(score,4)-1]||configs[0];
+  fill.style.width=cfg.w;fill.style.background=cfg.c;lbl.textContent=cfg.l;
+}
+
+function togglePwd(inputId,btn){
+  const inp=document.getElementById(inputId);
+  const isPass=inp.type==='password';
+  inp.type=isPass?'text':'password';
+  btn.querySelector('.eye-show').style.display=isPass?'none':'';
+  btn.querySelector('.eye-hide').style.display=isPass?'':'none';
+}
+
+function showError(msg){
+  const box=document.getElementById('error-box');
+  document.getElementById('error-text').textContent=msg;
+  box.classList.add('show');
+  box.style.animation='none';box.offsetHeight;box.style.animation='shake .35s ease';
+}
+function hideError(){document.getElementById('error-box').classList.remove('show');}
+
+const style=document.createElement('style');
+style.textContent='@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}';
+document.head.appendChild(style);
+
+function doRegister(){
+  hideError();
+  const t=TR[getLang()];
+  const fn=document.getElementById('input-firstname').value.trim();
+  const ln=document.getElementById('input-lastname').value.trim();
+  const org=document.getElementById('input-org').value.trim();
+  const email=document.getElementById('input-email').value.trim();
+  const pwd=document.getElementById('input-password').value;
+  const confirm=document.getElementById('input-confirm').value;
+  const terms=document.getElementById('chk-terms').checked;
+
+  if(!fn||!ln||!org||!email||!pwd){showError(t.errFields);return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showError(t.errEmail);return;}
+  if(pwd.length<8){showError(t.errPwdShort);return;}
+  if(pwd!==confirm){showError(t.errPwdMatch);return;}
+  if(!terms){showError(t.errTerms);return;}
+
+  const btn=document.getElementById('btn-register');
+  btn.classList.add('loading');
+
+  setTimeout(()=>{
+    // In production: POST to /api/register
+    // For now: set cookie and redirect
+    const payload={login:email,role:'admin',ts:Date.now()};
+    const token=btoa(JSON.stringify(payload));
+    const expires=new Date();expires.setDate(expires.getDate()+7);
+    document.cookie=`${COOKIE_NAME}=${encodeURIComponent(token)};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
+    window.location.replace('dashboard.html');
+  },800);
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doRegister();});
+['input-firstname','input-lastname','input-org','input-email','input-password','input-confirm']
+  .forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',hideError);});
+document.addEventListener('DOMContentLoaded',applyTranslations);
+</script>
+</body>
+</html>

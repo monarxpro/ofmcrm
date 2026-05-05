@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — New Model Card</title>
+<script src="auth.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── Wizard layout ── */
+.wiz-wrap{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start}
+.wiz-nav{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;position:sticky;top:20px}
+.wiz-nav-title{font-size:9.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:12px;padding:0 4px}
+.wiz-step{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:2px;text-decoration:none}
+.wiz-step:hover{background:var(--bg3)}
+.wiz-step.active{background:var(--accent-bg)}
+.wiz-step.done{opacity:.7}
+.wiz-step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;border:1.5px solid var(--border);color:var(--text3);background:var(--bg3);transition:all .15s}
+.wiz-step.active .wiz-step-num{border-color:var(--accent);background:var(--accent);color:#fff}
+.wiz-step.done .wiz-step-num{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.wiz-step-label{font-size:12.5px;color:var(--text2);transition:color .15s}
+.wiz-step.active .wiz-step-label{color:var(--accent2);font-weight:500}
+.wiz-step.done .wiz-step-label{color:var(--text2)}
+.wiz-progress{height:3px;background:var(--bg4);border-radius:2px;margin:12px 0 4px;overflow:hidden}
+.wiz-progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+.wiz-progress-text{font-size:10.5px;color:var(--text3);text-align:center}
+
+/* ── Main panel ── */
+.wiz-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.wiz-panel-header{padding:20px 24px 16px;border-bottom:1px solid var(--border)}
+.wiz-panel-title{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.wiz-panel-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.wiz-panel-body{padding:22px 24px}
+.wiz-panel-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg2)}
+
+/* ── Form ── */
+.wiz-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.wiz-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.wiz-field{display:flex;flex-direction:column;gap:5px}
+.wiz-field.full{grid-column:1/-1}
+.wiz-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
+.wiz-label .opt{font-size:10px;font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0}
+.wiz-hint{font-size:11px;color:var(--text3);line-height:1.4}
+.wiz-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);padding:9px 12px;outline:none;resize:vertical;min-height:80px;transition:border-color .15s;line-height:1.5}
+.wiz-textarea:focus{border-color:var(--accent)}
+.wiz-textarea::placeholder{color:var(--text3)}
+
+/* ── Tag input ── */
+.tag-input-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 8px;display:flex;flex-wrap:wrap;gap:5px;cursor:text;transition:border-color .15s;min-height:38px;align-items:center}
+.tag-input-wrap:focus-within{border-color:var(--accent)}
+.tag-chip{display:flex;align-items:center;gap:4px;background:var(--accent-bg);border:1px solid rgba(108,99,255,.25);color:var(--accent2);border-radius:5px;padding:2px 7px;font-size:11.5px;white-space:nowrap}
+.tag-chip-x{cursor:pointer;opacity:.7;font-size:12px;line-height:1}
+.tag-chip-x:hover{opacity:1}
+.tag-bare-input{background:none;border:none;outline:none;color:var(--text);font-size:12.5px;font-family:var(--font);flex:1;min-width:80px;padding:2px 4px}
+.tag-bare-input::placeholder{color:var(--text3)}
+
+/* ── Satellite row ── */
+.sat-input-row{display:flex;gap:8px;margin-bottom:6px}
+.sat-input-row .form-input{flex:1}
+.geo-sel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12.5px;font-family:var(--font);padding:8px 28px 8px 10px;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer;transition:border-color .15s;width:180px;flex-shrink:0}
+.geo-sel:focus{border-color:var(--accent)}
+.sat-list{display:flex;flex-direction:column;gap:5px}
+.sat-row{display:flex;align-items:center;gap:7px;background:var(--bg3);border-radius:7px;padding:6px 9px}
+.sat-num{width:16px;height:16px;border-radius:4px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text3);flex-shrink:0}
+.sat-url{font-size:11.5px;color:var(--accent2);font-family:var(--mono);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sat-geo-badge{font-size:10px;color:var(--text2);background:var(--bg4);padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+
+/* ── Platform link row ── */
+.pl-input-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pl-input-icon{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.pl-input-name{font-size:12px;font-weight:600;width:110px;flex-shrink:0;color:var(--text2)}
+
+/* ── Checkmark for done step ── */
+.check-svg{width:10px;height:10px}
+
+/* ── AI prompt preview ── */
+.prompt-preview{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 13px;font-size:11.5px;font-family:var(--mono);color:var(--text2);line-height:1.7;white-space:pre-wrap;word-break:break-word;min-height:60px;max-height:120px;overflow-y:auto}
+
+/* ── Success screen ── */
+.wiz-success{text-align:center;padding:40px 24px}
+.wiz-success-icon{width:64px;height:64px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.wiz-success-icon svg{width:28px;height:28px;color:var(--green)}
+.wiz-success-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.wiz-success-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+
+    <div class="page-header">
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">
+          <a href="model-cards.html" style="color:var(--accent2);text-decoration:none" id="breadcrumb-cards">Model Cards</a>
+          <span style="margin:0 6px;color:var(--text3)">/</span>
+          <span id="breadcrumb-new">New Card</span>
+        </div>
+        <div class="page-title" id="page-title">New Model Card</div>
+      </div>
+      <button class="btn btn-ghost" onclick="window.location.href='model-cards.html'" id="btn-cancel">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span id="lbl-cancel">Cancel</span>
+      </button>
+    </div>
+
+    <div class="wiz-wrap" id="wiz-wrap">
+
+      <!-- ── LEFT: step nav ── -->
+      <div class="wiz-nav">
+        <div class="wiz-nav-title" id="wiz-nav-title">Steps</div>
+        <div id="step-nav"></div>
+        <div class="wiz-progress"><div class="wiz-progress-fill" id="wiz-prog-fill"></div></div>
+        <div class="wiz-progress-text" id="wiz-prog-text">Step 1 of 6</div>
+      </div>
+
+      <!-- ── RIGHT: panel ── -->
+      <div class="wiz-panel" id="wiz-panel">
+        <div class="wiz-panel-header">
+          <div class="wiz-panel-title" id="panel-title"></div>
+          <div class="wiz-panel-sub" id="panel-sub"></div>
+        </div>
+        <div class="wiz-panel-body" id="panel-body"></div>
+        <div class="wiz-panel-footer" id="panel-footer">
+          <button class="btn btn-ghost" id="btn-back" onclick="goStep(-1)">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M9 2L5 7l4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span id="lbl-back">Back</span>
+          </button>
+          <button class="btn btn-primary" id="btn-next" onclick="goStep(1)">
+            <span id="lbl-next">Continue</span>
+            <svg viewBox="0 0 14 14" fill="none"><path d="M5 2l4 5-4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'New Model Card';
+if (typeof getLang === 'undefined') window.getLang = () => localStorage.getItem('ofmcrm_lang') || 'en';
+
+// ── State ─────────────────────────────────────────────────────────────────
+const D = {
+  realName:'', personaName:'', age:'', dob:'', zodiac:'', nationality:'',
+  language:'English (UK)', secondLang:'', mbti:'', subscription:'9.99',
+  country:'', city:'', hometown:'', livesWith:'', homeDesc:'',
+  mother:'', father:'', sibling:'', bestFriend:'',
+  strengths:'', weaknesses:'', values:'', fears:'', guilty:'',
+  degree:'', university:'', currentWork:'', dreamCareer:'',
+  fanvueUrl:'', onlyfansUrl:'', instagramUrl:'', telegramUrl:'',
+  satellites:[],
+  hair:'', eyes:'', height:'', weight:'', skin:'', face:'', figure:'', makeup:'', perfume:'',
+  marks:'', jewelry:'', look:'',
+  redflagTags:[],
+  tone:'', humour:'', flirt:'', address:'', msgLength:'1–4 sentences', voice:'',
+  emojis:'', phrases:'', exMorning:'', exPpv:'', exCompliment:'',
+  food:'', drinks:'', music:'', films:'', hobbies:'', sport:'', season:'', travel:'',
+  niche:'', mainPlatform:'Fanvue', trafficSrc:'', subPrice:'9.99',
+  coreAudience:'', theyWant:'',
+  imageGenTool:'', videoTool:'', editingTool:'',
+  basePrompt:'', negPrompt:'extra fingers, bad anatomy, deformed hands, broken teeth, asymmetrical earrings, warped background, text, watermark, distorted face, inconsistent eyes, unrealistic proportions',
+  chatPrompt:'',
+};
+
+const TR = {
+  en:{
+    pageTitle:'New Model Card', breadcrumbCards:'Model Cards', breadcrumbNew:'New Card',
+    cancel:'Cancel', back:'Back', next:'Continue', finish:'Create Card',
+    navTitle:'Steps',
+    s1:'Identity', s2:'Location & Family', s3:'Platforms & Links', s4:'Appearance & Voice',
+    s5:'Content Strategy', s6:'AI Prompts',
+    s1sub:'Basic info, character and career', s2sub:'Where she lives, family and circle',
+    s3sub:'Fanvue, Instagram, Telegram and satellites',
+    s4sub:'Physical appearance, style and communication',
+    s5sub:'Niche, audience and content pillars',
+    s6sub:'Image prompts, negative prompts and chat persona',
+    prog:'Step {n} of 6',
+    realName:'Real Name', personaName:'Persona Name', age:'Age', dob:'Date of Birth',
+    zodiac:'Zodiac Sign', nationality:'Nationality', language:'Main Language',
+    secondLang:'Secondary Language', mbti:'MBTI', subscription:'Subscription Price ($)',
+    strengths:'Strengths', weaknesses:'Weaknesses', values:'Values',
+    fears:'Fears', guilty:'Guilty Pleasures',
+    degree:'Degree', university:'University', currentWork:'Current Work', dreamCareer:'Dream Career',
+    country:'Country', city:'City', hometown:'Hometown', livesWith:'Lives with',
+    homeDesc:'Home Description',
+    mother:'Mother', father:'Father', sibling:'Sibling', bestFriend:'Best Friend',
+    fanvue:'Fanvue URL', onlyfans:'OnlyFans URL', instagram:'Instagram (Main) URL', telegram:'Telegram URL',
+    satellites:'Satellite Instagram Accounts', addSat:'Add account', satUrl:'Instagram URL',
+    hair:'Hair', eyes:'Eyes', height:'Height (cm)', weight:'Weight (kg)',
+    skin:'Skin Tone', face:'Face Shape', figure:'Figure', makeup:'Makeup Style', perfume:'Perfume',
+    marks:'Distinctive Marks', jewelry:'Jewelry', look:'General Look',
+    redflag:'AI Red Flags (press Enter to add)', redflagHint:'Things to never generate for this model',
+    tone:'General Tone', humour:'Humour Style', flirt:'Flirt Style',
+    address:'How she addresses fans', msgLength:'Message Length', voice:'Voice Description',
+    emojis:'Favourite Emojis', phrases:'Signature Phrases (one per line)',
+    exMorning:'Morning message example', exPpv:'PPV / exclusive offer example',
+    exCompliment:'Reply to compliment example',
+    food:'Food', drinks:'Drinks', music:'Music', films:'Films / Series',
+    hobbies:'Hobbies', sport:'Sport / Fitness', season:'Favourite Season', travel:'Travel Dreams',
+    niche:'Niche Description', mainPlatform:'Main Platform', trafficSrc:'Traffic Sources',
+    subPrice:'Subscription Price ($)', coreAudience:'Core Audience', theyWant:'What They Want',
+    imageGenTool:'Image Generation Tool', videoTool:'Video Tool', editingTool:'Editing Software',
+    basePrompt:'Base Image Prompt', negPrompt:'Negative Prompt', chatPrompt:'AI Chat Persona Prompt',
+    chatPromptHint:'This prompt will be used by AI to impersonate the model in chats',
+    opt:'optional',
+  },
+  ru:{
+    pageTitle:'Новая карточка модели', breadcrumbCards:'Карточки моделей', breadcrumbNew:'Новая карточка',
+    cancel:'Отмена', back:'Назад', next:'Продолжить', finish:'Создать карточку',
+    navTitle:'Шаги',
+    s1:'Личность', s2:'Локация и семья', s3:'Платформы и ссылки', s4:'Внешность и голос',
+    s5:'Контент-стратегия', s6:'AI промпты',
+    s1sub:'Основная информация, характер и карьера', s2sub:'Где живёт, семья и окружение',
+    s3sub:'Fanvue, Instagram, Telegram и дочерние аккаунты',
+    s4sub:'Внешность, стиль и стиль общения',
+    s5sub:'Ниша, аудитория и контент-рубрики',
+    s6sub:'Промпты для изображений, негативные промпты и AI чат',
+    prog:'Шаг {n} из 6',
+    realName:'Настоящее имя', personaName:'Имя персоны', age:'Возраст', dob:'Дата рождения',
+    zodiac:'Знак зодиака', nationality:'Национальность', language:'Основной язык',
+    secondLang:'Второй язык', mbti:'MBTI', subscription:'Цена подписки ($)',
+    strengths:'Сильные стороны', weaknesses:'Слабости', values:'Ценности',
+    fears:'Страхи', guilty:'Guilty pleasures',
+    degree:'Образование', university:'Университет', currentWork:'Текущая работа', dreamCareer:'Мечта о карьере',
+    country:'Страна', city:'Город', hometown:'Родной город', livesWith:'С кем живёт',
+    homeDesc:'Описание жилья',
+    mother:'Мама', father:'Папа', sibling:'Сестра / брат', bestFriend:'Лучшая подруга',
+    fanvue:'Fanvue URL', onlyfans:'OnlyFans URL', instagram:'Instagram (основной) URL', telegram:'Telegram URL',
+    satellites:'Дочерние Instagram аккаунты', addSat:'Добавить аккаунт', satUrl:'Instagram URL',
+    hair:'Волосы', eyes:'Глаза', height:'Рост (см)', weight:'Вес (кг)',
+    skin:'Тон кожи', face:'Форма лица', figure:'Фигура', makeup:'Макияж', perfume:'Парфюм',
+    marks:'Особые отметины', jewelry:'Украшения', look:'Общий образ',
+    redflag:'AI — никогда не генерировать (Enter для добавления)', redflagHint:'Что нельзя генерировать для этой модели',
+    tone:'Общий тон', humour:'Стиль юмора', flirt:'Стиль флирта',
+    address:'Как обращается к фанам', msgLength:'Длина сообщений', voice:'Описание голоса',
+    emojis:'Любимые эмодзи', phrases:'Фирменные фразы (по одной на строку)',
+    exMorning:'Пример утреннего сообщения', exPpv:'Пример PPV / эксклюзива',
+    exCompliment:'Пример ответа на комплимент',
+    food:'Еда', drinks:'Напитки', music:'Музыка', films:'Кино и сериалы',
+    hobbies:'Хобби', sport:'Спорт / фитнес', season:'Любимое время года', travel:'Мечты о путешествиях',
+    niche:'Описание ниши', mainPlatform:'Основная платформа', trafficSrc:'Источники трафика',
+    subPrice:'Цена подписки ($)', coreAudience:'Основная аудитория', theyWant:'Что они хотят',
+    imageGenTool:'Инструмент генерации фото', videoTool:'Видео инструмент', editingTool:'Редактирование',
+    basePrompt:'Базовый промпт', negPrompt:'Негативный промпт', chatPrompt:'Промпт для AI чата',
+    chatPromptHint:'Этот промпт используется AI для имитации модели в чатах',
+    opt:'необязательно',
+  }
+};
+
+function t(k){ return (TR[getLang()]||TR.en)[k]||k; }
+function inp(id,dkey,ph='',type='text'){
+  return `<input class="form-input" id="${id}" type="${type}" placeholder="${ph}" value="${D[dkey]||''}" oninput="D['${dkey}']=this.value">`;
+}
+function ta(id,dkey,ph='',rows=3){
+  return `<textarea class="wiz-textarea" id="${id}" placeholder="${ph}" rows="${rows}" oninput="D['${dkey}']=this.value">${D[dkey]||''}</textarea>`;
+}
+function field(label,content,full=false,hint=''){
+  return `<div class="wiz-field${full?' full':''}"><label class="wiz-label">${label}</label>${content}${hint?`<div class="wiz-hint">${hint}</div>`:''}</div>`;
+}
+function fieldOpt(label,content,full=false,hint=''){
+  return `<div class="wiz-field${full?' full':''}"><label class="wiz-label">${label} <span class="opt">(${t('opt')})</span></label>${content}${hint?`<div class="wiz-hint">${hint}</div>`:''}</div>`;
+}
+
+// ── Steps definition ──────────────────────────────────────────────────────
+const STEPS = [
+  {
+    key:'identity',
+    render:()=>`
+      <div class="wiz-grid3" style="margin-bottom:16px">
+        ${field(t('realName'), inp('f-realname','realName','Nora Whitfield'))}
+        ${field(t('personaName'), inp('f-persona','personaName','Nora Vale'))}
+        ${field(t('subscription'), inp('f-sub','subscription','9.99','number'))}
+        ${field(t('age'), inp('f-age','age','24','number'))}
+        ${field(t('dob'), inp('f-dob','dob','14.10.2001'))}
+        ${fieldOpt(t('zodiac'), inp('f-zodiac','zodiac','Libra ♎'))}
+        ${field(t('nationality'), inp('f-nat','nationality','British'))}
+        ${field(t('language'), inp('f-lang','language','English (UK)'))}
+        ${fieldOpt(t('secondLang'), inp('f-slang','secondLang','Basic French'))}
+        ${fieldOpt(t('mbti'), inp('f-mbti','mbti','INFJ'))}
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px">
+      <div class="wiz-grid">
+        ${field(t('strengths'), ta('f-strengths','strengths','Reads people well, great listener...'))}
+        ${field(t('weaknesses'), ta('f-weaknesses','weaknesses','Closes up without trust...'))}
+        ${field(t('values'), ta('f-values','values','Taste · Honesty · Freedom...'))}
+        ${field(t('fears'), ta('f-fears','fears','Losing herself, a boring life...'))}
+        ${fieldOpt(t('guilty'), ta('f-guilty','guilty','Romantic films · Crisps late at night...'),'full')}
+        ${field(t('degree'), inp('f-degree','degree','BA Visual Communication'))}
+        ${field(t('university'), inp('f-uni','university','London College of Communication'))}
+        ${field(t('currentWork'), inp('f-work','currentWork','Freelance Visual Stylist'))}
+        ${fieldOpt(t('dreamCareer'), inp('f-dream','dreamCareer','Own aesthetic digital brand'))}
+      </div>`
+  },
+  {
+    key:'location',
+    render:()=>`
+      <div class="wiz-grid" style="margin-bottom:16px">
+        ${field(t('country'), inp('f-country','country','United Kingdom 🇬🇧'))}
+        ${field(t('city'), inp('f-city','city','London — Notting Hill'))}
+        ${field(t('hometown'), inp('f-hometown','hometown','Bath'))}
+        ${fieldOpt(t('livesWith'), inp('f-lives','livesWith','Alone + cat Olive 🐱'))}
+        ${fieldOpt(t('homeDesc'), ta('f-homedesc','homeDesc','Small bright flat in an old London house...','3'),'full')}
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px">
+      <div class="wiz-grid">
+        ${fieldOpt(t('mother'), inp('f-mother','mother','Claire Whitfield, 49 — Literature teacher'))}
+        ${fieldOpt(t('father'), inp('f-father','father','Daniel Whitfield, 52 — Architect'))}
+        ${fieldOpt(t('sibling'), inp('f-sibling','sibling','Eva, 19 (sister)'))}
+        ${fieldOpt(t('bestFriend'), inp('f-bestfriend','bestFriend','Amelie — stylist, uni friend'))}
+      </div>`
+  },
+  {
+    key:'platforms',
+    render:()=>`
+      <div style="margin-bottom:18px">
+        <div class="pl-input-row">
+          <div class="pl-input-icon" style="background:rgba(108,99,255,.15)">🎯</div>
+          <div class="pl-input-name">Fanvue</div>
+          <input class="form-input" style="flex:1" placeholder="https://fanvue.com/username" value="${D.fanvueUrl}" oninput="D.fanvueUrl=this.value">
+        </div>
+        <div class="pl-input-row">
+          <div class="pl-input-icon" style="background:rgba(34,197,94,.1)">💠</div>
+          <div class="pl-input-name">OnlyFans</div>
+          <input class="form-input" style="flex:1" placeholder="https://onlyfans.com/username" value="${D.onlyfansUrl}" oninput="D.onlyfansUrl=this.value">
+        </div>
+        <div class="pl-input-row">
+          <div class="pl-input-icon" style="background:rgba(236,72,153,.1)">📸</div>
+          <div class="pl-input-name">Instagram</div>
+          <input class="form-input" style="flex:1" placeholder="https://instagram.com/username" value="${D.instagramUrl}" oninput="D.instagramUrl=this.value">
+        </div>
+        <div class="pl-input-row">
+          <div class="pl-input-icon" style="background:rgba(56,189,248,.1)">✈️</div>
+          <div class="pl-input-name">Telegram</div>
+          <input class="form-input" style="flex:1" placeholder="https://t.me/channel" value="${D.telegramUrl}" oninput="D.telegramUrl=this.value">
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px">
+      <label class="wiz-label" style="margin-bottom:8px">${t('satellites')}</label>
+      <div class="sat-input-row">
+        <input class="form-input" id="sat-url-inp" placeholder="https://instagram.com/username" style="flex:1">
+        <select class="geo-sel" id="sat-geo-inp">
+          <option value="">— Geo —</option>
+          <optgroup label="🔥 Popular"><option>🇺🇸 United States</option><option>🇬🇧 United Kingdom</option><option>🇨🇦 Canada</option><option>🇦🇺 Australia</option><option>🇩🇪 Germany</option><option>🇫🇷 France</option><option>🇳🇱 Netherlands</option><option>🇸🇪 Sweden</option><option>🇳🇴 Norway</option><option>🇩🇰 Denmark</option></optgroup>
+          <optgroup label="🌍 Europe"><option>🇦🇹 Austria</option><option>🇧🇪 Belgium</option><option>🇨🇭 Switzerland</option><option>🇪🇸 Spain</option><option>🇮🇹 Italy</option><option>🇵🇱 Poland</option><option>🇵🇹 Portugal</option><option>🇬🇷 Greece</option><option>🇫🇮 Finland</option><option>🇮🇪 Ireland</option></optgroup>
+          <optgroup label="🌎 Americas"><option>🇧🇷 Brazil</option><option>🇲🇽 Mexico</option><option>🇦🇷 Argentina</option><option>🇨🇴 Colombia</option></optgroup>
+          <optgroup label="🌏 Asia"><option>🇯🇵 Japan</option><option>🇰🇷 South Korea</option><option>🇸🇬 Singapore</option><option>🇮🇳 India</option></optgroup>
+          <optgroup label="🌍 Middle East"><option>🇦🇪 UAE</option><option>🇸🇦 Saudi Arabia</option><option>🇮🇱 Israel</option></optgroup>
+        </select>
+        <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px" onclick="addSat()">${t('addSat')}</button>
+      </div>
+      <div class="sat-list" id="sat-list">${D.satellites.map((s,i)=>`
+        <div class="sat-row"><div class="sat-num">${i+1}</div><div class="sat-url">${s.url}</div><div class="sat-geo-badge">${s.geo}</div><button class="icon-action" onclick="removeSat(${i})" style="flex-shrink:0"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`).join('')}</div>`
+  },
+  {
+    key:'appearance',
+    render:()=>`
+      <div style="margin-bottom:16px">
+        <div class="wiz-grid3">
+          ${field(t('hair'), inp('f-hair','hair','Dark blonde, soft waves'))}
+          ${field(t('eyes'), inp('f-eyes','eyes','Grey-green'))}
+          ${field(t('skin'), inp('f-skin','skin','Light, neutral'))}
+          ${field(t('height'), inp('f-height','height','168','number'))}
+          ${field(t('weight'), inp('f-weight','weight','54','number'))}
+          ${field(t('face'), inp('f-face','face','Oval'))}
+          ${field(t('figure'), inp('f-figure','figure','Slender, feminine'))}
+          ${field(t('makeup'), inp('f-makeup','makeup','Clean skin, soft contour'))}
+          ${fieldOpt(t('perfume'), inp('f-perfume','perfume','Woody-powdery, tea & musk'))}
+          ${fieldOpt(t('marks'), inp('f-marks','marks','Small mole near collarbone'))}
+          ${fieldOpt(t('jewelry'), inp('f-jewelry','jewelry','Thin gold hoop earring'))}
+        </div>
+        ${fieldOpt(t('look'), ta('f-look','look','Slightly tired, deep gaze — quiet luxury style...','2'),'true')}
+      </div>
+      <div class="wiz-field full">
+        <label class="wiz-label">${t('redflag')}</label>
+        <div class="tag-input-wrap" id="redflag-wrap" onclick="document.getElementById('redflag-inp').focus()">
+          ${D.redflagTags.map(tag=>`<span class="tag-chip">${tag}<span class="tag-chip-x" onclick="removeTag('${tag}')">✕</span></span>`).join('')}
+          <input class="tag-bare-input" id="redflag-inp" placeholder="extra fingers..." onkeydown="onTagKey(event)">
+        </div>
+        <div class="wiz-hint">${t('redflagHint')}</div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div class="wiz-grid">
+        ${field(t('tone'), ta('f-tone','tone','Soft, confident, slightly ironic...'))}
+        ${field(t('humour'), ta('f-humour','humour','Dry British self-irony'))}
+        ${field(t('flirt'), ta('f-flirt','flirt','Teases lightly...'))}
+        ${field(t('address'), inp('f-address','address','love, darling, you, by name'))}
+        ${fieldOpt(t('msgLength'), inp('f-msglen','msgLength','1–4 sentences'))}
+        ${fieldOpt(t('voice'), inp('f-voice','voice','Soft, calm, slightly low. Light British accent.'))}
+        ${fieldOpt(t('emojis'), inp('f-emojis','emojis','🤍 ✨ ☕️ 🙂 🥂'))}
+      </div>
+      <div class="wiz-grid" style="margin-top:12px">
+        ${fieldOpt(t('exMorning'), ta('f-exmorning','exMorning','"Morning, love 🤍 Just made coffee..."','2'),'full')}
+        ${fieldOpt(t('exPpv'), ta('f-exppv','exPpv','"I made something a little more special today..."','2'),'full')}
+        ${fieldOpt(t('exCompliment'), ta('f-excompliment','exCompliment','"That\'s actually very sweet of you to say 🙂..."','2'),'full')}
+        ${fieldOpt(t('phrases'), ta('f-phrases','phrases','"that\'s actually quite sweet"\n"don\'t tempt me"','3'),'full')}
+      </div>`
+  },
+  {
+    key:'content',
+    render:()=>`
+      <div class="wiz-grid" style="margin-bottom:14px">
+        ${field(t('niche'), ta('f-niche','niche','Lifestyle · Soft luxury · Feminine energy...','2'),'full')}
+        ${field(t('mainPlatform'), `<select class="form-select" oninput="D.mainPlatform=this.value"><option value="Fanvue" ${D.mainPlatform==='Fanvue'?'selected':''}>Fanvue</option><option value="OnlyFans" ${D.mainPlatform==='OnlyFans'?'selected':''}>OnlyFans</option><option value="Both" ${D.mainPlatform==='Both'?'selected':''}>Both</option></select>`)}
+        ${field(t('subPrice'), inp('f-price','subPrice','9.99','number'))}
+        ${field(t('trafficSrc'), inp('f-traffic','trafficSrc','Instagram · TikTok · Reddit · Telegram'))}
+        ${field(t('coreAudience'), ta('f-coreaud','coreAudience','Men 24–40 who value femininity...'))}
+        ${field(t('theyWant'), ta('f-theywant','theyWant','Attention, atmosphere, personality...'))}
+        ${fieldOpt(t('food'), inp('f-food','food','Truffle pasta, sourdough'))}
+        ${fieldOpt(t('drinks'), inp('f-drinks','drinks','Flat white, jasmine tea'))}
+        ${fieldOpt(t('music'), inp('f-music','music','The 1975, Sade, London Grammar'))}
+        ${fieldOpt(t('films'), inp('f-films','films','Fleabag, Normal People, Notting Hill'))}
+        ${fieldOpt(t('hobbies'), inp('f-hobbies','hobbies','City photography, moodboards...'))}
+        ${fieldOpt(t('sport'), inp('f-sport','sport','Pilates + long walks'))}
+        ${fieldOpt(t('season'), inp('f-season','season','Autumn 🍂'))}
+        ${fieldOpt(t('travel'), inp('f-travel','travel','Copenhagen, Paris, Kyoto, Lake Como'))}
+      </div>`
+  },
+  {
+    key:'ai',
+    render:()=>`
+      <div style="margin-bottom:16px">
+        <div class="wiz-grid3" style="margin-bottom:16px">
+          ${fieldOpt(t('imageGenTool'), inp('f-imggen','imageGenTool','Flux / Midjourney / Nano Banana'))}
+          ${fieldOpt(t('videoTool'), inp('f-video','videoTool','Kling / Runway'))}
+          ${fieldOpt(t('editingTool'), inp('f-editing','editingTool','Lightroom + Photoshop'))}
+        </div>
+        ${field(t('basePrompt'), ta('f-baseprompt','basePrompt','young British woman, 24 years old, dark blonde soft waves, grey-green eyes...','4'),'full')}
+        ${field(t('negPrompt'), ta('f-negprompt','negPrompt',D.negPrompt,'3'),'full')}
+        ${field(t('chatPrompt'), ta('f-chatprompt','chatPrompt','You are [Persona Name] — a [age]-year-old [nationality] woman living in [city]...','5'),'full',t('chatPromptHint'))}
+      </div>
+      ${D.basePrompt || D.personaName ? `
+      <div style="background:var(--bg3);border-radius:9px;padding:12px 14px;font-size:11.5px;color:var(--text3)">
+        <div style="font-weight:600;color:var(--text2);margin-bottom:6px">Preview — generated persona prompt:</div>
+        <div class="prompt-preview">${D.chatPrompt || `You are ${D.personaName||'[name]'} — a ${D.age||'[age]'}-year-old ${D.nationality||'[nationality]'} woman living in ${D.city||'[city]'}. ${D.tone||''}`}</div>
+      </div>` : ''}`
+  }
+];
+
+// ── Wizard state ──────────────────────────────────────────────────────────
+let currentStep = 0;
+const doneSteps = new Set();
+
+function renderStepNav() {
+  const nav = document.getElementById('step-nav');
+  nav.innerHTML = STEPS.map((s,i) => {
+    const isDone = doneSteps.has(i);
+    const isActive = i === currentStep;
+    const label = t('s'+(i+1));
+    return `<div class="wiz-step${isActive?' active':''}${isDone&&!isActive?' done':''}" onclick="jumpStep(${i})">
+      <div class="wiz-step-num">${isDone&&!isActive
+        ? `<svg class="check-svg" viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 3L8.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : i+1}</div>
+      <div class="wiz-step-label">${label}</div>
+    </div>`;
+  }).join('');
+
+  const pct = Math.round(((currentStep + (doneSteps.has(currentStep)?1:0)) / STEPS.length) * 100);
+  document.getElementById('wiz-prog-fill').style.width = pct + '%';
+  document.getElementById('wiz-prog-text').textContent = t('prog').replace('{n}', currentStep+1);
+}
+
+function renderPanel() {
+  const s = STEPS[currentStep];
+  document.getElementById('panel-title').textContent = t('s'+(currentStep+1));
+  document.getElementById('panel-sub').textContent = t('s'+(currentStep+1)+'sub');
+  document.getElementById('panel-body').innerHTML = s.render();
+
+  // Footer
+  const isLast = currentStep === STEPS.length - 1;
+  document.getElementById('btn-back').style.visibility = currentStep === 0 ? 'hidden' : '';
+  const btnNext = document.getElementById('btn-next');
+  btnNext.innerHTML = isLast
+    ? `<span id="lbl-next">${t('finish')}</span><svg viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    : `<span id="lbl-next">${t('next')}</span><svg viewBox="0 0 14 14" fill="none"><path d="M5 2l4 5-4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  document.getElementById('lbl-back').textContent = t('back');
+}
+
+function goStep(dir) {
+  if (dir === 1) {
+    doneSteps.add(currentStep);
+    if (currentStep === STEPS.length - 1) { finishWizard(); return; }
+    currentStep++;
+  } else {
+    currentStep = Math.max(0, currentStep - 1);
+  }
+  renderStepNav();
+  renderPanel();
+  document.getElementById('wiz-panel').scrollTop = 0;
+}
+
+function jumpStep(i) {
+  if (i <= currentStep || doneSteps.has(i-1) || i === 0) {
+    currentStep = i;
+    renderStepNav();
+    renderPanel();
+  }
+}
+
+function finishWizard() {
+  // In production: POST D to /api/model-cards
+  document.getElementById('wiz-wrap').innerHTML = `
+    <div></div>
+    <div class="wiz-panel">
+      <div class="wiz-success">
+        <div class="wiz-success-icon"><svg viewBox="0 0 28 28" fill="none"><path d="M4 14l7 8L24 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="wiz-success-title">${t('s1')} "${D.personaName || D.realName}" created!</div>
+        <div class="wiz-success-sub">${getLang()==='ru' ? 'Карточка модели успешно создана и добавлена в список.' : 'The model card has been created and added to the list.'}</div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <a href="model-cards.html" class="btn btn-primary">${getLang()==='ru'?'Открыть карточку':'Open Card'}</a>
+          <button class="btn btn-ghost" onclick="location.reload()">${getLang()==='ru'?'Создать ещё':'Add Another'}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Satellite helpers ─────────────────────────────────────────────────────
+function addSat() {
+  const url = document.getElementById('sat-url-inp').value.trim();
+  const geo = document.getElementById('sat-geo-inp').value;
+  if (!url || !geo) return;
+  if (D.satellites.length >= 30) { alert('Maximum 30 satellite accounts'); return; }
+  D.satellites.push({url: url.replace(/^https?:\/\//,''), geo});
+  document.getElementById('sat-url-inp').value = '';
+  document.getElementById('sat-geo-inp').value = '';
+  // Re-render satellite list only
+  const list = document.getElementById('sat-list');
+  if (list) list.outerHTML = `<div class="sat-list" id="sat-list">${D.satellites.map((s,i)=>`<div class="sat-row"><div class="sat-num">${i+1}</div><div class="sat-url">${s.url}</div><div class="sat-geo-badge">${s.geo}</div><button class="icon-action" onclick="removeSat(${i})"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`).join('')}</div>`;
+}
+function removeSat(i) {
+  D.satellites.splice(i,1);
+  const list = document.getElementById('sat-list');
+  if (list) list.outerHTML = `<div class="sat-list" id="sat-list">${D.satellites.map((s,j)=>`<div class="sat-row"><div class="sat-num">${j+1}</div><div class="sat-url">${s.url}</div><div class="sat-geo-badge">${s.geo}</div><button class="icon-action" onclick="removeSat(${j})"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`).join('')}</div>`;
+}
+
+// ── Tag (red flag) helpers ────────────────────────────────────────────────
+// Prefill default red flags
+D.redflagTags = ['extra fingers','bad anatomy','broken teeth','asymmetrical earrings','warped background','text on clothes','watermark'];
+
+function onTagKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,$/,'');
+    if (val && !D.redflagTags.includes(val)) {
+      D.redflagTags.push(val);
+      renderTags();
+    }
+    e.target.value = '';
+  } else if (e.key === 'Backspace' && !e.target.value && D.redflagTags.length) {
+    D.redflagTags.pop();
+    renderTags();
+  }
+}
+function removeTag(tag) {
+  D.redflagTags = D.redflagTags.filter(t=>t!==tag);
+  renderTags();
+}
+function renderTags() {
+  const wrap = document.getElementById('redflag-wrap');
+  const inp = document.getElementById('redflag-inp');
+  if (!wrap || !inp) return;
+  wrap.innerHTML = D.redflagTags.map(tag=>`<span class="tag-chip">${tag}<span class="tag-chip-x" onclick="removeTag('${tag}')">✕</span></span>`).join('');
+  wrap.appendChild(inp);
+  inp.focus();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('breadcrumb-cards').textContent = t('breadcrumbCards');
+  document.getElementById('breadcrumb-new').textContent = t('breadcrumbNew');
+  document.getElementById('page-title').textContent = t('pageTitle');
+  document.getElementById('lbl-cancel').textContent = t('cancel');
+  document.getElementById('wiz-nav-title').textContent = t('navTitle');
+  renderStepNav();
+  renderPanel();
+});
+</script>
+</body>
+</html>

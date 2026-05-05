@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OFM CRM — TG Group Posting</title>
+<script src="auth.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── toolbar ── */
+.cal-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-nav-btn{width:30px;height:30px;border-radius:7px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;color:var(--text2)}
+.cal-nav-btn:hover{border-color:var(--border2);color:var(--text)}
+.cal-nav-btn svg{width:13px;height:13px}
+.cal-month-label{font-size:15px;font-weight:700;letter-spacing:-.3px;min-width:160px;text-align:center}
+.cal-view-btns{display:flex;gap:2px;background:var(--bg3);border-radius:7px;padding:2px}
+.cal-view-btn{padding:5px 12px;border-radius:5px;font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;background:none;border:none;font-family:var(--font)}
+.cal-view-btn.active{background:var(--bg2);color:var(--text);font-weight:500;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.cal-legend{display:flex;align-items:center;gap:12px;margin-left:auto;flex-wrap:wrap}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text2)}
+.cal-legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* ── calendar grid ── */
+.cal-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.cal-head{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border)}
+.cal-head-cell{padding:9px 0;text-align:center;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-cell{min-height:110px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px;position:relative;vertical-align:top;cursor:pointer;transition:background .1s}
+.cal-cell:hover{background:var(--bg3)}
+.cal-cell:nth-child(7n){border-right:none}
+.cal-cell.other-month .cal-day-num{color:var(--text3);opacity:.4}
+.cal-cell.today .cal-day-num{background:var(--accent);color:#fff;border-radius:50%}
+.cal-cell.today{background:rgba(108,99,255,.04)}
+.cal-day-num{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;margin-bottom:4px;border-radius:50%;flex-shrink:0}
+.cal-add-btn{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:4px;background:var(--bg4);border:none;color:var(--text3);font-size:14px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;transition:all .15s}
+.cal-cell:hover .cal-add-btn{display:flex}
+.cal-add-btn:hover{background:var(--accent);color:#fff}
+
+/* ── post pill ── */
+.post-pill{display:flex;align-items:center;gap:5px;padding:3px 7px;border-radius:5px;margin-bottom:3px;font-size:10.5px;font-weight:500;cursor:pointer;transition:opacity .15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.post-pill:hover{opacity:.85}
+.post-pill-time{font-size:9.5px;opacity:.8;flex-shrink:0}
+.post-pill-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.post-pill-status{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.post-pill .status-posted{background:#22c55e}
+.post-pill .status-pending{background:#f59e0b}
+.post-pill .status-error{background:#ef4444}
+.more-pill{font-size:10px;color:var(--text3);padding:2px 4px;cursor:pointer}
+.more-pill:hover{color:var(--text2)}
+
+/* ── stats row ── */
+.cal-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.cal-stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.cal-stat-val{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-1px}
+.cal-stat-lbl{font-size:10.5px;color:var(--text2);margin-top:3px}
+
+/* ── preview modal ── */
+.preview-phone{width:280px;background:#17212b;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);flex-shrink:0}
+.preview-phone-bar{background:#232e3c;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.preview-phone-ava{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.preview-phone-name{font-size:13px;font-weight:600;color:#fff}
+.preview-phone-sub{font-size:10.5px;color:#8a9db5}
+.preview-chat{padding:12px;min-height:280px;max-height:380px;overflow-y:auto;background:#17212b}
+.preview-msg{background:#1e2c3a;border-radius:10px 10px 10px 2px;padding:10px 12px;margin-bottom:8px;max-width:100%}
+.preview-msg-imgs{display:grid;gap:3px;margin-bottom:8px;border-radius:8px;overflow:hidden}
+.preview-msg-imgs.n1{grid-template-columns:1fr}
+.preview-msg-imgs.n2{grid-template-columns:1fr 1fr}
+.preview-msg-imgs.n3{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+.preview-msg-imgs.n3 .img-item:first-child{grid-column:1/-1}
+.preview-msg-imgs.n4{grid-template-columns:1fr 1fr}
+.preview-msg-imgs.n5{grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto}
+.preview-msg-imgs.n5 .img-item:first-child,.preview-msg-imgs.n5 .img-item:nth-child(2){grid-column:span 1}
+.img-item{background:var(--bg4);min-height:80px;display:flex;align-items:center;justify-content:center;border-radius:4px;overflow:hidden}
+.img-item img{width:100%;height:100%;object-fit:cover;display:block}
+.img-placeholder{color:#8a9db5;font-size:20px}
+.preview-msg-text{font-size:12.5px;color:#e0e7f0;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.preview-msg-meta{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:6px}
+.preview-msg-time{font-size:10px;color:#8a9db5}
+.preview-msg-stars{font-size:10px;color:#f59e0b}
+.preview-detail{flex:1;min-width:0}
+.preview-detail-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12.5px}
+.preview-detail-lbl{color:var(--text3);width:80px;flex-shrink:0;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.preview-detail-val{color:var(--text);font-weight:500}
+.status-badge{padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600}
+.status-badge.pending{background:var(--amber-bg);color:var(--amber)}
+.status-badge.posted{background:var(--green-bg);color:var(--green)}
+.status-badge.error{background:var(--red-bg);color:var(--red)}
+</style>
+</head>
+<body>
+<aside id="sidebar"></aside>
+<div class="main">
+  <div id="topbar"></div>
+  <div class="content">
+
+    <div class="page-header">
+      <div class="page-title" id="page-title">TG Group Posting</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" id="btn-export">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 10V2M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="lbl-export">Export</span>
+        </button>
+        <button class="btn btn-primary" onclick="window.location.href='tg-post-new.html'">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="lbl-new-post">New Post</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="cal-stats">
+      <div class="cal-stat">
+        <div class="cal-stat-val" id="stat-total">24</div>
+        <div class="cal-stat-lbl" id="lbl-stat-total">Posts this month</div>
+      </div>
+      <div class="cal-stat">
+        <div class="cal-stat-val" style="color:var(--green)" id="stat-posted">18</div>
+        <div class="cal-stat-lbl" id="lbl-stat-posted">Posted</div>
+      </div>
+      <div class="cal-stat">
+        <div class="cal-stat-val" style="color:var(--amber)" id="stat-pending">5</div>
+        <div class="cal-stat-lbl" id="lbl-stat-pending">Pending</div>
+      </div>
+      <div class="cal-stat">
+        <div class="cal-stat-val" style="color:var(--red)" id="stat-error">1</div>
+        <div class="cal-stat-lbl" id="lbl-stat-error">Error</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="cal-toolbar">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)"><svg viewBox="0 0 14 14" fill="none"><path d="M9 2L5 7l4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="cal-month-label" id="cal-month-label">May 2026</div>
+        <button class="cal-nav-btn" onclick="changeMonth(1)"><svg viewBox="0 0 14 14" fill="none"><path d="M5 2l4 5-4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="btn btn-ghost" style="padding:5px 11px;font-size:12px;margin-left:4px" onclick="goToday()" id="btn-today">Today</button>
+      </div>
+      <div class="cal-view-btns">
+        <button class="cal-view-btn active" id="vb-month" onclick="setView('month',this)" id="vb-month-lbl">Month</button>
+        <button class="cal-view-btn" onclick="setView('week',this)" id="vb-week-lbl">Week</button>
+        <button class="cal-view-btn" onclick="setView('list',this)" id="vb-list-lbl">List</button>
+      </div>
+      <div class="cal-legend" id="cal-legend"></div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="cal-wrap" id="cal-wrap">
+      <div class="cal-head" id="cal-head"></div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <!-- List view (hidden by default) -->
+    <div id="list-view" style="display:none">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+        <table>
+          <thead><tr>
+            <th id="th-channel">Channel</th>
+            <th id="th-date">Date & Time</th>
+            <th id="th-text">Post Text</th>
+            <th id="th-stars">Stars</th>
+            <th id="th-status">Status</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="list-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="overlay" id="modal-preview" onclick="if(event.target===this)closePreview()">
+  <div class="modal" style="width:680px;max-width:95vw;flex-direction:row;display:flex;gap:20px;align-items:flex-start;padding:0;background:transparent;border:none;box-shadow:none">
+    <!-- Phone preview -->
+    <div class="preview-phone" id="preview-phone">
+      <div class="preview-phone-bar">
+        <div class="preview-phone-ava" id="preview-ava" style="background:#6c63ff;color:#fff">TG</div>
+        <div>
+          <div class="preview-phone-name" id="preview-ch-name">Channel</div>
+          <div class="preview-phone-sub" id="preview-ch-id">@channel</div>
+        </div>
+      </div>
+      <div class="preview-chat">
+        <div class="preview-msg">
+          <div class="preview-msg-imgs" id="preview-imgs"></div>
+          <div class="preview-msg-text" id="preview-text">Post text here...</div>
+          <div class="preview-msg-meta">
+            <div class="preview-msg-stars" id="preview-stars"></div>
+            <div class="preview-msg-time" id="preview-time">12:00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Details -->
+    <div class="preview-detail">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:14px" id="preview-title">Post Details</div>
+        <div class="preview-detail-row"><div class="preview-detail-lbl" id="pdl-channel">Channel</div><div class="preview-detail-val" id="pd-channel">—</div></div>
+        <div class="preview-detail-row"><div class="preview-detail-lbl" id="pdl-date">Date</div><div class="preview-detail-val" id="pd-date">—</div></div>
+        <div class="preview-detail-row"><div class="preview-detail-lbl" id="pdl-stars">Stars</div><div class="preview-detail-val" id="pd-stars">—</div></div>
+        <div class="preview-detail-row"><div class="preview-detail-lbl" id="pdl-photos">Photos</div><div class="preview-detail-val" id="pd-photos">—</div></div>
+        <div class="preview-detail-row"><div class="preview-detail-lbl" id="pdl-status">Status</div><div class="preview-detail-val" id="pd-status">—</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="btn-preview-edit" onclick="editFromPreview()">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M9 2l3 3-7 7H2v-3L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span id="lbl-preview-edit">Edit Post</span>
+        </button>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="closePreview()" id="lbl-preview-close">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="sidebar.js"></script>
+<script>
+window.PAGE_TITLE = 'TG Group Posting';
+if (typeof getLang === 'undefined') window.getLang = () => localStorage.getItem('ofmcrm_lang') || 'en';
+
+// ── Channel color map ──────────────────────────────────────────────────────
+const CHANNELS = [
+  {id:'@noravale_main',   name:'Nora Vale Main',   color:'#6c63ff', bg:'rgba(108,99,255,.2)', initials:'NV'},
+  {id:'@aurora_official', name:'Aurora Official',  color:'#ec4899', bg:'rgba(236,72,153,.2)', initials:'AU'},
+  {id:'@stella_tg',       name:'Stella Moon TG',   color:'#22c55e', bg:'rgba(34,197,94,.2)',  initials:'SM'},
+  {id:'@luna_channel',    name:'Luna Ray Channel', color:'#f59e0b', bg:'rgba(245,158,11,.2)', initials:'LR'},
+];
+
+// ── Mock posts data ────────────────────────────────────────────────────────
+const TODAY = new Date();
+const Y = TODAY.getFullYear(), M = TODAY.getMonth();
+let viewYear = Y, viewMonth = M;
+
+function makePosts() {
+  const posts = [];
+  const statuses = ['posted','posted','posted','pending','error'];
+  const texts = [
+    'Morning vibes ☕️\n\nJust woke up and made my flat white. London is grey today but I don\'t mind — rainy days are my favourite for staying in and editing content 🤍',
+    'New exclusive content dropped ✨\n\nSomething very soft, very me. Want to see? Link in bio 💕',
+    'Late night thoughts 🌙\n\nI love these quiet hours. What are you doing right now?',
+    'Weekly update! 📸\n\nThis week was incredible — thank you all for the support 🥂',
+    'Autumn mood 🍂\n\nNotting Hill looks absolutely stunning right now. Taking a walk with Olive 🐱',
+  ];
+  CHANNELS.forEach((ch, ci) => {
+    for (let d = 1; d <= 28; d++) {
+      if (Math.random() < 0.25) {
+        const h = 8 + Math.floor(Math.random() * 14);
+        const min = Math.floor(Math.random() * 60);
+        const stars = [0,0,0,0,50,100,150][Math.floor(Math.random()*7)];
+        const nPhotos = Math.floor(Math.random()*6);
+        posts.push({
+          id: `p_${ci}_${d}_${h}`,
+          channelId: ch.id, channelName: ch.name,
+          channelColor: ch.color, channelBg: ch.bg, channelInitials: ch.initials,
+          date: new Date(viewYear, viewMonth, d, h, min),
+          text: texts[Math.floor(Math.random()*texts.length)],
+          stars, nPhotos,
+          status: statuses[Math.floor(Math.random()*statuses.length)],
+        });
+      }
+    }
+  });
+  return posts.sort((a,b) => a.date - b.date);
+}
+
+let POSTS = makePosts();
+let previewPost = null;
+
+// ── Calendar rendering ─────────────────────────────────────────────────────
+const DAYS_EN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAYS_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+function renderCalendar() {
+  const lang = getLang();
+  const days = lang === 'ru' ? DAYS_RU : DAYS_EN;
+  const months = lang === 'ru' ? MONTHS_RU : MONTHS_EN;
+
+  document.getElementById('cal-month-label').textContent = `${months[viewMonth]} ${viewYear}`;
+
+  // Head
+  document.getElementById('cal-head').innerHTML = days.map(d => `<div class="cal-head-cell">${d}</div>`).join('');
+
+  // Grid
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  const lastDay = new Date(viewYear, viewMonth+1, 0);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Mon=0
+
+  const cells = [];
+  // Prev month days
+  for (let i = startDow - 1; i >= 0; i--) {
+    const d = new Date(viewYear, viewMonth, -i);
+    cells.push({date: d, otherMonth: true});
+  }
+  // Current month
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    cells.push({date: new Date(viewYear, viewMonth, d), otherMonth: false});
+  }
+  // Next month
+  while (cells.length % 7 !== 0) {
+    cells.push({date: new Date(viewYear, viewMonth+1, cells.length - lastDay.getDate() - startDow + 1), otherMonth: true});
+  }
+
+  document.getElementById('cal-grid').innerHTML = cells.map(cell => {
+    const isToday = cell.date.toDateString() === new Date().toDateString();
+    const dayPosts = POSTS.filter(p => p.date.toDateString() === cell.date.toDateString());
+    const maxShow = 3;
+    const pills = dayPosts.slice(0, maxShow).map(p => `
+      <div class="post-pill" style="background:${p.channelBg};color:${p.channelColor}" onclick="openPreview('${p.id}',event)">
+        <span class="post-pill-time">${fmt2(p.date.getHours())}:${fmt2(p.date.getMinutes())}</span>
+        <span class="post-pill-name">${p.channelName}</span>
+        <span class="post-pill-status status-${p.status}"></span>
+      </div>`).join('');
+    const more = dayPosts.length > maxShow ? `<div class="more-pill">+${dayPosts.length - maxShow} more</div>` : '';
+    const dateStr = cell.date.toISOString().split('T')[0];
+    return `<div class="cal-cell${cell.otherMonth?' other-month':''}${isToday?' today':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+        <div class="cal-day-num">${cell.date.getDate()}</div>
+        <button class="cal-add-btn" onclick="newPostDate('${dateStr}',event)">+</button>
+      </div>
+      ${pills}${more}
+    </div>`;
+  }).join('');
+
+  renderLegend();
+  renderListView();
+  updateStats();
+}
+
+function fmt2(n){ return String(n).padStart(2,'0'); }
+
+function renderLegend() {
+  document.getElementById('cal-legend').innerHTML = CHANNELS.map(ch =>
+    `<div class="cal-legend-item"><div class="cal-legend-dot" style="background:${ch.color}"></div>${ch.name}</div>`
+  ).join('');
+}
+
+function updateStats() {
+  const mp = POSTS.filter(p => p.date.getFullYear()===viewYear && p.date.getMonth()===viewMonth);
+  document.getElementById('stat-total').textContent = mp.length;
+  document.getElementById('stat-posted').textContent = mp.filter(p=>p.status==='posted').length;
+  document.getElementById('stat-pending').textContent = mp.filter(p=>p.status==='pending').length;
+  document.getElementById('stat-error').textContent = mp.filter(p=>p.status==='error').length;
+}
+
+function renderListView() {
+  const lang = getLang();
+  const mp = POSTS.filter(p => p.date.getFullYear()===viewYear && p.date.getMonth()===viewMonth);
+  const statusLabel = {posted: lang==='ru'?'Опубликован':'Posted', pending: lang==='ru'?'Ожидает':'Pending', error: lang==='ru'?'Ошибка':'Error'};
+  document.getElementById('list-tbody').innerHTML = mp.map(p => `
+    <tr onclick="openPreview('${p.id}',event)" style="cursor:pointer">
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${p.channelColor};flex-shrink:0"></div>
+        <div><div style="font-size:12.5px;font-weight:500">${p.channelName}</div><div style="font-size:11px;color:var(--text3)">${p.channelId}</div></div>
+      </div></td>
+      <td class="mono" style="font-size:11.5px;white-space:nowrap">${p.date.toLocaleDateString(lang==='ru'?'ru-RU':'en-GB')} ${fmt2(p.date.getHours())}:${fmt2(p.date.getMinutes())}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text2)">${p.text.replace(/\n/g,' ').slice(0,60)}…</td>
+      <td style="font-size:12px;color:var(--amber)">${p.stars > 0 ? '⭐ '+p.stars : '—'}</td>
+      <td><span class="status-badge ${p.status}">${statusLabel[p.status]}</span></td>
+      <td><div class="actions-cell">
+        <button class="action-btn" onclick="editPost('${p.id}',event)">Edit</button>
+        <button class="icon-action" onclick="deletePost('${p.id}',event)"><svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2h4v2M6 7v4M8 7v4M3 4l1 8h6l1-8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div></td>
+    </tr>`).join('');
+}
+
+// ── Preview modal ──────────────────────────────────────────────────────────
+function openPreview(postId, e) {
+  if (e) e.stopPropagation();
+  const p = POSTS.find(x => x.id === postId);
+  if (!p) return;
+  previewPost = p;
+  const lang = getLang();
+  const ch = CHANNELS.find(c => c.id === p.channelId) || {};
+  const statusLabel = {posted: lang==='ru'?'Опубликован':'Posted', pending: lang==='ru'?'Ожидает':'Pending', error: lang==='ru'?'Ошибка':'Error'};
+
+  document.getElementById('preview-ava').textContent = p.channelInitials;
+  document.getElementById('preview-ava').style.background = p.channelColor;
+  document.getElementById('preview-ch-name').textContent = p.channelName;
+  document.getElementById('preview-ch-id').textContent = p.channelId;
+  document.getElementById('preview-text').textContent = p.text;
+  document.getElementById('preview-time').textContent = `${fmt2(p.date.getHours())}:${fmt2(p.date.getMinutes())}`;
+  document.getElementById('preview-stars').textContent = p.stars > 0 ? `⭐ ${p.stars}` : '';
+
+  // Images placeholder
+  const imgs = document.getElementById('preview-imgs');
+  if (p.nPhotos > 0) {
+    imgs.className = `preview-msg-imgs n${p.nPhotos}`;
+    imgs.innerHTML = Array.from({length:p.nPhotos}).map((_,i) =>
+      `<div class="img-item"><div style="font-size:24px">📸</div></div>`
+    ).join('');
+    imgs.style.display = '';
+  } else {
+    imgs.innerHTML = '';
+    imgs.style.display = 'none';
+  }
+
+  document.getElementById('pd-channel').textContent = `${p.channelName} (${p.channelId})`;
+  document.getElementById('pd-date').textContent = `${p.date.toLocaleDateString(lang==='ru'?'ru-RU':'en-GB')} ${fmt2(p.date.getHours())}:${fmt2(p.date.getMinutes())}`;
+  document.getElementById('pd-stars').textContent = p.stars > 0 ? `⭐ ${p.stars}` : lang==='ru'?'Бесплатно':'Free';
+  document.getElementById('pd-photos').textContent = p.nPhotos > 0 ? `${p.nPhotos} ${lang==='ru'?'фото':'photos'}` : '—';
+  document.getElementById('pd-status').innerHTML = `<span class="status-badge ${p.status}">${statusLabel[p.status]}</span>`;
+
+  document.getElementById('modal-preview').classList.add('open');
+}
+
+function closePreview() {
+  document.getElementById('modal-preview').classList.remove('open');
+  previewPost = null;
+}
+
+function editFromPreview() {
+  if (!previewPost) return;
+  window.location.href = `tg-post-edit.html?id=${previewPost.id}`;
+}
+
+function editPost(id, e) {
+  if (e) e.stopPropagation();
+  window.location.href = `tg-post-edit.html?id=${id}`;
+}
+
+function deletePost(id, e) {
+  if (e) e.stopPropagation();
+  if (confirm(getLang()==='ru'?'Удалить пост?':'Delete this post?')) {
+    POSTS = POSTS.filter(p => p.id !== id);
+    renderCalendar();
+  }
+}
+
+function newPostDate(dateStr, e) {
+  if (e) e.stopPropagation();
+  window.location.href = `tg-post-new.html?date=${dateStr}`;
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────────
+function changeMonth(dir) {
+  viewMonth += dir;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
+  POSTS = makePosts();
+  renderCalendar();
+}
+
+function goToday() {
+  viewYear = TODAY.getFullYear();
+  viewMonth = TODAY.getMonth();
+  POSTS = makePosts();
+  renderCalendar();
+}
+
+let currentView = 'month';
+function setView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.cal-view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const showCal = view !== 'list';
+  document.getElementById('cal-wrap').style.display = showCal ? '' : 'none';
+  document.getElementById('list-view').style.display = showCal ? 'none' : '';
+}
+
+// ── Translations ──────────────────────────────────────────────────────────
+const TR = {
+  en:{pageTitle:'TG Group Posting',export:'Export',newPost:'New Post',today:'Today',
+    month:'Month',week:'Week',list:'List',
+    statTotal:'Posts this month',statPosted:'Posted',statPending:'Pending',statError:'Error',
+    thChannel:'Channel',thDate:'Date & Time',thText:'Post Text',thStars:'Stars',thStatus:'Status',
+    previewTitle:'Post Details',pdlChannel:'Channel',pdlDate:'Date',pdlStars:'Stars',pdlPhotos:'Photos',pdlStatus:'Status',
+    btnEdit:'Edit Post',btnClose:'Close'},
+  ru:{pageTitle:'Постинг в группы Telegram',export:'Экспорт',newPost:'Новый пост',today:'Сегодня',
+    month:'Месяц',week:'Неделя',list:'Список',
+    statTotal:'Постов в месяце',statPosted:'Опубликовано',statPending:'Ожидает',statError:'Ошибка',
+    thChannel:'Канал',thDate:'Дата и время',thText:'Текст поста',thStars:'Звёзды',thStatus:'Статус',
+    previewTitle:'Детали поста',pdlChannel:'Канал',pdlDate:'Дата',pdlStars:'Звёзды',pdlPhotos:'Фото',pdlStatus:'Статус',
+    btnEdit:'Редактировать',btnClose:'Закрыть'}
+};
+
+function applyTranslations() {
+  const l = getLang(), t = TR[l];
+  const s = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  s('page-title',t.pageTitle); s('lbl-export',t.export); s('lbl-new-post',t.newPost);
+  s('btn-today',t.today);
+  s('vb-month-lbl',t.month); s('vb-week-lbl',t.week); s('vb-list-lbl',t.list);
+  s('lbl-stat-total',t.statTotal); s('lbl-stat-posted',t.statPosted);
+  s('lbl-stat-pending',t.statPending); s('lbl-stat-error',t.statError);
+  s('th-channel',t.thChannel); s('th-date',t.thDate); s('th-text',t.thText);
+  s('th-stars',t.thStars); s('th-status',t.thStatus);
+  s('preview-title',t.previewTitle);
+  s('pdl-channel',t.pdlChannel); s('pdl-date',t.pdlDate); s('pdl-stars',t.pdlStars);
+  s('pdl-photos',t.pdlPhotos); s('pdl-status',t.pdlStatus);
+  s('lbl-preview-edit',t.btnEdit); s('lbl-preview-close',t.btnClose);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations();
+  renderCalendar();
+});
+window.addEventListener('storage', e => { if (e.key==='ofmcrm_lang') { applyTranslations(); renderCalendar(); }});
+document.addEventListener('keydown', e => { if (e.key==='Escape') closePreview(); });
+</script>
+</body>
+</html>
